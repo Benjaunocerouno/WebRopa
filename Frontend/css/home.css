@@ -1,0 +1,632 @@
+/* ================================================================
+   home.css — WebRopa Estilos específicos del Home
+   Alcance: hero, categorías, productos masonry, sobre-marca
+   ================================================================ */
+
+
+/* ================================================================
+   HERO SECTION
+================================================================ */
+.hero {
+  padding: clamp(3rem, 6vw, 6rem) clamp(1rem, 4vw, 3rem);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  overflow: hidden; /* contiene doodles que sobresalen */
+}
+
+.hero__layout {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+@media (max-width: 860px) {
+  .hero__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__image-collage {
+    order: -1; /* imagen primero en mobile */
+    max-height: 380px;
+    overflow: hidden;
+  }
+}
+
+/* Hero text */
+.hero__text {
+  position: relative;
+  padding-top: 1.5rem;
+}
+
+.hero__doodle-tag {
+  display: inline-block;
+  background: var(--color-sage);
+  color: var(--color-cream);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.9rem;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.06em;
+  margin-bottom: 1.2rem;
+  transform: rotate(-2deg);
+  box-shadow: 2px 2px 0px var(--color-sage-dark);
+}
+
+.hero__headline {
+  font-family: var(--font-serif);
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 900;
+  color: var(--color-brown);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.hero__headline em {
+  font-style: italic;
+  color: var(--color-terracotta);
+}
+
+.hero__subtext {
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  max-width: 360px;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+  font-weight: 300;
+}
+
+/* CTA button — "handmade sticker" style */
+.hero__cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--color-terracotta);
+  color: var(--color-white);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 0.85rem 2rem;
+  border-radius: 20px 6px 20px 6px; /* irregular "cut" corners */
+  box-shadow: 4px 5px 0px var(--color-terracotta-dark);
+  transition: var(--transition);
+}
+
+.hero__cta-btn svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s var(--ease-out-slow);
+}
+
+.hero__cta-btn:hover {
+  background: var(--color-terracotta-dark);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 7px 0px var(--color-brown-light);
+}
+
+.hero__cta-btn:hover svg {
+  transform: translateX(4px);
+}
+
+/* Decorative floating flower doodle */
+.hero__doodle-flower {
+  position: absolute;
+  bottom: -1rem;
+  left: -1.5rem;
+  width: 80px;
+  height: 80px;
+  opacity: 0.5;
+  animation: floatDoodle 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes floatDoodle {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50%       { transform: translateY(-12px) rotate(5deg); }
+}
+
+/* Hero image collage */
+.hero__image-collage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 0.5fr;
+  grid-template-rows: auto auto;
+  gap: 1rem;
+}
+
+.hero__image-main {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+
+.hero__image-main img {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  /* Irregular border-radius for "cut by hand" feel */
+  border-radius: 50% 24px 50% 24px / 24px 50% 24px 50%;
+  box-shadow: var(--shadow-lg);
+  transform: rotate(-2deg);
+  transition: var(--transition);
+}
+
+.hero__image-main:hover img {
+  transform: rotate(0deg) scale(1.02);
+}
+
+.hero__image-secondary {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+}
+
+.hero__image-secondary img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 24px 50% 24px 50% / 50% 24px 50% 24px;
+  box-shadow: var(--shadow-md);
+  transform: rotate(3deg);
+  transition: var(--transition);
+}
+
+.hero__image-secondary:hover img {
+  transform: rotate(0deg) scale(1.03);
+}
+
+/* Floating sticker on image */
+.hero__sticker {
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  background: var(--color-mustard);
+  color: var(--color-brown);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 2px 3px 0px var(--color-mustard-dark);
+  transform: rotate(5deg);
+  white-space: nowrap;
+  animation: floatDoodle 5s ease-in-out 1s infinite;
+  z-index: 10;
+}
+
+
+/* ================================================================
+   CATEGORÍAS
+================================================================ */
+.categorias {
+  padding: 5rem 0;
+  background: var(--color-cream-dark);
+}
+
+.categorias__grid {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.categoria-card {
+  text-align: center;
+}
+
+.categoria-card__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--color-brown);
+}
+
+.categoria-card__img-wrap {
+  width: clamp(100px, 14vw, 150px);
+  height: clamp(100px, 14vw, 150px);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--color-cream);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.categoria-card__img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease-out-slow);
+}
+
+.categoria-card__link:hover .categoria-card__img-wrap {
+  border-color: var(--color-terracotta);
+  box-shadow: var(--shadow-warm-hover);
+  transform: translateY(-6px);
+}
+
+.categoria-card__link:hover .categoria-card__img-wrap img {
+  transform: scale(1.08);
+}
+
+.categoria-card__label {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-brown);
+  transition: color 0.2s ease;
+}
+
+.categoria-card__link:hover .categoria-card__label {
+  color: var(--color-terracotta-dark);
+}
+
+
+/* ================================================================
+   PRODUCTOS DESTACADOS — Masonry grid
+================================================================ */
+.productos {
+  padding: 5rem 0;
+}
+
+/* Filter tabs */
+.productos__filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: var(--color-cream-dark);
+  border: 1.5px solid transparent;
+  transition: var(--transition);
+}
+
+.filter-tab:hover {
+  color: var(--color-terracotta-dark);
+  border-color: var(--color-terracotta);
+}
+
+.filter-tab--active {
+  background: var(--color-terracotta);
+  color: var(--color-white);
+  border-color: var(--color-terracotta);
+  box-shadow: 2px 2px 0px var(--color-terracotta-dark);
+}
+
+/* Masonry grid via CSS columns */
+.productos__masonry {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) { .productos__masonry { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .productos__masonry { grid-template-columns: 1fr; } }
+
+/* Product card */
+.product-card {
+  break-inside: avoid;
+  background: var(--color-cream-dark);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.4s var(--ease-out-slow), box-shadow 0.4s var(--ease-out-slow);
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-warm-hover);
+}
+
+/* Image wrapper */
+.product-card__img-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-card__img {
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s var(--ease-out-slow);
+}
+
+.product-card--short .product-card__img { height: 220px; }
+.product-card--medium .product-card__img { height: 320px; }
+.product-card--tall   .product-card__img { height: 420px; }
+
+.product-card:hover .product-card__img {
+  transform: scale(1.06);
+}
+
+.product-card__out-of-stock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  background: rgba(255, 255, 255, 0.85);
+  color: #c0392b;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 800;
+  padding: 0.5rem 1rem;
+  border: 2px dashed #c0392b;
+  border-radius: var(--radius-md);
+  z-index: 10;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Sticker badge */
+.product-badge {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-pill);
+  z-index: 5;
+  box-shadow: 1px 2px 0px rgba(0,0,0,0.15);
+  transform: rotate(-2deg);
+}
+
+.product-badge--nuevo    { background: var(--color-sage); color: var(--color-cream); }
+.product-badge--oferta   { background: #E05C5C; color: var(--color-white); }
+.product-badge--favorito { background: var(--color-mustard); color: var(--color-brown); }
+
+/* Favorite heart button */
+.product-card__fav {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 5;
+  background: rgba(250,246,240,0.9);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  border: none;
+}
+
+.product-card__fav svg { width: 16px; height: 16px; }
+
+.product-card__fav:hover,
+.product-card__fav.is-liked {
+  color: #E05C5C;
+  background: var(--color-white);
+  transform: scale(1.15);
+}
+
+.product-card__fav.is-liked svg {
+  fill: #E05C5C;
+  stroke: #E05C5C;
+}
+
+/* Card info */
+.product-card__info {
+  padding: 1rem 1.2rem 1.4rem;
+}
+
+.product-card__name {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-brown);
+  margin-bottom: 0.3rem;
+  line-height: 1.3;
+}
+
+.product-card__price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-terracotta-dark);
+  margin-bottom: 0.8rem;
+}
+
+/* Add to cart button — appears on hover */
+.product-card__add-btn {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: var(--color-brown);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.3s var(--ease-out-slow), transform 0.3s var(--ease-out-slow), background 0.2s ease;
+}
+
+.product-card:hover .product-card__add-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.product-card__add-btn:hover {
+  background: var(--color-terracotta-dark);
+}
+
+
+/* ================================================================
+   SOBRE LA MARCA
+================================================================ */
+.sobre-marca {
+  background: var(--color-sage);
+  background: linear-gradient(150deg, #C8D5BC 0%, #A8B89C 100%);
+  padding: 6rem clamp(1rem, 4vw, 3rem);
+  margin: 5rem 0 0;
+}
+
+.sobre-marca__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 5rem);
+}
+
+@media (max-width: 768px) {
+  .sobre-marca__inner { grid-template-columns: 1fr; }
+}
+
+/* Image side */
+.sobre-marca__image-wrap {
+  position: relative;
+}
+
+.sobre-marca__image {
+  width: 100%;
+  height: clamp(320px, 40vw, 480px);
+  object-fit: cover;
+  border-radius: 50% 24px 50% 24px / 24px 50% 24px 50%;
+  box-shadow: var(--shadow-lg);
+  transform: rotate(2deg);
+  transition: var(--transition);
+}
+
+.sobre-marca__image-wrap:hover .sobre-marca__image {
+  transform: rotate(0deg);
+}
+
+/* Decorative frame accent */
+.sobre-marca__frame-accent {
+  position: absolute;
+  inset: -12px -12px 12px 12px;
+  border: 2px dashed rgba(255,255,255,0.6);
+  border-radius: 50% 24px 50% 24px / 24px 50% 24px 50%;
+  pointer-events: none;
+  transform: rotate(2deg);
+  transition: var(--transition);
+}
+
+.sobre-marca__image-wrap:hover .sobre-marca__frame-accent {
+  transform: rotate(0deg);
+}
+
+/* Leaf doodle */
+.sobre-marca__doodle-leaf {
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  width: 60px;
+  height: 100px;
+  opacity: 0.8;
+  animation: floatDoodle 5s ease-in-out 2s infinite;
+  pointer-events: none;
+}
+
+/* Text side */
+.sobre-marca__text {
+  color: var(--color-brown);
+}
+
+.sobre-marca__eyebrow {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(92,74,61,0.65);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.sobre-marca__title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 900;
+  color: var(--color-brown);
+  line-height: 1.08;
+  margin-bottom: 1.5rem;
+}
+
+.sobre-marca__title em {
+  font-style: italic;
+  color: var(--color-cream);
+  text-shadow: 1px 2px 0px rgba(92,74,61,0.2);
+}
+
+.sobre-marca__body {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(58,46,40,0.85);
+  max-width: 500px;
+  margin-bottom: 1rem;
+}
+
+.sobre-marca__body strong {
+  font-weight: 600;
+  color: var(--color-brown);
+}
+
+.sobre-marca__link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-brown);
+  border-bottom: 2px solid var(--color-brown);
+  padding-bottom: 2px;
+  transition: var(--transition);
+}
+
+.sobre-marca__link:hover {
+  color: var(--color-terracotta-dark);
+  border-color: var(--color-terracotta-dark);
+  letter-spacing: 0.02em;
+}
+
+/* ================================================================
+   PORTAL DIRECTORY
+================================================================ */
+.portal-directory {
+  background: var(--color-cream-dark);
+}
+
+.portal-company-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.portal-company-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-terracotta) !important;
+  box-shadow: 0 8px 24px rgba(216, 164, 143, 0.15) !important;
+}
+
+.portal-company-card:hover .portal-company-card__logo {
+  transform: scale(1.15);
+}
+
+.portal-company-card:hover .portal-company-card__action {
+  color: var(--color-terracotta-dark) !important;
+}
+
+.product-card__add-btn--portal {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  transition: all 0.2s ease !important;
+}
+
+.product-card__add-btn--portal:hover {
+  background: var(--color-terracotta-dark) !important;
+  color: var(--color-white) !important;
+  border-color: var(--color-terracotta-dark) !important;
+}

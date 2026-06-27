@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel SuperAdmin · Seguridad, Infraestructura, Personal y API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/panelsuperadmin.css">
+</head>
+<body>
+
+<!-- ── Login overlay ── -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-caja">
+    <div class="marca">
+      <svg class="marca-icono" viewBox="0 0 40 40" fill="none">
+        <path d="M20 4C12 4 6 10 6 18c0 9 8 14 14 18 6-4 14-9 14-18 0-8-6-14-14-14Z" stroke="#5C4A3D" stroke-width="2" fill="#D8A48F" opacity="0.6"/>
+        <path d="M14 19l4 4 9-9" stroke="#5C4A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <h1>Mood&amp;Co</h1>
+    </div>
+    <p class="marca-sub">Acceso SuperAdmin</p>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-form">
+      <div class="campo">
+        <label class="etiqueta-campo">Correo electrónico</label>
+        <input type="email" id="login-correo" placeholder="correo@moodandco.pe" autocomplete="email">
+      </div>
+      <div class="campo">
+        <label class="etiqueta-campo">Contraseña</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="marca">
+      <svg class="marca-icono" viewBox="0 0 40 40" fill="none">
+        <path d="M20 4C12 4 6 10 6 18c0 9 8 14 14 18 6-4 14-9 14-18 0-8-6-14-14-14Z" stroke="#5C4A3D" stroke-width="2" fill="#D8A48F" opacity="0.6"/>
+        <path d="M14 19l4 4 9-9" stroke="#5C4A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <h1>Mood&amp;Co</h1>
+    </div>
+    <p class="marca-sub">Consola de SuperAdmin</p>
+
+    <div class="usuario-activo">
+      <div class="avatar-mini" id="avatar-iniciales">–</div>
+      <div>
+        <div class="nombre" id="usuario-nombre">Cargando…</div>
+        <div class="rol" id="usuario-rol">SuperAdmin</div>
+      </div>
+    </div>
+
+    <nav class="menu" id="menu-navegacion">
+      <button class="menu-item activo" data-panel="empresas">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 21V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16M8 21v-4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4M10 9h4M10 13h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Empresas (Tenants)
+      </button>
+      <button class="menu-item" data-panel="seguridad">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.8"/></svg>
+        Seguridad en vivo
+      </button>
+      <button class="menu-item" data-panel="roles">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="7" cy="7" r="2.4" stroke="currentColor" stroke-width="1.7"/><path d="M9 7h11M5 13h15M9.5 19h10.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="7.5" cy="19" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>
+        Roles y permisos
+      </button>
+      <button class="menu-item" data-panel="auditoria">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="11" height="15" rx="1.5" stroke="currentColor" stroke-width="1.7"/><path d="M8 7h5M8 10.5h5M8 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16.5" cy="16.5" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M19 19l2 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Auditoría
+      </button>
+      <button class="menu-item" data-panel="infraestructura">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="14" width="16" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/><circle cx="8" cy="7" r="0.9" fill="currentColor"/><circle cx="8" cy="17" r="0.9" fill="currentColor"/></svg>
+        Infraestructura
+      </button>
+      <button class="menu-item" data-panel="respaldos">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M7 17a4 4 0 0 1-1-7.9A5.5 5.5 0 0 1 16.8 8 4.5 4.5 0 0 1 17 17H7Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v6M9.5 14.5L12 17l2.5-2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Respaldos
+      </button>
+      <button class="menu-item" data-panel="admins">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.8"/><path d="M16.5 7.5l1.2 1.2 2.3-2.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Cuentas Admin
+      </button>
+      <button class="menu-item" data-panel="api">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.4l-4.8 2.5.9-5.4-3.9-3.8 5.4-.8L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        API externa
+      </button>
+    </nav>
+
+    <div class="menu-pie">
+      Panel de control · RF-SA-01 a RF-SA-15<br>
+      <span id="footer-usuario"></span>
+    </div>
+    <button class="btn-cerrar-sesion" id="btn-cerrar-sesion">
+      <svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Cerrar sesión
+    </button>
+  </aside>
+
+  <main>
+
+    <!-- ═══════════════════ EMPRESAS ═══════════════════ -->
+    <section class="panel activo" id="panel-empresas">
+      <div class="topbar">
+        <div>
+          <h2>Gestión de Empresas (Tenants)</h2>
+          <p class="descripcion">Crea y administra múltiples empresas. Cada empresa mantiene su catálogo, usuarios y pedidos completamente aislados.</p>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Crear nueva empresa</h3>
+        </div>
+        <div class="form-fila">
+          <div class="campo"><label class="etiqueta-campo">RUC</label><input type="text" id="nueva-empresa-ruc" placeholder="Ej. 20123456789" maxlength="11"></div>
+          <div class="campo"><label class="etiqueta-campo">Razón Social</label><input type="text" id="nueva-empresa-razon" placeholder="Razón social"></div>
+          <div class="campo"><label class="etiqueta-campo">Nombre Comercial</label><input type="text" id="nueva-empresa-comercial" placeholder="Nombre comercial"></div>
+          <button class="btn btn-primario" id="btn-crear-empresa">Registrar Empresa</button>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Empresas registradas</h3>
+          <button class="btn btn-secundario btn-mini" onclick="cargarEmpresas()">↻ Refrescar</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>RUC</th><th>Empresa</th><th>Estado</th><th colspan="2"></th></tr></thead>
+          <tbody id="tabla-empresas">
+            <tr><td colspan="5" style="text-align:center; padding: 20px;">Cargando empresas...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ SEGURIDAD ═══════════════════ -->
+    <section class="panel" id="panel-seguridad">
+      <div class="topbar">
+        <div>
+          <h2>Monitoreo de seguridad en vivo</h2>
+          <p class="descripcion">Sesiones activas y bloqueos automáticos del sistema. Fuerza el cierre o revoca accesos ante cualquier comportamiento sospechoso.</p>
+        </div>
+        <div class="estado-vivo"><span class="punto-pulso"></span> <span id="contador-sesiones">4</span> sesiones activas</div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Sesiones activas</h3>
+          <span class="nota">Tabla optimizada para 50+ sesiones simultáneas</span>
+        </div>
+        <p class="tarjeta-sub">Cierre forzado de sesión = invalida el token en curso. Revocar acceso = bloquea el nivel de permiso y devuelve HTTP 403 en la siguiente petición.</p>
+        <table>
+          <thead><tr><th>ID usuario</th><th>Rol</th><th>IP</th><th>Última actividad</th><th colspan="2"></th></tr></thead>
+          <tbody id="tabla-sesiones"></tbody>
+        </table>
+      </div>
+
+      <div class="tarjeta">
+        <span class="etiqueta-doodle">Auto-bloqueo</span>
+        <div class="tarjeta-titulo">
+          <h3>Bloqueos por intentos de intrusión</h3>
+        </div>
+        <p class="tarjeta-sub">Más de 5 intentos fallidos en 10 minutos inhabilita la cuenta 15 minutos. Aun así, queda bloqueada hasta el desbloqueo manual del SuperAdmin.</p>
+        <div id="lista-bloqueos"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ ROLES ═══════════════════ -->
+    <section class="panel" id="panel-roles">
+      <div class="topbar">
+        <div>
+          <h2>Roles y permisos</h2>
+          <p class="descripcion">Asigna el rol de cada trabajador y ajusta su matriz de permisos sin necesidad de crear un rol nuevo.</p>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Asignación de rol</h3>
+        </div>
+        <p class="tarjeta-sub">El sistema valida que el rol exista en la matriz de permisos. El trabajador verá los nuevos módulos en su siguiente inicio de sesión.</p>
+        <div class="form-fila">
+          <div class="campo">
+            <label class="etiqueta-campo">Trabajador</label>
+            <select id="select-trabajador">
+              <option>Luis Fernández — vendedor</option>
+              <option>Marisol Vega — administrador de catálogo</option>
+              <option>Jhon Pérez — almacenero</option>
+              <option>Renzo Díaz — supervisor</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="etiqueta-campo">Nuevo rol</label>
+            <select id="select-rol">
+              <option value="vendedor">Vendedor</option>
+              <option value="almacenero">Almacenero</option>
+              <option value="catalogo">Administrador de catálogo</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+          </div>
+          <button class="btn btn-primario" id="btn-asignar-rol">Asignar rol</button>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Matriz de permisos granular</h3>
+          <button class="btn btn-secundario btn-mini" id="btn-guardar-permisos">Guardar cambios</button>
+        </div>
+        <p class="tarjeta-sub">Activa o desactiva permisos individuales por rol. El cambio impacta la base de datos al instante.</p>
+        <table class="matriz-permisos">
+          <thead>
+            <tr><th>Rol</th><th>Inventario</th><th>Pedidos</th><th>Boletas</th><th>Devoluciones</th><th>Reportes</th></tr>
+          </thead>
+          <tbody id="tabla-matriz"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ AUDITORÍA ═══════════════════ -->
+    <section class="panel" id="panel-auditoria">
+      <div class="topbar">
+        <div>
+          <h2>Auditoría de modificaciones</h2>
+          <p class="descripcion">Historial de cambios sobre datos sensibles de clientes o inventario.</p>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Log de auditoría</h3>
+          <button class="btn btn-secundario btn-mini" id="btn-exportar-pdf">⭳ Exportar PDF</button>
+        </div>
+        <div class="barra-filtros">
+          <div class="campo">
+            <label class="etiqueta-campo">Desde</label>
+            <input type="date" id="filtro-fecha-desde" value="2026-06-10">
+          </div>
+          <div class="campo">
+            <label class="etiqueta-campo">Hasta</label>
+            <input type="date" id="filtro-fecha-hasta" value="2026-06-18">
+          </div>
+          <div class="campo">
+            <label class="etiqueta-campo">ID de usuario</label>
+            <select id="filtro-usuario">
+              <option value="todos">Todos</option>
+              <option value="ADM-002">ADM-002</option>
+              <option value="ADM-005">ADM-005</option>
+              <option value="SA-001">SA-001 (tú)</option>
+            </select>
+          </div>
+          <button class="btn btn-secundario" id="btn-filtrar-log">Filtrar</button>
+        </div>
+        <table>
+          <thead><tr><th>Fecha y hora</th><th>Autor</th><th>Entidad</th><th>Cambio</th></tr></thead>
+          <tbody id="tabla-logs"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ INFRAESTRUCTURA ═══════════════════ -->
+    <section class="panel" id="panel-infraestructura">
+      <div class="topbar">
+        <div>
+          <h2>Salud de la infraestructura</h2>
+          <p class="descripcion">Métricas del servidor y disponibilidad del sistema en horario comercial.</p>
+        </div>
+        <div class="estado-vivo"><span class="punto-pulso"></span> Próxima lectura en <span id="contador-refresco">60</span>s</div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>CPU, RAM y latencia</h3>
+          <span class="nota">Refresco automático cada 60s</span>
+        </div>
+        <div class="grid-metricas" id="grid-metricas"></div>
+        <div class="alerta-banner" id="alerta-infra">⚠️ Una o más métricas superaron el 90%. Revisa la carga del servidor.</div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Disponibilidad del sistema</h3>
+        </div>
+        <div class="uptime-pie">
+          <div class="uptime-dato">Meta de disponibilidad: <b>99.5%</b></div>
+          <div class="uptime-dato">Caída acumulada este mes: <b>12 min</b> / 43 min máx.</div>
+          <div class="uptime-dato">Próxima ventana de mantenimiento: <b>22 jun · 11:00pm</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ RESPALDOS ═══════════════════ -->
+    <section class="panel" id="panel-respaldos">
+      <div class="topbar">
+        <div>
+          <h2>Respaldos automáticos</h2>
+          <p class="descripcion">Ejecución diaria, integridad por checksum y verificación de cifrado AES-256.</p>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Reporte de ejecución</h3>
+        </div>
+        <div id="lista-backups"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ ADMINS ═══════════════════ -->
+    <section class="panel" id="panel-admins">
+      <div class="topbar">
+        <div>
+          <h2>Cuentas de Administrador</h2>
+          <p class="descripcion">Alta, desactivación y restablecimiento de credenciales para cuentas de nivel Admin.</p>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Crear cuenta Admin</h3>
+        </div>
+        <p class="tarjeta-sub">Se valida que el correo no esté registrado. Al finalizar se envía una notificación de bienvenida con credenciales temporales.</p>
+        <div class="form-fila">
+          <div class="campo"><label class="etiqueta-campo">Nombre completo</label><input type="text" id="nuevo-admin-nombre" placeholder="Ej. Carla Ramos"></div>
+          <div class="campo"><label class="etiqueta-campo">Correo electrónico</label><input type="email" id="nuevo-admin-correo" placeholder="carla@moodandco.pe"></div>
+          <div class="campo"><label class="etiqueta-campo">Teléfono</label><input type="text" id="nuevo-admin-telefono" placeholder="Ej. 987654321"></div>
+          <div class="campo"><label class="etiqueta-campo">Contraseña</label><input type="password" id="nuevo-admin-password" placeholder="••••••••"></div>
+          <div class="campo">
+            <label class="etiqueta-campo">Empresa destino</label>
+            <select id="nuevo-admin-empresa">
+              <option value="">Cargando empresas...</option>
+            </select>
+          </div>
+          <button class="btn btn-primario" id="btn-crear-admin">Crear cuenta</button>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Cuentas existentes</h3>
+        </div>
+        <div id="lista-admins"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ API ═══════════════════ -->
+    <section class="panel" id="panel-api">
+      <div class="topbar">
+        <div>
+          <h2>Credenciales de API externa</h2>
+          <p class="descripcion">Alta, consulta y suspensión de accesos para clientes y sistemas integrados.</p>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Registros activos</h3>
+          <button class="btn btn-secundario btn-mini" id="btn-nueva-credencial">+ Nueva credencial</button>
+        </div>
+        <p class="tarjeta-sub">Al cambiar el estado a suspendida, cualquier request firmado con ese token retorna HTTP 401 de inmediato.</p>
+        <div class="lista-credenciales" id="lista-credenciales"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config/config.js"></script>
+<script>
+/* ══════════════════════════════════════════
+   AUTENTICACIÓN — SuperAdmin
+   ══════════════════════════════════════════ */
+const SESSION_KEY = 'sa_session';
+
+function obtenerSesion() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
+}
+
+function guardarSesion(datos) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(datos));
+}
+
+function borrarSesion() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function aplicarUsuario(datos) {
+  const palabras = (datos.nombre || '').trim().split(/\s+/);
+  const iniciales = palabras.length >= 2
+    ? (palabras[0][0] + palabras[palabras.length - 1][0]).toUpperCase()
+    : (datos.nombre || '?').substring(0, 2).toUpperCase();
+  document.getElementById('avatar-iniciales').textContent = iniciales;
+  document.getElementById('usuario-nombre').textContent = datos.nombre || '—';
+  document.getElementById('usuario-rol').textContent = datos.rol || 'SuperAdmin';
+  document.getElementById('footer-usuario').textContent = datos.correo || '';
+}
+
+async function verificarSesion() {
+  const sesion = obtenerSesion();
+  if (!sesion || !sesion.token) {
+    document.getElementById('login-overlay').classList.remove('oculto');
+    return;
+  }
+
+  try {
+    const resp = await fetch(CONFIG.API_URL + '/usuarios/me', {
+      headers: { 'Authorization': 'Bearer ' + sesion.token }
+    });
+
+    if (!resp.ok) {
+      borrarSesion();
+      document.getElementById('login-overlay').classList.remove('oculto');
+      return;
+    }
+
+    const datos = await resp.json();
+    if (datos.rol !== 'SUPERADMIN') {
+      borrarSesion();
+      document.getElementById('login-overlay').classList.remove('oculto');
+      const errorEl = document.getElementById('login-error');
+      errorEl.textContent = 'Acceso denegado: Tu rol no es SUPERADMIN.';
+      errorEl.classList.add('visible');
+      return;
+    }
+
+    guardarSesion({ ...sesion, ...datos });
+    aplicarUsuario(datos);
+    document.getElementById('login-overlay').classList.add('oculto');
+  } catch {
+    borrarSesion();
+    document.getElementById('login-overlay').classList.remove('oculto');
+  }
+}
+
+document.getElementById('btn-ingresar').addEventListener('click', async () => {
+  const correo   = document.getElementById('login-correo').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btnLogin = document.getElementById('btn-ingresar');
+  const errorEl  = document.getElementById('login-error');
+
+  if (!correo || !password) {
+    errorEl.textContent = 'Ingresa correo y contraseña.';
+    errorEl.classList.add('visible');
+    return;
+  }
+
+  btnLogin.disabled = true;
+  btnLogin.textContent = 'Verificando…';
+  errorEl.classList.remove('visible');
+
+  try {
+    const resp = await fetch(CONFIG.API_URL + '/usuarios/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correo, password })
+    });
+
+    const body = await resp.json().catch(() => ({}));
+
+    if (!resp.ok) {
+      const msg = typeof body === 'string' ? body : (body.message || 'Credenciales incorrectas o sin permiso de SuperAdmin.');
+      errorEl.textContent = msg;
+      errorEl.classList.add('visible');
+      return;
+    }
+
+    if (body.rol !== 'SUPERADMIN') {
+      errorEl.textContent = 'Acceso denegado: Solo SUPERADMIN puede acceder a esta consola.';
+      errorEl.classList.add('visible');
+      return;
+    }
+
+    guardarSesion(body);
+    aplicarUsuario(body);
+    document.getElementById('login-overlay').classList.add('oculto');
+    document.getElementById('login-password').value = '';
+    mostrarToast(`Bienvenido/a, ${body.nombre}`);
+  } catch {
+    errorEl.textContent = 'Error de conexión. Verifica que el servidor esté activo.';
+    errorEl.classList.add('visible');
+  } finally {
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'Ingresar';
+  }
+});
+
+document.getElementById('login-password').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btn-ingresar').click();
+});
+
+document.getElementById('btn-cerrar-sesion').addEventListener('click', () => {
+  borrarSesion();
+  document.getElementById('usuario-nombre').textContent = 'Cargando…';
+  document.getElementById('avatar-iniciales').textContent = '–';
+  document.getElementById('login-correo').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').classList.remove('visible');
+  document.getElementById('login-overlay').classList.remove('oculto');
+});
+
+verificarSesion();
+
+/* ══════════════════════════════════════════
+   DATOS DE DEMOSTRACIÓN
+   ══════════════════════════════════════════ */
+const sesiones = [
+  { id:'USR-7741', rol:'catalogo', ip:'190.234.11.8',  actividad:'hace 2 min',  sospechosa:false },
+  { id:'USR-7742', rol:'vendedor', ip:'186.4.55.230',  actividad:'hace 4 min',  sospechosa:false },
+  { id:'USR-7743', rol:'almacenero', ip:'45.182.9.14', actividad:'hace 19 min', sospechosa:true  },
+  { id:'USR-7744', rol:'supervisor', ip:'190.234.11.91',actividad:'hace 1 min', sospechosa:false },
+];
+
+let bloqueos = [
+  { usuario:'USR-6620 (vendedor)',   ip:'201.88.4.12', intentos:6, segundosRestantes: 312 },
+  { usuario:'USR-6633 (almacenero)', ip:'77.12.90.4',  intentos:8, segundosRestantes: 0   },
+];
+
+const roles = ['vendedor','almacenero','catalogo','supervisor'];
+const nombreRol = {
+  vendedor:   'Vendedor',
+  almacenero: 'Almacenero',
+  catalogo:   'Administrador de catálogo',
+  supervisor: 'Supervisor',
+};
+const modulos = ['inventario','pedidos','boletas','devoluciones','reportes'];
+let matriz = {
+  vendedor:   { inventario:false, pedidos:true,  boletas:false, devoluciones:false, reportes:false },
+  almacenero: { inventario:true,  pedidos:false, boletas:false, devoluciones:false, reportes:false },
+  catalogo:   { inventario:true,  pedidos:false, boletas:false, devoluciones:false, reportes:false },
+  supervisor: { inventario:true,  pedidos:true,  boletas:true,  devoluciones:true,  reportes:false },
+};
+
+const logs = [
+  { fecha:'18/06/2026 09:14', autor:'ADM-002', entidad:'usuarios.teléfono',      anterior:'987 654 321', nuevo:'987 000 111' },
+  { fecha:'17/06/2026 22:40', autor:'ADM-005', entidad:'variantes.stock_critico', anterior:'5',          nuevo:'8'           },
+  { fecha:'17/06/2026 16:02', autor:'SA-001',  entidad:'usuarios.rol',            anterior:'vendedor',   nuevo:'supervisor'  },
+  { fecha:'16/06/2026 11:21', autor:'ADM-002', entidad:'cupones.estado',          anterior:'ACTIVO',     nuevo:'INACTIVO'    },
+];
+
+const metricasDef = [
+  { id:'cpu',      nombre:'CPU',      unidad:'%',  valor:62              },
+  { id:'ram',      nombre:'RAM',      unidad:'%',  valor:74              },
+  { id:'latencia', nombre:'Latencia', unidad:'ms', valor:118, max:300    },
+];
+
+let backups = [
+  { resultado:'exito', fecha:'18/06/2026', hora:'03:00', tamano:'412 MB', ubicacion:'S3 · backups-moodandco/2026-06-18', hashOk:true,  aes256:true  },
+  { resultado:'exito', fecha:'17/06/2026', hora:'03:00', tamano:'408 MB', ubicacion:'S3 · backups-moodandco/2026-06-17', hashOk:true,  aes256:true  },
+  { resultado:'fallo', fecha:'16/06/2026', hora:'03:00', tamano:'—',      ubicacion:'S3 · backups-moodandco/2026-06-16', hashOk:false, aes256:false },
+];
+
+let admins = [
+  { nombre:'Andrea Kristell',  correo:'andrea@moodandco.pe', estado:'Activo',   esPropio:true  },
+  { nombre:'Víctor Tantaleán', correo:'victor@moodandco.pe', estado:'Activo',   esPropio:false },
+  { nombre:'José Iberico',     correo:'jose@moodandco.pe',   estado:'Inactivo', esPropio:false },
+];
+
+let credenciales = [
+  { cliente:'cliente_pasarela_pagos',  token:'sk_live_••••••••a91f', activa:true  },
+  { cliente:'cliente_envios_olva',     token:'tok_••••••••2c3e',     activa:true  },
+  { cliente:'cliente_marketing_meta',  token:'tok_••••••••88b1',     activa:false },
+];
+
+/* ── Navegación ── */
+document.getElementById('menu-navegacion').addEventListener('click', (e) => {
+  const btn = e.target.closest('.menu-item');
+  if (!btn) return;
+  document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
+  document.getElementById('panel-' + btn.dataset.panel).classList.add('activo');
+});
+
+/* ── Toast ── */
+let toastTimeout;
+function mostrarToast(mensaje) {
+  const toast = document.getElementById('toast');
+  toast.textContent = mensaje;
+  toast.classList.add('visible');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('visible'), 2800);
+}
+
+/* ── Sesiones ── */
+function pintarSesiones() {
+  const tbody = document.getElementById('tabla-sesiones');
+  tbody.innerHTML = sesiones.map(s => `
+    <tr class="${s.sospechosa ? 'fila-sospechosa' : ''}">
+      <td class="mono">${s.id}</td>
+      <td><span class="pildora rol-${s.rol}">${nombreRol[s.rol]}</span></td>
+      <td class="mono">${s.ip}</td>
+      <td>${s.actividad}${s.sospechosa ? ' · <strong style="color:var(--alerta)">revisar</strong>' : ''}</td>
+      <td><button class="btn btn-secundario btn-mini" data-revocar="${s.id}">Revocar acceso</button></td>
+      <td><button class="btn btn-peligro btn-mini" data-cerrar="${s.id}">Forzar cierre</button></td>
+    </tr>
+  `).join('');
+  document.getElementById('contador-sesiones').textContent = sesiones.length;
+}
+document.getElementById('tabla-sesiones').addEventListener('click', (e) => {
+  const cerrar  = e.target.dataset.cerrar;
+  const revocar = e.target.dataset.revocar;
+  if (cerrar) {
+    sesiones.splice(sesiones.findIndex(s => s.id === cerrar), 1);
+    pintarSesiones();
+    mostrarToast(`Sesión ${cerrar} cerrada · token invalidado`);
+  }
+  if (revocar) {
+    sesiones.splice(sesiones.findIndex(s => s.id === revocar), 1);
+    pintarSesiones();
+    mostrarToast(`Acceso de ${revocar} revocado · próxima petición → HTTP 403 · registrado en auditoría`);
+  }
+});
+pintarSesiones();
+
+/* ── Bloqueos ── */
+function formatoTiempo(s) {
+  if (s <= 0) return null;
+  const m = Math.floor(s / 60), sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+function pintarBloqueos() {
+  const cont = document.getElementById('lista-bloqueos');
+  if (bloqueos.length === 0) {
+    cont.innerHTML = `<p class="tarjeta-sub" style="margin:0;">No hay cuentas bloqueadas por intrusión en este momento.</p>`;
+    return;
+  }
+  cont.innerHTML = bloqueos.map((b, i) => {
+    const tiempo = formatoTiempo(b.segundosRestantes);
+    return `
+      <div class="fila-bloqueo">
+        <div class="detalle">
+          <strong>${b.usuario}</strong> · <span class="ip mono">${b.ip}</span><br>
+          <span class="nota">${b.intentos} intentos fallidos en 10 min</span>
+        </div>
+        ${tiempo
+          ? `<span class="cronometro">⏱ ${tiempo} restante (auto)</span>`
+          : `<span class="pildora estado-fallo">Tiempo expirado · pendiente</span>`
+        }
+        <button class="btn btn-secundario btn-mini" data-desbloquear="${i}">Desbloquear manualmente</button>
+      </div>
+    `;
+  }).join('');
+}
+document.getElementById('lista-bloqueos').addEventListener('click', (e) => {
+  const idx = e.target.dataset.desbloquear;
+  if (idx === undefined) return;
+  const u = bloqueos[idx].usuario;
+  bloqueos.splice(idx, 1);
+  pintarBloqueos();
+  mostrarToast(`${u} desbloqueado manualmente`);
+});
+pintarBloqueos();
+setInterval(() => {
+  let cambio = false;
+  bloqueos.forEach(b => { if (b.segundosRestantes > 0) { b.segundosRestantes--; cambio = true; } });
+  if (cambio) pintarBloqueos();
+}, 1000);
+
+/* ── Roles ── */
+document.getElementById('btn-asignar-rol').addEventListener('click', () => {
+  const trabajador = document.getElementById('select-trabajador').value;
+  const rol = document.getElementById('select-rol').selectedOptions[0].text;
+  mostrarToast(`Rol "${rol}" asignado a ${trabajador.split(' — ')[0]}. Verá los nuevos módulos en su próximo inicio de sesión.`);
+});
+
+function pintarMatriz() {
+  const tbody = document.getElementById('tabla-matriz');
+  tbody.innerHTML = roles.map(r => `
+    <tr>
+      <td><span class="pildora rol-${r}">${nombreRol[r]}</span></td>
+      ${modulos.map(m => `<td><input type="checkbox" class="chk-permiso" data-rol="${r}" data-modulo="${m}" ${matriz[r][m] ? 'checked' : ''} aria-label="${nombreRol[r]} - ${m}"></td>`).join('')}
+    </tr>
+  `).join('');
+}
+document.getElementById('tabla-matriz').addEventListener('change', (e) => {
+  if (!e.target.classList.contains('chk-permiso')) return;
+  const { rol, modulo } = e.target.dataset;
+  matriz[rol][modulo] = e.target.checked;
+});
+document.getElementById('btn-guardar-permisos').addEventListener('click', () => {
+  mostrarToast('Matriz de permisos actualizada · cambios aplicados de inmediato');
+});
+pintarMatriz();
+
+/* ── Auditoría ── */
+function pintarLogs(lista) {
+  document.getElementById('tabla-logs').innerHTML = lista.map(l => `
+    <tr>
+      <td class="mono">${l.fecha}</td>
+      <td class="mono">${l.autor}</td>
+      <td>${l.entidad}</td>
+      <td><div class="valor-cambio"><span class="anterior">${l.anterior}</span>→<span class="nuevo">${l.nuevo}</span></div></td>
+    </tr>
+  `).join('');
+}
+document.getElementById('btn-filtrar-log').addEventListener('click', () => {
+  const usuario = document.getElementById('filtro-usuario').value;
+  const filtrado = usuario === 'todos' ? logs : logs.filter(l => l.autor === usuario);
+  pintarLogs(filtrado);
+  mostrarToast(`Filtro aplicado · ${filtrado.length} registro(s) encontrados`);
+});
+document.getElementById('btn-exportar-pdf').addEventListener('click', () => {
+  mostrarToast('Generando PDF del historial filtrado…');
+});
+pintarLogs(logs);
+
+/* ── Infraestructura ── */
+function pintarMetricas() {
+  const grid = document.getElementById('grid-metricas');
+  let hayCritico = false;
+  grid.innerHTML = metricasDef.map(m => {
+    const max = m.max || 100;
+    const porcentaje = Math.min(100, (m.valor / max) * 100);
+    const critico = porcentaje >= 90;
+    if (critico) hayCritico = true;
+    return `
+      <div class="metrica">
+        <div class="metrica-header">
+          <span class="nombre">${m.nombre}</span>
+          <span class="valor ${critico ? 'critico' : ''}">${m.valor}${m.unidad}</span>
+        </div>
+        <div class="barra-fondo"><div class="barra-relleno ${critico ? 'critico' : ''}" style="width:${porcentaje}%"></div></div>
+        <div class="metrica-pie"><span>0${m.unidad}</span><span>${max}${m.unidad}</span></div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('alerta-infra').classList.toggle('visible', hayCritico);
+}
+function simularMetricas() {
+  metricasDef.forEach(m => {
+    const max = m.max || 100;
+    const delta = (Math.random() - 0.45) * (max * 0.18);
+    m.valor = Math.max(5, Math.min(max, Math.round(m.valor + delta)));
+  });
+  pintarMetricas();
+}
+pintarMetricas();
+let contador = 60;
+setInterval(() => {
+  contador -= 1;
+  if (contador <= 0) { contador = 60; simularMetricas(); }
+  document.getElementById('contador-refresco').textContent = contador;
+}, 1000);
+
+/* ── Respaldos ── */
+function pintarBackups() {
+  document.getElementById('lista-backups').innerHTML = backups.map(b => `
+    <div class="backup-card">
+      <div class="backup-card-top">
+        <span class="pildora ${b.resultado === 'exito' ? 'estado-ok' : 'estado-fallo'}">${b.resultado === 'exito' ? 'Éxito' : 'Fallo'}</span>
+        <span class="nota">${b.fecha} · ${b.hora}</span>
+      </div>
+      <div class="backup-meta">
+        <span>Tamaño: <b>${b.tamano}</b></span>
+        <span>Ubicación: <b class="mono">${b.ubicacion}</b></span>
+      </div>
+      <div class="check-linea ${b.hashOk ? 'ok' : 'fallo'}">
+        ${b.hashOk
+          ? '<svg viewBox="0 0 24 24" fill="none"><path d="M4 12l5 5L20 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Integridad verificada · hash coincide (Válido)'
+          : '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg> Hash no coincide · archivo marcado como Corrupto'}
+      </div>
+      <div class="check-linea ${b.aes256 ? 'ok' : 'fallo'}">
+        ${b.aes256
+          ? '<svg viewBox="0 0 24 24" fill="none"><path d="M4 12l5 5L20 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Cifrado AES-256 confirmado'
+          : '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg> No se pudo confirmar el cifrado'}
+      </div>
+      ${b.resultado === 'fallo' ? `<div class="alerta-banner visible" style="margin-top:12px;">⚠️ Alerta de alta prioridad enviada por correo · detectada hace 4 min (≤ 5 min según RF-SA-11)</div>` : ''}
+    </div>
+  `).join('');
+}
+pintarBackups();
+
+/* ── Cuentas Admin ── */
+async function cargarAdmins() {
+  const cont = document.getElementById('lista-admins');
+  const sesion = obtenerSesion();
+  if (!sesion || !sesion.token) return;
+
+  cont.innerHTML = '<div style="padding:20px; text-align:center;">Cargando administradores...</div>';
+
+  try {
+    const res = await fetch(CONFIG.API_URL + '/usuarios', { headers: { 'Authorization': 'Bearer ' + sesion.token }});
+    if (!res.ok) throw new Error();
+    const usuarios = await res.json();
+    
+    // Filtrar solo los que tienen rol ADMIN
+    const adminsList = usuarios.filter(u => u.rol && u.rol.nombre === 'ADMIN');
+    
+    if (adminsList.length === 0) {
+      cont.innerHTML = '<div style="padding:20px; text-align:center; color:var(--cafe);">No hay cuentas de administrador registradas.</div>';
+      return;
+    }
+
+    cont.innerHTML = adminsList.map(a => `
+      <div class="admin-fila">
+        <div class="info">
+          <span><strong>${a.nombre}</strong>${a.id === sesion.id ? '<span class="badge-tu">Tú</span>' : ''}</span>
+          <span class="correo mono">${a.correo}</span>
+          ${a.empresa ? `<span style="font-size:0.75rem; color:var(--cafe); margin-top:4px; display:block;">Empresa: ${a.empresa.nombre_comercial || a.empresa.razon_social}</span>` : ''}
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span class="pildora estado-ok">${a.estado || 'ACTIVO'}</span>
+          <button class="btn btn-secundario btn-mini" onclick="mostrarToast('Generación de token no implementada aún.')">Restablecer credenciales</button>
+          <button class="btn btn-peligro btn-mini" onclick="eliminarAdmin(${a.id}, '${a.nombre}')" ${a.id === sesion.id ? 'disabled title="No puedes desactivar tu propia cuenta"' : ''}>
+            Desactivar
+          </button>
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    cont.innerHTML = '<div style="padding:20px; text-align:center; color:var(--alerta);">Error al cargar administradores.</div>';
+  }
+}
+
+async function eliminarAdmin(id, nombre) {
+  if (!confirm(`¿Estás seguro de desactivar la cuenta de ${nombre}?`)) return;
+  const sesion = obtenerSesion();
+  try {
+    const res = await fetch(`${CONFIG.API_URL}/usuarios/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + sesion.token }
+    });
+    if (res.ok) {
+      mostrarToast(`Cuenta de ${nombre} desactivada`);
+      cargarAdmins();
+    } else {
+      mostrarToast('Error al desactivar la cuenta');
+    }
+  } catch (e) {
+    mostrarToast('Error de red');
+  }
+}
+
+document.getElementById('btn-crear-admin').addEventListener('click', async () => {
+  const nombre = document.getElementById('nuevo-admin-nombre').value.trim();
+  const correo = document.getElementById('nuevo-admin-correo').value.trim();
+  const telefono = document.getElementById('nuevo-admin-telefono').value.trim();
+  const password = document.getElementById('nuevo-admin-password').value;
+  const empresaId = document.getElementById('nuevo-admin-empresa').value;
+
+  if (!nombre || !correo || !telefono || !password || !empresaId) { 
+    mostrarToast('Por favor completa todos los campos (Nombre, Correo, Teléfono, Contraseña y Empresa).'); 
+    return; 
+  }
+
+  const sesion = obtenerSesion();
+  if (!sesion || !sesion.token) return;
+
+  const btn = document.getElementById('btn-crear-admin');
+  btn.disabled = true;
+  btn.textContent = 'Creando...';
+
+  try {
+    const res = await fetch(CONFIG.API_URL + '/usuarios/admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + sesion.token
+      },
+      body: JSON.stringify({
+        nombre,
+        correo,
+        telefono,
+        password,
+        empresa: { id: parseInt(empresaId) }
+      })
+    });
+
+    if (!res.ok) {
+      const errMsg = await res.text();
+      mostrarToast(`Error: ${errMsg}`);
+    } else {
+      mostrarToast(`Cuenta Admin creada para ${correo}. Ya puede iniciar sesión.`);
+      document.getElementById('nuevo-admin-nombre').value = '';
+      document.getElementById('nuevo-admin-correo').value = '';
+      document.getElementById('nuevo-admin-telefono').value = '';
+      document.getElementById('nuevo-admin-password').value = '';
+      document.getElementById('nuevo-admin-empresa').value = '';
+      cargarAdmins();
+    }
+  } catch (err) {
+    mostrarToast(`Error de red: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Crear cuenta';
+  }
+});
+
+/* ── API / Credenciales ── */
+function pintarCredenciales() {
+  document.getElementById('lista-credenciales').innerHTML = credenciales.map((c, i) => `
+    <div class="credencial ${c.activa ? '' : 'suspendida'}">
+      <div class="info">
+        <span class="cliente-id mono">${c.cliente}</span>
+        <span class="token-oculto">${c.token}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="nota" style="font-size:0.78rem; color:var(--cafe);">${c.activa ? 'Activa' : 'Suspendida'}</span>
+        <button class="switch ${c.activa ? 'encendido' : ''}" data-toggle="${i}" aria-label="Activar o suspender credencial de ${c.cliente}"></button>
+      </div>
+    </div>
+  `).join('');
+}
+document.getElementById('lista-credenciales').addEventListener('click', (e) => {
+  const idx = e.target.dataset.toggle;
+  if (idx === undefined) return;
+  credenciales[idx].activa = !credenciales[idx].activa;
+  pintarCredenciales();
+  mostrarToast(credenciales[idx].activa
+    ? `${credenciales[idx].cliente} activada`
+    : `${credenciales[idx].cliente} suspendida (estado = 0) · sus requests ahora retornan HTTP 401`);
+});
+pintarCredenciales();
+
+document.getElementById('btn-nueva-credencial').addEventListener('click', () => {
+  const n = credenciales.length + 1;
+  credenciales.push({ cliente:`cliente_nuevo_${n}`, token:`tok_••••••••${Math.random().toString(16).slice(2,6)}`, activa:true });
+  pintarCredenciales();
+  mostrarToast('Credencial generada: cliente_id, llave_secreta y access_token únicos creados');
+});
+
+/* ── Módulo de Empresas (Backend Real) ── */
+async function cargarEmpresas() {
+  const tbody = document.getElementById('tabla-empresas');
+  const selectAdmin = document.getElementById('nuevo-admin-empresa');
+  const sesion = obtenerSesion();
+  if (!sesion || !sesion.token) return;
+
+  try {
+    const res = await fetch(CONFIG.API_URL + '/empresas', { headers: { 'Authorization': 'Bearer ' + sesion.token }});
+    if (!res.ok) throw new Error();
+    const empresas = await res.json();
+    
+    // Poblar dropdown de empresas para Cuentas Admin
+    if (selectAdmin) {
+      selectAdmin.innerHTML = '<option value="">-- Selecciona Empresa --</option>' + 
+        empresas.map(e => `<option value="${e.id}">${e.nombre_comercial || e.razon_social} (ID: ${e.id})</option>`).join('');
+    }
+
+    if (empresas.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px;">No hay empresas registradas.</td></tr>`;
+      return;
+    }
+    
+    tbody.innerHTML = empresas.map(emp => `
+      <tr>
+        <td class="mono">EMP-${emp.id.toString().padStart(3,'0')}</td>
+        <td class="mono">${emp.ruc}</td>
+        <td>
+          <strong>${emp.nombre_comercial || emp.razon_social}</strong><br>
+          <span style="font-size:0.8rem; color:var(--cafe)">${emp.razon_social}</span>
+        </td>
+        <td><span class="pildora ${emp.estado === 'ACTIVO' ? 'estado-ok' : 'estado-fallo'}">${emp.estado}</span></td>
+        <td>
+           <button class="btn btn-secundario btn-mini" onclick="cambiarEstadoEmpresa(${emp.id}, '${emp.estado}')">
+             ${emp.estado === 'ACTIVO' ? 'Suspender' : 'Reactivar'}
+           </button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Error cargando empresas</td></tr>`;
+  }
+}
+
+document.getElementById('btn-crear-empresa').addEventListener('click', async () => {
+  const ruc = document.getElementById('nueva-empresa-ruc').value.trim();
+  const razon = document.getElementById('nueva-empresa-razon').value.trim();
+  const comercial = document.getElementById('nueva-empresa-comercial').value.trim();
+  
+  if (!ruc || !razon) {
+    mostrarToast('El RUC y la Razón Social son obligatorios');
+    return;
+  }
+  
+  const sesion = obtenerSesion();
+  try {
+    const res = await fetch(CONFIG.API_URL + '/empresas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sesion.token },
+      body: JSON.stringify({ ruc, razon_social: razon, nombre_comercial: comercial, estado: 'ACTIVO' })
+    });
+    
+    if (res.ok) {
+      mostrarToast('Empresa registrada correctamente');
+      document.getElementById('nueva-empresa-ruc').value = '';
+      document.getElementById('nueva-empresa-razon').value = '';
+      document.getElementById('nueva-empresa-comercial').value = '';
+      cargarEmpresas();
+    } else {
+      mostrarToast('Error al crear la empresa');
+    }
+  } catch (e) {
+    mostrarToast('Error de conexión');
+  }
+});
+
+async function cambiarEstadoEmpresa(id, estadoActual) {
+  const sesion = obtenerSesion();
+  const nuevoEstado = estadoActual === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+  
+  try {
+    const resGet = await fetch(CONFIG.API_URL + '/empresas/' + id, { headers: { 'Authorization': 'Bearer ' + sesion.token }});
+    const empresa = await resGet.json();
+    empresa.estado = nuevoEstado;
+    
+    const resPut = await fetch(CONFIG.API_URL + '/empresas', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sesion.token },
+      body: JSON.stringify(empresa)
+    });
+    
+    if (resPut.ok) {
+      mostrarToast(`Empresa cambiada a ${nuevoEstado}`);
+      cargarEmpresas();
+    }
+  } catch (e) {
+    mostrarToast('Error al cambiar el estado');
+  }
+}
+
+// Cargar empresas al iniciar (si hay sesión)
+const oldVerificar = verificarSesion;
+verificarSesion = async function() {
+  await oldVerificar();
+  cargarEmpresas();
+  cargarAdmins();
+};
+verificarSesion();
+
+</script>
+
+</body>
+</html>

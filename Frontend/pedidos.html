@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis Pedidos — WebRopa</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pedidos.css" />
+</head>
+<body>
+
+  <header class="navbar" role="banner">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo" aria-label="WebRopa - Inicio">
+        <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
+      </a>
+      <div class="navbar__actions" style="margin-left: auto;">
+        <a href="index.html" style="font-weight: 500; color: var(--color-text-muted); font-size: 0.9rem; text-decoration: none;">Ir al catálogo</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="orders-portal section-container" id="main-content">
+    
+    <div id="view-historial">
+      <header class="portal-header">
+        <h1 class="portal-title">Mis Compras</h1>
+        <p class="portal-subtitle">Revisa el registro histórico de tus piezas adquiridas y su estado actual.</p>
+      </header>
+
+      <section class="orders-list-wrapper">
+        <div class="orders-table-responsive">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Código Orden</th>
+                <th>Fecha de Registro</th>
+                <th>Monto Total</th>
+                <th>Estado de Envío</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="js-orders-tbody">
+              <tr>
+                <td colspan="5" style="color: var(--color-muted); text-align: center; padding: 3rem 0;">
+                  Cargando tu historial transaccional...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div id="view-detalle" style="display: none;">
+      <header class="portal-header portal-header--inline">
+        <div>
+          <button type="button" class="btn-back" onclick="volverAlHistorial()">← Volver a mis compras</button>
+          <h1 class="portal-title" style="margin-top: 1rem;">Pedido <span id="det-codigo-titulo">#—</span></h1>
+        </div>
+        <div class="order-meta-badge" id="det-status-badge-container">
+          </div>
+      </header>
+
+      <div class="detail-layout">
+        
+        <div class="detail-main">
+          <section class="detail-panel">
+            <h2 class="panel-section-title">Línea de Seguimiento en Tiempo Real</h2>
+            <p class="panel-section-desc">Actualizado de forma fiel según las validaciones de logística de la marca.</p>
+            
+            <div class="tracking-stepper" id="js-tracking-stepper">
+              </div>
+          </section>
+
+          <section class="detail-panel">
+            <h2 class="panel-section-title">Prendas de la Colección Solicitadas</h2>
+            <div class="items-invoice-list" id="js-invoice-items-container">
+              </div>
+          </section>
+        </div>
+
+        <aside class="detail-sidebar">
+          <div class="summary-invoice-card">
+            <h3 class="invoice-card-title">Resumen Financiero</h3>
+            
+            <div class="invoice-row">
+              <span>Subtotal</span>
+              <span id="det-subtotal">S/. 0.00</span>
+            </div>
+            <div class="invoice-row" id="det-row-descuento" style="color: #c94c4c; display: none;">
+              <span>Descuento Aplicado</span>
+              <span id="det-descuento">-S/. 0.00</span>
+            </div>
+            <div class="invoice-row">
+              <span>Costo de Envío</span>
+              <span id="det-envio">Gratis</span>
+            </div>
+            
+            <hr class="invoice-divider" />
+            
+            <div class="invoice-row invoice-row--grand-total">
+              <span>Total Cancelado</span>
+              <strong id="det-total">S/. 0.00</strong>
+            </div>
+
+            <div class="invoice-notes-box">
+              <strong>Información de Despacho:</strong>
+              <p id="det-logistica-notas" style="margin: 0.4rem 0 0.75rem 0; font-size: 0.85rem; color: var(--color-muted); line-height: 1.4;">
+                Cargando detalles...
+              </p>
+              <div id="det-recojo-container" style="display:none; background:#f8faf6; border:1px solid #e9eee6; padding:8px 12px; border-radius:6px; font-size:0.85rem; margin-top:10px;">
+                <strong>Código de Recojo:</strong> <code id="det-recojo-codigo" style="font-family:monospace; background:#fff; border:1px solid #d3dbcf; padding:2px 6px; border-radius:4px; font-weight:600; color:#444;">—</code>
+                <div id="det-recojo-aviso" style="font-size:0.75rem; color:var(--color-muted); margin-top:4px;"></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer__bottom">
+      <p>© 2026 WebRopa · Gestión Transaccional Post-Venta</p>
+    </div>
+  </footer>
+
+  <script src="config/config.js"></script>
+  <script>
+    const API_URL = CONFIG.API_URL;
+    const USUARIO_ID = 1; // Simulación del ID del cliente en sesión
+
+    document.addEventListener("DOMContentLoaded", () => {
+        obtenerHistorialCompras();
+    });
+
+    // RF-CL-26: Listar historial consumiendo PedidosController
+    function obtenerHistorialCompras() {
+        const tbody = document.getElementById("js-orders-tbody");
+
+        fetch(`${API_URL}/pedidos/usuario/${USUARIO_ID}`)
+            .then(res => res.json())
+            .then(data => {
+                if (typeof data === 'string' || data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                          <td colspan="5" style="text-align: center; padding: 4rem 1rem; color: var(--color-muted);">
+                             <p style="font-family: var(--font-serif); font-size: 1.3rem;">Aún no has realizado ningún pedido.</p>
+                             <a href="index.html" style="color: var(--color-dark); font-weight: 500; font-size: 0.9rem;">Explorar la tienda ✦</a>
+                          </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = "";
+                // Ordenar los pedidos del más reciente al más antiguo de forma preliminar
+                data.sort((a, b) => b.id - a.id);
+
+                data.forEach(pedido => {
+                    // Formatear fecha básica (si viene como timestamp o ISO string)
+                    const fechaFormat = pedido.fecha ? new Date(pedido.fecha).toLocaleDateString('es-PE') : 'Reciente';
+                    const totalFormat = parseFloat(pedido.total || 0).toFixed(2);
+                    
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>#ORD-${pedido.id}</strong></td>
+                        <td>${fechaFormat}</td>
+                        <td>S/. ${totalFormat}</td>
+                        <td><span class="status-badge status-badge--${pedido.estado.toLowerCase()}">${pedido.estado}</span></td>
+                        <td>
+                          <button class="btn-action-view" onclick="verDetalleYRastreo(${pedido.id})">
+                             Rastrear / Detalle →
+                          </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(() => {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#c94c4c;">Error al sincronizar con el servidor.</td></tr>`;
+            });
+    }
+
+    // RF-CL-27: Consultar e imprimir Seguimiento de un pedido específico
+    function verDetalleYRastreo(pedidoId) {
+        // Consultar metadatos generales del pedido
+        fetch(`${API_URL}/pedidos/${pedidoId}`)
+            .then(res => {
+                if(!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(pedido => {
+                document.getElementById("det-codigo-titulo").textContent = `#ORD-${pedido.id}`;
+                document.getElementById("det-subtotal").textContent = `S/. ${parseFloat(pedido.subtotal).toFixed(2)}`;
+                document.getElementById("det-total").textContent = `S/. ${parseFloat(pedido.total).toFixed(2)}`;
+                document.getElementById("det-logistica-notas").textContent = pedido.notes || pedido.notas || "No se especificaron notas logísticas adicionales.";
+                
+                if (pedido.descuento > 0) {
+                    document.getElementById("det-row-descuento").style.display = "flex";
+                    document.getElementById("det-descuento").textContent = `-S/. ${parseFloat(pedido.descuento).toFixed(2)}`;
+                } else {
+                    document.getElementById("det-row-descuento").style.display = "none";
+                }
+
+                // Generar el Stepper visual dinámico (RF-CL-27)
+                construirStepperVisualLogistico(pedido.estado);
+
+                // Consultar el código de recojo si existe
+                document.getElementById("det-recojo-container").style.display = "none";
+                fetch(`${API_URL}/recojotienda/pedido/${pedidoId}`)
+                    .then(r => r.ok ? r.json() : null)
+                    .then(recojoData => {
+                        if (recojoData && recojoData.codigo_recojo) {
+                            document.getElementById("det-recojo-container").style.display = "block";
+                            const codeElem = document.getElementById("det-recojo-codigo");
+                            const avisoElem = document.getElementById("det-recojo-aviso");
+                            codeElem.textContent = recojoData.codigo_recojo;
+                            
+                            if (recojoData.estado === "RECOGIDO" || pedido.estado === "RECOGIDO") {
+                                codeElem.style.textDecoration = "line-through";
+                                codeElem.style.color = "#888";
+                                avisoElem.textContent = "(Pedido Recogido)";
+                                avisoElem.style.color = "#777";
+                            } else if (pedido.estado === "LISTO_PARA_RECOGER") {
+                                codeElem.style.textDecoration = "none";
+                                codeElem.style.color = "var(--color-sage)";
+                                avisoElem.textContent = "(¡Listo para retirar en tienda!)";
+                                avisoElem.style.color = "var(--color-sage)";
+                                codeElem.style.fontWeight = "bold";
+                            } else {
+                                codeElem.style.textDecoration = "none";
+                                codeElem.style.color = "#444";
+                                avisoElem.textContent = "(Código listo. Podrás retirar cuando el estado sea LISTO PARA RECOGER)";
+                                avisoElem.style.color = "#C89B1F";
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Error al obtener recojo:", err));
+
+                // Consultar los ítems asociados desde el PedidosItemsController
+                return fetch(`${API_URL}/pedidoitems/pedido/${pedidoId}`);
+            })
+            .then(res => res.json())
+            .then(items => {
+                renderizarItemsDelPedido(items);
+                
+                // Transición fluida de pantallas
+                document.getElementById("view-historial").style.display = "none";
+                document.getElementById("view-detalle").style.display = "block";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            })
+            .catch(() => alert("No se pudo recuperar la trazabilidad de esta orden."));
+    }
+
+    // Generador de la línea de tiempo de estados (RF-CL-27 Criteria)
+    function construirStepperVisualLogistico(estadoActual) {
+        const stepperWrap = document.getElementById("js-tracking-stepper");
+        
+        // Flujo estándar definido en los enums del backend Spring Boot
+        const estadosFlujo = ["PENDIENTE", "CONFIRMADO", "PROCESANDO", "ENVIADO", "ENTREGADO"];
+        
+        // Si el pedido está CANCELADO, mostramos un flujo especial de alerta
+        if (estadoActual === "CANCELADO") {
+            stepperWrap.innerHTML = `
+                <div class="cancel-notice-box">
+                   <span class="cancel-notice-box__icon">✕</span>
+                   <div>
+                      <strong>Esta orden se encuentra Cancelada</strong>
+                      <p style="margin:4px 0 0 0; font-size:0.85rem; color:#8a3030;">El inventario reservado fue liberado de forma instantánea y devuelto al catálogo general.</p>
+                   </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Obtener índice del estado actual para encender los anteriores
+        let indiceActual = estadosFlujo.indexOf(estadoActual);
+        if (indiceActual === -1 && estadoActual === "RECOGIDO") {
+            // RECOGIDO equivale al estado terminal de ciclo de vida de la orden en tienda física
+            indiceActual = 4; 
+        }
+
+        stepperWrap.innerHTML = "";
+        estadosFlujo.forEach((est, index) => {
+            let claseStep = "step-node";
+            if (index < indiceActual) claseStep += " step-node--completed";
+            else if (index === indiceActual) claseStep += " step-node--active";
+            
+            // Traducción visual amigable
+            const nombresAmigables = {
+                "PENDIENTE": "Registrado",
+                "CONFIRMADO": "Confirmado",
+                "PROCESANDO": "En Preparación",
+                "ENVIADO": "En Camino ✈",
+                "ENTREGADO": "Entregado ♡"
+            };
+
+            const nodeHtml = `
+                <div class="${claseStep}">
+                   <div class="step-node__circle">${index < indiceActual ? '✓' : index + 1}</div>
+                   <div class="step-node__label">${nombresAmigables[est] || est}</div>
+                </div>
+            `;
+            stepperWrap.insertAdjacentHTML("beforeend", nodeHtml);
+        });
+    }
+
+    // Inyectar los items de la compra congelados al momento de pagar
+    function renderizarItemsDelPedido(items) {
+        const container = document.getElementById("js-invoice-items-container");
+        container.innerHTML = "";
+
+        items.forEach(item => {
+            const pu = parseFloat(item.precio_unitario || 0);
+            const cant = parseInt(item.cantidad || 0);
+            const sub = pu * cant;
+
+            const html = `
+                <div class="invoice-item-row">
+                   <div class="invoice-item-row__desc">
+                      <span class="invoice-item-row__name">${item.variante.producto.nombre}</span>
+                      <span class="invoice-item-row__sku">SKU: ${item.variante.sku} | Talla: ${item.variante.talla} | Color: ${item.variante.color}</span>
+                   </div>
+                   <div class="invoice-item-row__qty">x${cant}</div>
+                   <div class="invoice-item-row__total">S/. ${sub.toFixed(2)}</div>
+                </div>
+            `;
+            container.insertAdjacentHTML("beforeend", html);
+        });
+    }
+
+    function volverAlHistorial() {
+        document.getElementById("view-detalle").style.display = "none";
+        document.getElementById("view-historial").style.display = "block";
+    }
+  </script>
+</body>
+</html>

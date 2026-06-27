@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Boutiques · Mood&Co</title>
+  <meta name="description" content="Portal central de boutiques de moda y marcas independientes." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS global y específico -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/home.css" />
+  
+  <style>
+    /* Estilos del directorio */
+    .portal-directory {
+      padding: 4rem 1.5rem 2rem;
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+    .portal-directory__inner {
+      text-align: center;
+    }
+    .portal-directory__title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--color-brown);
+      margin-bottom: 0.5rem;
+    }
+    .portal-directory__subtitle {
+      font-size: 1rem;
+      color: var(--color-text-muted);
+      margin-bottom: 3rem;
+    }
+    .portal-directory__grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+    .portal-company-card {
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.2rem 2.8rem;
+      min-width: 260px;
+      border-radius: 16px;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-secondary);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .portal-company-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--color-terracotta) !important;
+      box-shadow: 0 12px 32px rgba(216, 164, 143, 0.18) !important;
+    }
+    .portal-company-card__logo {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+      display: block;
+      transition: transform 0.25s;
+    }
+    .portal-company-card:hover .portal-company-card__logo {
+      transform: scale(1.15);
+    }
+    .portal-company-card__name {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      color: var(--color-brown);
+      text-align: center;
+      display: block;
+    }
+    .portal-company-card__action {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      margin-top: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .portal-company-card:hover .portal-company-card__action {
+      color: var(--color-terracotta-dark) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header / Navbar Simplificado para el Portal -->
+  <header class="header">
+    <div class="navbar__inner">
+      <a href="portal.html" class="logo" aria-label="Volver al inicio del portal">
+        <span class="logo__text">Mood&Co</span>
+        <svg class="logo__doodle" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <path d="M20 35 C10 25, 5 10, 20 5 C35 10, 30 25, 20 35Z" stroke="#A8B89C" stroke-width="1.5" fill="none"/>
+          <line x1="20" y1="5" x2="20" y2="35" stroke="#A8B89C" stroke-width="1" stroke-dasharray="3,2"/>
+        </svg>
+      </a>
+      
+      <span style="font-family: var(--font-serif); font-style: italic; color: var(--color-text-muted); font-size: 0.95rem;">Portal de Boutiques Independientes</span>
+
+      <div class="navbar__actions">
+        <!-- User dropdown -->
+        <div class="user-menu" id="user-menu">
+          <button class="user-menu__trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true" aria-label="Menú de usuario">
+            <!-- Guest icon -->
+            <svg class="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20 C4 16, 8 13, 12 13 S20 16, 20 20" stroke-linecap="round"/>
+            </svg>
+            <span class="user-menu__name" id="user-display-name">Entrar</span>
+          </button>
+          <div class="user-menu__dropdown" id="user-dropdown" role="menu" aria-hidden="true">
+            <!-- Guest state -->
+            <div class="dropdown-guest" id="dropdown-guest-view">
+              <button class="dropdown-item dropdown-item--cta" id="btn-open-login" role="menuitem">
+                Iniciar sesión
+              </button>
+              <button class="dropdown-item" id="btn-open-register" role="menuitem">
+                Crear cuenta
+              </button>
+            </div>
+            <!-- Logged-in state -->
+            <div class="dropdown-user" id="dropdown-user-view" style="display:none;">
+              <a href="#" class="dropdown-item" role="menuitem">Mi Perfil</a>
+              <a href="#" id="nav-mis-pedidos" class="dropdown-item" role="menuitem">Mis Pedidos</a>
+              <a href="#" class="dropdown-item" role="menuitem">Configuración</a>
+              <hr class="dropdown-divider"/>
+              <button class="dropdown-item dropdown-item--danger" id="btn-logout" role="menuitem">Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    
+    <!-- 1. DIRECTORIO DE BOUTIQUES -->
+    <section class="portal-directory">
+      <div class="portal-directory__inner">
+        <h2 class="portal-directory__title">Nuestras Boutiques</h2>
+        <p class="portal-directory__subtitle">Haz clic en una boutique para ingresar a su tienda y comprar sus colecciones</p>
+        <div class="portal-directory__grid" id="company-directory-grid">
+          <!-- Creado dinámicamente por portal.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Separador -->
+    <div style="max-width: var(--max-width); margin: 0 auto; padding: 0 1.5rem;">
+      <div style="width: 100%; height: 1px; background: var(--color-border);"></div>
+    </div>
+
+    <!-- 2. CATÁLOGO GENERAL (Solo Vista) -->
+    <section class="productos" id="productos-destacados">
+      <div class="section-container">
+        <header class="section-header" style="text-align: center; margin-bottom: 3rem;">
+          <h2 class="section-title" style="font-family: var(--font-serif); font-size: 2.2rem; color: var(--color-brown);">Catálogo Consolidado</h2>
+          <p class="section-subtitle" style="font-size: 1rem; color: var(--color-text-muted);">Descubre todos los artículos disponibles de nuestras marcas exclusivas</p>
+        </header>
+
+        <!-- Grilla de productos (Masonry) -->
+        <div class="productos__masonry" id="productos-masonry-grid">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card skeleton-card--tall"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; 2026 Mood&Co. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- ════════════════════════════════════════
+       MODAL DE LOGIN / REGISTRO
+  ════════════════════════════════════════ -->
+  <div class="modal-overlay" id="auth-modal-overlay" role="dialog" aria-modal="true" aria-label="Iniciar sesión o crear cuenta" hidden>
+    <div class="auth-modal">
+
+      <!-- Close button -->
+      <button class="auth-modal__close" id="auth-modal-close" aria-label="Cerrar modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <!-- Decorative botanical illustration -->
+      <div class="auth-modal__deco" aria-hidden="true">
+        <svg viewBox="0 0 120 200" fill="none">
+          <!-- Stem -->
+          <path d="M60 180 Q55 140 60 80" stroke="#A8B89C" stroke-width="2"/>
+          <!-- Large leaf left -->
+          <path d="M60 120 C35 100, 20 60, 40 40 C45 60, 55 90, 60 120Z" fill="#A8B89C" opacity="0.5"/>
+          <!-- Large leaf right -->
+          <path d="M60 100 C85 80, 100 40, 80 20 C75 40, 65 70, 60 100Z" fill="#A8B89C" opacity="0.35"/>
+          <!-- Small leaf -->
+          <path d="M60 150 C45 140, 38 125, 48 118 C52 128, 57 140, 60 150Z" fill="#D8A48F" opacity="0.5"/>
+          <!-- Flower -->
+          <circle cx="60" cy="75" r="7" fill="#E3B23C" opacity="0.7"/>
+          <ellipse cx="60" cy="60" rx="5" ry="10" fill="#E3B23C" opacity="0.4"/>
+          <ellipse cx="60" cy="60" rx="5" ry="10" fill="#E3B23C" opacity="0.4" transform="rotate(60,60,75)"/>
+          <ellipse cx="60" cy="60" rx="5" ry="10" fill="#E3B23C" opacity="0.4" transform="rotate(120,60,75)"/>
+        </svg>
+      </div>
+
+      <!-- Modal content -->
+      <div class="auth-modal__content">
+        <!-- Tabs -->
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab auth-tab--active" id="tab-login" role="tab" aria-selected="true" aria-controls="panel-login">
+            Iniciar sesión
+          </button>
+          <button class="auth-tab" id="tab-register" role="tab" aria-selected="false" aria-controls="panel-register">
+            Crear cuenta
+          </button>
+        </div>
+
+        <!-- Panel: Login -->
+        <div class="auth-panel" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+          <form class="auth-form" id="form-login" novalidate>
+            <div class="form-field">
+              <label class="form-field__label" for="login-email">Correo electrónico</label>
+              <input class="form-field__input" type="email" id="login-email" name="correo"
+                placeholder="Tu correo" required autocomplete="username" />
+              <span class="form-field__error" aria-live="polite"></span>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="login-password">Contraseña</label>
+              <input class="form-field__input" type="password" id="login-password" name="password"
+                placeholder="Tu contraseña" required autocomplete="current-password" />
+              <span class="form-field__error" aria-live="polite"></span>
+            </div>
+            <button type="submit" class="auth-submit-btn" id="btn-login-submit">
+              Entrar ✦
+            </button>
+            <p class="auth-form__hint" id="login-status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <!-- Panel: Register -->
+        <div class="auth-panel" id="panel-register" role="tabpanel" aria-labelledby="tab-register" hidden>
+          <form class="auth-form" id="form-register" novalidate>
+            <div class="form-field">
+              <label class="form-field__label" for="reg-nombres">Nombres</label>
+              <input class="form-field__input" type="text" id="reg-nombres" name="nombres"
+                placeholder="Ej. María Fernanda" required autocomplete="given-name"/>
+              <span class="form-field__error" aria-live="polite"></span>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="reg-apellidos">Correo electrónico</label>
+              <input class="form-field__input" type="email" id="reg-apellidos" name="correo"
+                placeholder="hola@tuemail.com" required autocomplete="email"/>
+              <span class="form-field__error" aria-live="polite"></span>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="reg-email">Contraseña</label>
+              <input class="form-field__input" type="password" id="reg-email" name="password"
+                placeholder="Crea una contraseña" required />
+              <span class="form-field__error" aria-live="polite"></span>
+            </div>
+            <div class="form-field">
+              <label class="form-field__label" for="reg-telefono">Teléfono</label>
+              <input class="form-field__input" type="text" id="reg-telefono" name="telefono"
+                placeholder="Ej. 987654321" required />
+              <span class="form-field__error" aria-live="polite"></span>
+            </div>
+            <button type="submit" class="auth-submit-btn" id="btn-register-submit">
+              Unirme ♡
+            </button>
+            <p class="auth-form__hint" id="register-status" aria-live="polite"></p>
+          </form>
+
+          <!-- Credentials reveal (after successful registration) -->
+          <div class="credentials-reveal" id="credentials-reveal" hidden>
+            <div class="credentials-reveal__header">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#A8B89C" stroke-width="1.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+              <h3>¡Bienvenida! 🎉</h3>
+              <p>Guarda estos datos en un lugar seguro.</p>
+            </div>
+            <div class="credential-box">
+              <span class="credential-box__label">Tu Cliente ID</span>
+              <div class="credential-box__value-row">
+                <code id="cred-client-id">—</code>
+                <button class="copy-btn" data-target="cred-client-id" aria-label="Copiar Cliente ID">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15 H4 C2.9 15 2 14.1 2 13 V4 C2 2.9 2.9 2 4 2 H13 C14.1 2 15 2.9 15 4 V5"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="credential-box">
+              <span class="credential-box__label">Tu Llave Secreta</span>
+              <div class="credential-box__value-row">
+                <code id="cred-secret-key">—</code>
+                <button class="copy-btn" data-target="cred-secret-key" aria-label="Copiar Llave Secreta">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15 H4 C2.9 15 2 14.1 2 13 V4 C2 2.9 2.9 2 4 2 H13 C14.1 2 15 2.9 15 4 V5"/></svg>
+                </button>
+              </div>
+            </div>
+            <button class="auth-submit-btn" id="btn-go-login-after-reg">Ir a iniciar sesión →</button>
+          </div>
+        </div><!-- /#panel-register -->
+
+      </div><!-- /.auth-modal__content -->
+    </div><!-- /.auth-modal -->
+  </div><!-- /#auth-modal-overlay -->
+
+  <!-- Scripts -->
+  <script src="config/config.js"></script>
+  <script src="services/api.service.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/portal.js"></script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pasarela de Pago Segura — WebRopa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { background-color: #f7f9f6; }
+    .payment-modal {
+      max-width: 550px;
+      margin: 3rem auto;
+      background: var(--color-bg);
+      border-radius: 16px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+      padding: 3rem;
+      border: 1px solid var(--color-border);
+      position: relative;
+    }
+    .payment-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .payment-title {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      color: var(--color-primary);
+      margin-bottom: 0.5rem;
+    }
+    .timer-badge {
+      display: inline-block;
+      background: #F8ECEC;
+      color: #c94c4c;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-top: 1rem;
+      letter-spacing: 0.5px;
+    }
+    .order-summary-box {
+      background: #fdfdfd;
+      padding: 1.5rem 2rem;
+      border-radius: 12px;
+      border: 1px dashed #dcdcdc;
+      margin-bottom: 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+      background: #f1f1f1;
+      border-radius: 8px;
+      padding: 0.25rem;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 0.85rem 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--color-muted);
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+    .tab.active {
+      background: var(--color-bg);
+      color: var(--color-text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Card Form */
+    .form-group label {
+      font-size: 0.85rem;
+      color: var(--color-text);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .form-input {
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      transition: border-color 0.3s;
+      color: var(--color-text);
+    }
+    .form-input:focus {
+      border-color: var(--color-primary);
+      background: #fff;
+    }
+    .card-input-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-input-row .form-group {
+      flex: 1;
+    }
+    
+    /* Yape/Plin Form */
+    .qr-container {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: #fafafa;
+      border-radius: 12px;
+      border: 1px solid var(--color-border);
+    }
+    .qr-img {
+      width: 160px;
+      height: 160px;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .file-upload-box {
+      border: 2px dashed #ccc;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      color: var(--color-text);
+      cursor: pointer;
+      background: #fafafa;
+      transition: background 0.3s;
+    }
+    .file-upload-box:hover {
+      background: #f1f1f1;
+    }
+    
+    .cancel-btn-link {
+      display: block;
+      text-align: center;
+      margin-top: 2rem;
+      color: var(--color-muted);
+      text-decoration: underline;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .cancel-btn-link:hover {
+      color: #c94c4c;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar" role="banner">
+    <div class="navbar__inner" style="justify-content: center;">
+      <a href="index.html" class="navbar__logo" id="logo-link">
+        <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="section-container">
+    <div class="payment-modal">
+      <div class="payment-header">
+        <h1 class="payment-title">Completar Pago</h1>
+        <p style="color: var(--color-muted); font-size: 0.95rem;">Selecciona un método para asegurar tu pedido.</p>
+        <div class="timer-badge" id="timer-display">Tiempo restante: 10:00</div>
+      </div>
+
+      <div class="order-summary-box">
+        <div>
+          <span style="display:block; font-size:0.8rem; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Monto Total</span>
+          <strong style="font-size: 1.8rem; color: var(--color-primary);" id="monto-total">S/. 0.00</strong>
+        </div>
+        <div style="text-align: right;">
+          <span style="display:block; font-size:0.85rem; color:var(--color-muted);">Orden #<span id="orden-id" style="font-weight:600; color:var(--color-text);">---</span></span>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('tarjeta')">💳 Tarjeta de Crédito/Débito</div>
+        <div class="tab" onclick="switchTab('yape')">📱 Yape / Plin</div>
+      </div>
+
+      <!-- TARJETA CONTENT -->
+      <div id="tab-tarjeta" class="tab-content active">
+        <div style="text-align:center; margin-bottom:1.5rem;">
+            <p style="font-size: 0.85rem; color: var(--color-sage); font-weight: 500; background: #f0f7f2; display: inline-block; padding: 6px 12px; border-radius: 20px;">
+            <span style="margin-right:4px;">🔒</span> Pago 100% encriptado
+            </p>
+        </div>
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label>Número de Tarjeta</label>
+          <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19" />
+        </div>
+        <div class="card-input-row">
+          <div class="form-group">
+            <label>Expiración (MM / YY)</label>
+            <input type="text" class="form-input" placeholder="MM/YY" maxlength="5" />
+          </div>
+          <div class="form-group">
+            <label>Código CVV</label>
+            <input type="password" class="form-input" placeholder="123" maxlength="4" />
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label>Nombre del Titular</label>
+          <input type="text" class="form-input" placeholder="Nombre tal como aparece en la tarjeta" />
+        </div>
+        <button class="btn-primary" style="width: 100%; font-size: 1.05rem; padding: 1rem;" onclick="procesarPago('TARJETA')">
+          Pagar de Forma Segura ✦
+        </button>
+      </div>
+
+      <!-- YAPE CONTENT -->
+      <div id="tab-yape" class="tab-content">
+        <div class="qr-container" style="padding: 1.5rem;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QR Yape" class="qr-img" style="margin: 0 auto 1rem auto; display: block;" />
+          <p style="font-weight: 600; font-size: 1.25rem; margin: 0; color: var(--color-text);">WebRopa S.A.C.</p>
+          <p style="color: var(--color-muted); font-size: 1rem; margin: 6px 0 0 0;">N° de Billetera: <strong style="color: var(--color-primary); font-size: 1.1rem;">999 888 777</strong></p>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 2rem; text-align: center;">
+          <label style="font-size: 0.95rem;">N° de Operación / Referencia *</label>
+          <input type="text" id="yape-ref" class="form-input" placeholder="Ej. 12345678" style="text-align:center; font-size: 1.2rem; letter-spacing: 2px; padding: 1rem; width: 80%; margin: 0 auto; display: block;" />
+        </div>
+        
+        <button class="btn-primary" style="width: 100%; font-size: 1.05rem; padding: 1rem; background: #C89B1F; border-color: #C89B1F;" onclick="procesarPago('YAPE')">
+          Enviar para Verificación ✦
+        </button>
+      </div>
+
+      <a class="cancel-btn-link" onclick="cancelarPedido()">Cancelar operación y liberar stock</a>
+    </div>
+  </main>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.92); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
+    <div style="font-size:3.5rem; animation: pulse 1.5s infinite;">⏳</div>
+    <h2 style="font-family:var(--font-serif); margin-top:1.5rem; color: var(--color-primary);" id="loading-text">Procesando pago...</h2>
+  </div>
+
+  <style>
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  </style>
+
+  <script src="config/config.js"></script>
+  <script>
+    const API_URL = CONFIG.API_URL;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const pedidoId = urlParams.get('pedido_id');
+    const empresaId = urlParams.get('empresa');
+
+    if (empresaId) {
+        document.getElementById('logo-link').href = `index.html?empresa=${empresaId}`;
+    }
+
+    if (!pedidoId) {
+      window.location.replace(empresaId ? `index.html?empresa=${empresaId}` : 'index.html');
+    }
+
+    const sesion = JSON.parse(localStorage.getItem('webropa_user') || 'null');
+    if (!sesion || !sesion.token) {
+      alert("Sesión inválida.");
+      window.location.replace(empresaId ? `index.html?empresa=${empresaId}` : 'index.html');
+    }
+    const TOKEN = sesion.token;
+
+    let totalOrden = 0;
+    
+    // Obtener info del pedido
+    fetch(`${API_URL}/pedidos/${pedidoId}`, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    })
+    .then(res => res.json())
+    .then(pedido => {
+      totalOrden = pedido.total;
+      document.getElementById("monto-total").textContent = `S/. ${totalOrden.toFixed(2)}`;
+      document.getElementById("orden-id").textContent = pedido.id;
+      
+      if (pedido.estado === 'CANCELADO') {
+        alert("Esta orden ya ha sido cancelada.");
+        window.location.replace(empresaId ? `index.html?empresa=${empresaId}` : 'index.html');
+      }
+      if (pedido.pago_confirmado) {
+        alert("Esta orden ya ha sido pagada.");
+        window.location.replace(empresaId ? `index.html?empresa=${empresaId}` : 'index.html');
+      }
+    });
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      
+      if (tabId === 'tarjeta') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('tab-tarjeta').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('tab-yape').classList.add('active');
+      }
+    }
+
+    // Timer Logic 10 minutos
+    let timeRemaining = 10 * 60; // 10 min
+    const timerDisplay = document.getElementById("timer-display");
+    
+    const countdown = setInterval(() => {
+      timeRemaining--;
+      let m = Math.floor(timeRemaining / 60);
+      let s = timeRemaining % 60;
+      timerDisplay.textContent = `Tiempo restante: ${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
+      
+      if (timeRemaining <= 0) {
+        clearInterval(countdown);
+        alert("El tiempo se ha agotado. Se ha cancelado la orden y liberado el stock.");
+        cancelarPedido();
+      }
+    }, 1000);
+
+    function cancelarPedido() {
+      fetch(`${API_URL}/pedidos/${pedidoId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + TOKEN }
+      }).then(() => {
+        window.location.replace(empresaId ? `index.html?empresa=${empresaId}` : 'index.html');
+      });
+    }
+
+    function procesarPago(metodo) {
+      let ref = "";
+      if (metodo === 'YAPE') {
+        ref = document.getElementById("yape-ref").value.trim();
+        if (!ref) {
+          alert("Por favor ingrese el número de operación de Yape/Plin.");
+          return;
+        }
+      }
+
+      document.getElementById("loading-overlay").style.display = "flex";
+      clearInterval(countdown);
+      
+      const payload = {
+        pedido: { id: pedidoId },
+        metodo: metodo,
+        monto: totalOrden,
+        referencia_externa: ref
+      };
+
+      setTimeout(() => {
+        fetch(`${API_URL}/pagos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + TOKEN
+          },
+          body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if(!res.ok) return res.text().then(t => {throw new Error(t)});
+            return res.json();
+        })
+        .then(data => {
+            localStorage.setItem('webropa_last_transaction', JSON.stringify(data));
+            window.location.replace(`exito.html?empresa=${empresaId || ''}`);
+        })
+        .catch(err => {
+            document.getElementById("loading-overlay").style.display = "none";
+            alert("Error procesando pago: " + err.message);
+        });
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,357 @@
+/* ==========================================================================
+   WEBROPA — PORTAL DE POST-VENTA (PEDIDOS.CSS)
+   ========================================================================== */
+
+.orders-portal {
+    padding-top: 3.5rem;
+    padding-bottom: 6rem;
+}
+
+.portal-header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid rgba(42, 42, 42, 0.06);
+    padding-bottom: 1.5rem;
+}
+
+.portal-header--inline {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+@media (min-width: 576px) {
+    .portal-header--inline {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.portal-title {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 400;
+    margin: 0;
+}
+
+.portal-subtitle {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    margin: 0.5rem 0 0 0;
+    font-weight: 300;
+}
+
+/* Tabla del Historial */
+.orders-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 25px rgba(0,0,0,0.01);
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.orders-table th {
+    background-color: #fafafa;
+    padding: 1.2rem 1.5rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    border-bottom: 1px solid #eee;
+}
+
+.orders-table td {
+    padding: 1.4rem 1.5rem;
+    border-bottom: 1px solid #f6f6f6;
+    color: #444;
+}
+
+/* Badges de Estados */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+}
+
+.status-badge--pendiente { background: #fdf5e6; color: #b8860b; }
+.status-badge--confirmado { background: #e6f2ff; color: #0066cc; }
+.status-badge--procesando { background: #f3f0fa; color: #6f42c1; }
+.status-badge--enviado { background: #eaf5ea; color: #2e7d32; }
+.status-badge--entregado { background: #e2f0d9; color: #385723; }
+.status-badge--recogido { background: #e2f0d9; color: #385723; }
+.status-badge--cancelado { background: #fceae8; color: #c94c4c; }
+
+.btn-action-view {
+    background: transparent;
+    border: 1px solid var(--color-dark);
+    color: var(--color-dark);
+    padding: 0.5rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-action-view:hover {
+    background: var(--color-dark);
+    color: #fff;
+}
+
+.btn-back {
+    background: none;
+    border: none;
+    color: var(--color-muted);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+    transition: var(--transition);
+}
+
+.btn-back:hover {
+    color: var(--color-dark);
+}
+
+/* Layout de Detalle */
+.detail-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+}
+
+@media (min-width: 992px) {
+    .detail-layout {
+        grid-template-columns: 1.3fr 0.7fr;
+        align-items: start;
+    }
+}
+
+.detail-panel {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.05);
+    padding: 2.5rem 2rem;
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+}
+
+.panel-section-title {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.panel-section-desc {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    margin: 0.3rem 0 2rem 0;
+}
+
+/* ESTRUCTURA DEL STEPPER VISUAL (RF-CL-27) */
+.tracking-stepper {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    position: relative;
+    padding-left: 1rem;
+    margin: 2rem 0;
+}
+
+@media (min-width: 576px) {
+    .tracking-stepper {
+        flex-direction: row;
+        justify-content: space-between;
+        padding-left: 0;
+        gap: 0;
+    }
+    .tracking-stepper::before {
+        content: "";
+        position: absolute;
+        top: 20px;
+        left: 5%;
+        width: 90%;
+        height: 2px;
+        background-color: #e0e0e0;
+        z-index: 1;
+    }
+}
+
+.step-node {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+@media (min-width: 576px) {
+    .step-node {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+        flex: 1;
+    }
+}
+
+.step-node__circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #ccc;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.step-node__label {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    font-weight: 400;
+}
+
+/* Modificadores de Progreso */
+.step-node--completed .step-node__circle {
+    background-color: var(--color-sage);
+    border-color: var(--color-sage);
+    color: #fff;
+}
+
+.step-node--completed .step-node__label {
+    color: var(--color-sage);
+    font-weight: 500;
+}
+
+.step-node--active .step-node__circle {
+    border-color: var(--color-dark);
+    color: var(--color-dark);
+    box-shadow: 0 0 0 4px rgba(42,42,42,0.1);
+}
+
+.step-node--active .step-node__label {
+    color: var(--color-dark);
+    font-weight: 600;
+}
+
+/* Caja de Orden Cancelada */
+.cancel-notice-box {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background-color: #fdf3f2;
+    border: 1px solid #f3c2bc;
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    color: #c94c4c;
+}
+
+.cancel-notice-box__icon {
+    width: 44px;
+    height: 44px;
+    background: #c94c4c;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Lista Desglose Factura */
+.invoice-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px dashed #eee;
+    font-size: 0.9rem;
+}
+
+.invoice-item-row__name {
+    display: block;
+    font-weight: 500;
+}
+
+.invoice-item-row__sku {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    margin-top: 0.2rem;
+}
+
+.invoice-item-row__qty {
+    color: var(--color-muted);
+}
+
+.invoice-item-row__total {
+    font-weight: 500;
+}
+
+/* Sidebar Factura */
+.summary-invoice-card {
+    background-color: #ffffff;
+    border: 1px solid #eee;
+    padding: 2rem;
+    border-radius: var(--radius);
+}
+
+.invoice-card-title {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    margin: 0 0 1.5rem 0;
+}
+
+.invoice-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+}
+
+.invoice-row span:last-child {
+    color: var(--color-dark);
+    font-weight: 500;
+}
+
+.invoice-divider {
+    border: 0;
+    height: 1px;
+    background-color: #eee;
+    margin: 1.2rem 0;
+}
+
+.invoice-row--grand-total {
+    font-size: 1.1rem;
+    color: var(--color-dark);
+}
+
+.invoice-row--grand-total strong {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.invoice-notes-box {
+    background-color: #fafafa;
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+}

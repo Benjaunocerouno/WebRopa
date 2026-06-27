@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis Pedidos — WebRopa</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="css/style.css" />
+  
+  <style>
+    .orders-container {
+      max-width: 900px;
+      margin: 4rem auto;
+    }
+    .order-card {
+      background: var(--color-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .order-card:hover {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transform: translateY(-2px);
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 1rem;
+    }
+    .order-header h3 {
+      font-family: var(--font-serif);
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--color-primary);
+    }
+    .order-meta {
+      display: flex;
+      gap: 2rem;
+      color: var(--color-muted);
+      font-size: 0.9rem;
+    }
+    .order-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .order-item-mini {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #fafafa;
+      padding: 0.75rem;
+      border-radius: 8px;
+    }
+    .order-item-mini img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .order-item-mini h4 {
+      margin: 0;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+    .order-item-mini p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: var(--color-muted);
+    }
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--color-border);
+    }
+    .order-total {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    
+    /* Estados */
+    .badge-estado {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .estado-PENDIENTE { background: #fff3cd; color: #856404; }
+    .estado-CONFIRMADO { background: #d4edda; color: #155724; }
+    .estado-EN_PREPARACION { background: #cce5ff; color: #004085; }
+    .estado-LISTO_PARA_RECOGER { background: #FDF7E3; color: #C89B1F; }
+    .estado-RECOGIDO { background: #e2e3e5; color: #383d41; }
+    .estado-CANCELADO { background: #f8d7da; color: #721c24; }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--color-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar" role="banner">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo" id="logo-link">
+        <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
+      </a>
+      
+      <div class="navbar__actions">
+        <!-- User dropdown -->
+        <div class="user-menu" id="user-menu">
+          <button class="user-menu__trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true" aria-label="Menú de usuario">
+            <!-- Guest icon -->
+            <svg class="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20 C4 16, 8 13, 12 13 S20 16, 20 20" stroke-linecap="round"/>
+            </svg>
+            <span class="user-menu__name" id="user-display-name">Entrar</span>
+          </button>
+          <div class="user-menu__dropdown" id="user-dropdown" role="menu" aria-hidden="true">
+            <!-- Guest state -->
+            <div class="dropdown-guest" id="dropdown-guest-view">
+              <button class="dropdown-item dropdown-item--cta" id="btn-open-login" role="menuitem" onclick="window.location.href='index.html'">
+                Iniciar sesión
+              </button>
+            </div>
+            <!-- Logged-in state -->
+            <div class="dropdown-user" id="dropdown-user-view" style="display:none;">
+              <a href="#" class="dropdown-item" role="menuitem">Mi Perfil</a>
+              <a href="#" id="nav-mis-pedidos" class="dropdown-item" role="menuitem">Mis Pedidos</a>
+              <hr class="dropdown-divider"/>
+              <button class="dropdown-item dropdown-item--danger" id="btn-logout" role="menuitem">Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="section-container">
+    <div class="orders-container">
+      <h1 style="font-family: var(--font-serif); margin-bottom: 2rem;">Mis Pedidos</h1>
+      
+      <div id="orders-list">
+        <!-- Loader inicial -->
+        <p style="text-align:center;">Cargando pedidos...</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="config/config.js"></script>
+  <script src="services/api.service.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const sesion = JSON.parse(localStorage.getItem('webropa_user') || 'null');
+      if (!sesion || !sesion.token) {
+        alert("Debes iniciar sesión para ver tus pedidos.");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const empresaId = urlParams.get('empresa');
+      if(empresaId) document.getElementById('logo-link').href = `index.html?empresa=${empresaId}`;
+
+      cargarPedidos(sesion.clientId, sesion.token);
+    });
+
+    async function cargarPedidos(usuarioId, token) {
+      const container = document.getElementById("orders-list");
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/pedidos/usuario/${usuarioId}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        if (!res.ok) {
+            if (res.status === 404 || res.status === 200) { // Dependiendo de como responda la API
+                const text = await res.text();
+                if (text.includes("no tiene pedidos")) {
+                    container.innerHTML = `<div class="empty-state">
+                      <h2>Aún no has realizado ninguna compra ✦</h2>
+                      <p>Explora nuestras boutiques y encuentra prendas únicas.</p>
+                      <a href="portal.html" class="btn-primary" style="display:inline-block; margin-top:1rem; text-decoration:none;">Ver Tiendas</a>
+                    </div>`;
+                    return;
+                }
+            }
+            throw new Error("Error de API");
+        }
+
+        const pedidos = await res.json();
+        
+        if (!Array.isArray(pedidos) || pedidos.length === 0) {
+          container.innerHTML = `<div class="empty-state">
+            <h2>Aún no has realizado ninguna compra ✦</h2>
+            <p>Explora nuestras boutiques y encuentra prendas únicas.</p>
+            <a href="portal.html" class="btn-primary" style="display:inline-block; margin-top:1rem; text-decoration:none;">Ver Tiendas</a>
+          </div>`;
+          return;
+        }
+
+        // Ordenar por fecha descendente
+        pedidos.sort((a,b) => b.id - a.id);
+        
+        container.innerHTML = "";
+
+        // Para cada pedido, necesitamos consultar los items
+        for (const p of pedidos) {
+          const resItems = await fetch(`${CONFIG.API_URL}/pedidoitems/pedido/${p.id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const items = resItems.ok ? await resItems.json() : [];
+          
+          let itemsHtml = "";
+          items.forEach(item => {
+            const prod = item.variante?.producto;
+            if (prod) {
+              itemsHtml += `
+                <div class="order-item-mini">
+                  <img src="${prod.imagen_url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100&q=80'}" alt="img" />
+                  <div>
+                    <h4>${prod.nombre}</h4>
+                    <p>Talla: ${item.variante.talla} | Cant: ${item.cantidad}</p>
+                  </div>
+                </div>
+              `;
+            }
+          });
+
+          // Consultar el código de recojo si existe en la base de datos
+          let recojoHtml = "";
+          try {
+            const resRecojo = await fetch(`${CONFIG.API_URL}/recojotienda/pedido/${p.id}`, {
+              headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (resRecojo.ok) {
+              const recojoData = await resRecojo.json();
+              if (recojoData && recojoData.codigo_recojo) {
+                let recojoClase = "";
+                let recojoAviso = "";
+                
+                if (recojoData.estado === "RECOGIDO" || p.estado === "RECOGIDO") {
+                  recojoClase = "style='color:#888; text-decoration:line-through;'";
+                  recojoAviso = "<span style='color:#777; font-size:0.8rem; margin-left:8px;'>(Pedido Recogido)</span>";
+                } else if (p.estado === "LISTO_PARA_RECOGER") {
+                  recojoClase = "style='color:var(--color-sage); font-weight:bold;'";
+                  recojoAviso = "<span style='color:var(--color-sage); font-size:0.8rem; margin-left:8px; font-weight:600;'>(¡Listo para retirar en tienda!)</span>";
+                } else {
+                  recojoClase = "style='color:#444;'";
+                  recojoAviso = "<span style='color:#C89B1F; font-size:0.8rem; margin-left:8px;'>(Código listo. Podrás retirar cuando el estado sea LISTO PARA RECOGER)</span>";
+                }
+
+                recojoHtml = `
+                  <div style="background:#f8faf6; border: 1px solid #e9eee6; border-radius:8px; padding:10px 14px; margin: 10px 0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                    <div>
+                      <strong style="font-size:0.85rem; color:#555;">Código de Recojo en Tienda:</strong>
+                      <code ${recojoClase} style="background:#fff; border:1px solid #d3dbcf; padding:3px 8px; border-radius:4px; font-family:monospace; font-size:0.95rem; margin-left:6px;">${recojoData.codigo_recojo}</code>
+                      ${recojoAviso}
+                    </div>
+                  </div>
+                `;
+              }
+            }
+          } catch (err) {
+            console.error("Error al consultar recojo:", err);
+          }
+
+          const empresaNom = p.empresa ? (p.empresa.nombre_comercial || p.empresa.razon_social) : 'WebRopa Multi-Tenant';
+
+          const card = document.createElement("div");
+          card.className = "order-card";
+          card.innerHTML = `
+            <div class="order-header">
+              <div>
+                <h3>Orden #${p.id}</h3>
+                <div class="order-meta">
+                  <span>${p.fecha_creacion || 'Fecha no disponible'}</span>
+                  <span><strong>Tienda:</strong> ${empresaNom}</span>
+                </div>
+              </div>
+              <span class="badge-estado estado-${p.estado}">${p.estado.replace(/_/g, ' ')}</span>
+            </div>
+            <div class="order-items">
+              ${itemsHtml}
+            </div>
+            ${recojoHtml}
+            <div class="order-footer">
+              <span style="color:var(--color-muted); font-size:0.9rem;">Subtotal: S/. ${p.subtotal.toFixed(2)} | Dscto: S/. ${p.descuento.toFixed(2)}</span>
+              <div class="order-total">Total: S/. ${p.total.toFixed(2)}</div>
+            </div>
+          `;
+          container.appendChild(card);
+        }
+
+      } catch (err) {
+        container.innerHTML = `<p style="color:#c94c4c;">Hubo un problema al cargar tu historial. Intenta nuevamente.</p>`;
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

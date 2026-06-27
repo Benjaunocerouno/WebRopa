@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tu Bolsa de Compras — WebRopa</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/carrito.css" />
+</head>
+<body>
+
+  <header class="navbar" role="banner">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo" aria-label="WebRopa - Inicio">
+        <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
+      </a>
+      <div class="navbar__actions" style="margin-left: auto;">
+        <a href="index.html" class="back-to-shop" style="font-weight: 500; color: var(--color-text-muted); font-size: 0.9rem; text-decoration: none;">← Volver a la tienda</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="cart-page section-container" id="main-content">
+    <header class="cart-page__header">
+      <h1 class="cart-page__title">Tu bolsa de compras</h1>
+      <p class="cart-page__subtitle">Revisa tus piezas antes de iniciar el viaje de entrega.</p>
+    </header>
+
+    <div class="cart-page__layout">
+      <section class="cart-page__items" id="cart-items-container" aria-label="Artículos en la bolsa">
+        <p style="color: var(--color-muted);">Cargando tus piezas seleccionadas...</p>
+      </section>
+
+      <aside class="cart-page__sidebar" id="cart-sidebar" style="display: none;">
+        <div class="summary-card">
+          <h2 class="summary-card__title">Resumen del pedido</h2>
+          
+          <div class="summary-row">
+            <span>Subtotal (Base)</span>
+            <span id="js-summary-subtotal">S/. 0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>IGV (18%)</span>
+            <span id="js-summary-igv">S/. 0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>Envío</span>
+            <span style="color: #A8B89C; font-weight: 600;">Gratis 🎁</span>
+          </div>
+          
+          <hr class="summary-divider" style="border:0; height:1px; background-color:rgba(42,42,42,0.06); margin:1.5rem 0;" />
+          
+          <div class="summary-row summary-row--total" style="font-size: 1.15rem; color: #2A2A2A;">
+            <span>Total Estimado</span>
+            <strong id="js-summary-total" style="font-size: 1.35rem; font-weight: 600;">S/. 0.00</strong>
+          </div>
+
+          <a href="checkout.html" id="js-btn-confirmar" class="checkout-btn">
+            Proceder al pago ✦
+          </a>
+          
+          <p class="summary-note" style="font-size: 0.75rem; color: var(--color-muted); text-align: center; margin-top: 1rem;">
+            Calculado de forma exacta con soporte multi-usuario.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__bottom">
+      <p>© 2026 WebRopa · Hecho con amor y mucho café ☕</p>
+    </div>
+  </footer>
+
+  <script src="config/config.js"></script>
+  <script>
+    const API_URL = CONFIG.API_URL;
+    const USUARIO_ID = 1; // ID de prueba (En producción lo recuperas de tu sesión/localStorage)
+    let carritoId = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        cargarCarrito();
+    });
+
+    // Cargar Carrito del Usuario (RF-CL-18 -> CarritosController)
+    function cargarCarrito() {
+        const container = document.getElementById("cart-items-container");
+        
+        fetch(`${API_URL}/carritos/usuario/${USUARIO_ID}`)
+            .then(res => {
+                if (!res.ok) throw new Error("No se encontró el carrito");
+                return res.json();
+            })
+            .then(carrito => {
+                carritoId = carrito.id;
+                // Obtenemos todos los items del carritoItemsController
+                return fetch(`${API_URL}/carritoitems`);
+            })
+            .then(res => res.json())
+            .then(allItems => {
+                // Filtramos los items que correspondan a este carrito específico
+                const itemsFiltrados = allItems.filter(item => item.carrito && item.carrito.id === carritoId);
+                renderizarItems(itemsFiltrados);
+            })
+            .catch(err => {
+                mostrarEstadoVacio();
+            });
+    }
+
+    // Pintar los productos en el HTML dinámicamente
+    function renderizarItems(items) {
+        const container = document.getElementById("cart-items-container");
+        const sidebar = document.getElementById("cart-sidebar");
+        
+        if (items.length === 0) {
+            mostrarEstadoVacio();
+            return;
+        }
+
+        sidebar.style.display = "block";
+        container.innerHTML = "";
+        let subtotalGeneral = 0;
+        let tieneItemsSinStock = false;
+
+        items.forEach(item => {
+            const precio = parseFloat(item.variante.producto.precio || 0);
+            const cantidad = parseInt(item.cantidad);
+            const stock = parseInt(item.variante.stock || 0);
+            const totalFila = precio * cantidad;
+            
+            // RF-CL-19: Validación de Stock disponible
+            const isOutofStock = (stock <= 0);
+            if (!isOutofStock) subtotalGeneral += totalFila;
+            else tieneItemsSinStock = true;
+
+            const itemHtml = `
+                <article class="cart-item ${isOutofStock ? 'cart-item--no-stock' : ''}" data-price="${precio}">
+                  <div class="cart-item__img-container">
+                    <img src="${item.variante.producto.imagenPrincipal || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=200&q=80'}" class="cart-item__img" />
+                  </div>
+                  
+                  <div class="cart-item__details">
+                    <h2 class="cart-item__name">${item.variante.producto.nombre}</h2>
+                    <p class="cart-item__meta">Talla: <span>${item.variante.talla}</span> &middot; Color: <span>${item.variante.color}</span></p>
+                    <p class="cart-item__price-unit">S/. ${precio.toFixed(2)}</p>
+                    ${isOutofStock ? `<span class="stock-alert">⚠️ Agotado. Remueve este artículo para continuar.</span>` : ''}
+                  </div>
+
+                  <div class="cart-item__quantity">
+                    <input 
+                      type="number" 
+                      class="qty-input js-qty-input" 
+                      value="${cantidad}" 
+                      min="1" 
+                      max="${stock}" 
+                      ${isOutofStock ? 'disabled' : ''}
+                      oninput="actualizarCantidadInmediata(this, ${item.id}, ${precio}, ${stock})"
+                    />
+                  </div>
+
+                  <div class="cart-item__subtotal">
+                    <span class="js-item-subtotal subtotal-value">S/. ${totalFila.toFixed(2)}</span>
+                  </div>
+
+                  <div class="cart-item__actions">
+                    <button onclick="eliminarArticulo(${item.id})" class="delete-btn" aria-label="Eliminar artículo">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                </article>
+            `;
+            container.insertAdjacentHTML("beforeend", itemHtml);
+        });
+
+        actualizarBloqueResumen(subtotalGeneral, tieneItemsSinStock);
+    }
+
+    // RF-CL-15 & RF-CL-17: Modificación de cantidades y cálculo < 1s
+    function actualizarCantidadInmediata(input, itemId, precio, stockMaximo) {
+        if (input.value < 1 || isNaN(input.value)) input.value = 1;
+        if (input.value > stockMaximo) {
+            alert(`Lo sentimos, solo quedan ${stockMaximo} unidades disponibles.`);
+            input.value = stockMaximo;
+        }
+
+        // Recálculo visual en tiempo real en la fila
+        const fila = input.closest(".cart-item");
+        const nuevaCantidad = parseInt(input.value);
+        fila.querySelector(".js-item-subtotal").textContent = `S/. ${(precio * nuevaCantidad).toFixed(2)}`;
+
+        // Recálculo de totales del resumen de forma instantánea
+        let nuevoSubtotalGeneral = 0;
+        document.querySelectorAll(".cart-item").forEach(item => {
+            if (!item.classList.contains("cart-item--no-stock")) {
+                const itemPrecio = parseFloat(item.getAttribute("data-price"));
+                const itemCantidad = parseInt(item.querySelector(".js-qty-input").value) || 0;
+                nuevoSubtotalGeneral += (itemPrecio * itemCantidad);
+            }
+        });
+        actualizarBloqueResumen(nuevoSubtotalGeneral, document.querySelectorAll(".cart-item--no-stock").length > 0);
+
+        // Persistencia asíncrona hacia Spring Boot (Debounce transparente)
+        clearTimeout(input.timeout);
+        input.timeout = setTimeout(() => {
+            fetch(`${API_URL}/carritoitems`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: itemId, cantidad: nuevaCantidad })
+            });
+        }, 800);
+    }
+
+    function actualizarBloqueResumen(subtotal, tieneItemsSinStock) {
+        const igv = subtotal * 0.18;
+        const subtotalBase = subtotal - igv;
+
+        document.getElementById("js-summary-subtotal").textContent = `S/. ${subtotalBase.toFixed(2)}`;
+        document.getElementById("js-summary-igv").textContent = `S/. ${igv.toFixed(2)}`;
+        document.getElementById("js-summary-total").textContent = `S/. ${subtotal.toFixed(2)}`;
+
+        // RF-CL-19: Bloquear botón de compra si hay prendas sin stock en la bolsa
+        const btnConfirmar = document.getElementById("js-btn-confirmar");
+        if (tieneItemsSinStock) {
+            btnConfirmar.classList.add("checkout-btn--disabled");
+            btnConfirmar.onclick = (e) => e.preventDefault();
+        } else {
+            btnConfirmar.classList.remove("checkout-btn--disabled");
+            btnConfirmar.onclick = null;
+        }
+    }
+
+    // RF-CL-16: Eliminar Artículo
+    function eliminarArticulo(itemId) {
+        if (!confirm("¿Deseas remover esta prenda de tu bolsa?")) return;
+
+        fetch(`${API_URL}/carritoitems/${itemId}`, { method: "DELETE" })
+            .then(() => cargarCarrito());
+    }
+
+    function mostrarEstadoVacio() {
+        document.getElementById("cart-sidebar").style.display = "none";
+        document.getElementById("cart-items-container").innerHTML = `
+            <div class="cart-page__empty" style="text-align: center; padding: 5rem 1rem;">
+                <p style="font-family: var(--font-serif); font-size: 1.5rem; color: var(--color-muted);">Tu bolsa está vacía actualmente.</p>
+                <a href="index.html" style="display: inline-block; background: #2A2A2A; color: #fff; padding: 1rem 2rem; text-decoration: none; margin-top: 1.5rem; border-radius: 4px;">Ver novedades ✦</a>
+            </div>
+        `;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transacción Exitosa — WebRopa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/checkout.css" />
+</head>
+<body>
+  <header class="navbar" role="banner">
+    <div class="navbar__inner" style="justify-content: center;">
+      <a href="index.html" class="navbar__logo">
+        <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="checkout-page section-container" id="checkout-success-view">
+    <div class="success-card">
+      <div class="success-icon-wrap" id="icon-wrap">✓</div>
+      <h1 class="success-title" id="exito-titulo">¡Gracias por tu compra!</h1>
+      <p class="success-subtitle" id="exito-subtitulo">Tu transacción ha sido procesada.</p>
+      
+      <div class="receipt-box" id="rec-box" style="display:none;">
+        <h2 class="receipt-box__title">Comprobante Electrónico</h2>
+        <div class="receipt-row" id="row-boleta" style="display:none;"><strong>Número de Boleta:</strong> <span id="rec-numero">—</span></div>
+        <div class="receipt-row" id="row-cliente" style="display:none;"><strong>Cliente Titular:</strong> <span id="rec-cliente">—</span></div>
+        <div class="receipt-row"><strong>Estado del Pedido:</strong> <span class="badge badge--success" id="rec-estado">CONFIRMADO / PAGADO</span></div>
+        <div class="receipt-row" id="rec-row-codigo-recojo" style="display:none;">
+            <strong>Código de Recojo en Tienda:</strong> <code id="rec-codigo-recojo" style="background:#F3F6F1; padding:4px 8px; font-weight:600; color:var(--color-sage);">—</code>
+        </div>
+        <hr style="border:0; border-top:1px dashed #ddd; margin:1rem 0;" />
+        <div class="receipt-row"><strong>Monto Total Cancelado:</strong> <strong id="rec-total" style="font-size:1.1rem; color:#2A2A2A;">—</strong></div>
+      </div>
+
+      <a href="index.html" id="btn-volver" class="btn-primary" style="display:inline-block; text-decoration:none; margin-top:2rem;">Volver a la tienda</a>
+    </div>
+  </main>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const empresaId = urlParams.get('empresa');
+    
+    if (empresaId) {
+      document.getElementById("btn-volver").href = `index.html?empresa=${empresaId}`;
+    }
+
+    const txRaw = localStorage.getItem('webropa_last_transaction');
+    if (!txRaw) {
+      document.getElementById("exito-titulo").textContent = "Información no encontrada";
+      document.getElementById("exito-subtitulo").textContent = "No pudimos cargar los datos de tu última transacción.";
+    } else {
+      const tx = JSON.parse(txRaw);
+      document.getElementById("rec-box").style.display = "block";
+
+      // Siempre mostramos la boleta y el total si existen en la transacción
+      if (tx.boleta) {
+        document.getElementById("row-boleta").style.display = "flex";
+        document.getElementById("row-cliente").style.display = "flex";
+        document.getElementById("rec-numero").textContent = tx.boleta.numero_boleta;
+        document.getElementById("rec-cliente").textContent = tx.boleta.nombre_cliente;
+        document.getElementById("rec-total").textContent = `S/. ${tx.boleta.total.toFixed(2)}`;
+      } else if (tx.pago) {
+        document.getElementById("rec-total").textContent = `S/. ${tx.pago.monto.toFixed(2)}`;
+      }
+      
+      // Mostrar código de recojo si está presente
+      if (tx.recojo && tx.recojo.codigo_recojo) {
+        document.getElementById("rec-row-codigo-recojo").style.display = "flex";
+        document.getElementById("rec-codigo-recojo").textContent = tx.recojo.codigo_recojo;
+      }
+
+      // Mensaje de éxito dinámico según estado
+      if (tx.pago && tx.pago.estado === 'PENDIENTE') {
+        document.getElementById("icon-wrap").textContent = "⏳";
+        document.getElementById("exito-titulo").textContent = "¡Pago Recibido!";
+        document.getElementById("exito-subtitulo").textContent = `Tu transacción por ${tx.pago.metodo} está siendo verificada por nuestro equipo.`;
+        
+        let recEstado = document.getElementById("rec-estado");
+        recEstado.textContent = "PENDIENTE DE VERIFICACIÓN";
+        recEstado.className = "badge badge--warning";
+        recEstado.style.backgroundColor = "#FFF3CD";
+        recEstado.style.color = "#856404";
+      } else if (tx.pago) {
+        document.getElementById("icon-wrap").textContent = "✓";
+        document.getElementById("exito-titulo").textContent = "¡Pago Validado!";
+        document.getElementById("exito-subtitulo").textContent = `Tu transacción ha sido validada de forma exitosa.`;
+        document.getElementById("rec-estado").textContent = "CONFIRMADO / PAGADO";
+      }
+
+      // Opcional: borrar el localStorage para que no se re-use
+      localStorage.removeItem('webropa_last_transaction');
+    }
+  </script>
+</body>
+</html>

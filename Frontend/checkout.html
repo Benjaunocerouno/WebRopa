@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout Seguro — WebRopa</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/checkout.css" />
+</head>
+
+<body>
+
+  <header class="navbar" role="banner">
+    <div class="navbar__inner" style="justify-content: center; position: relative;">
+      <a href="carrito.html" id="js-back-link" class="back-link" style="position: absolute; left: 0;">← Volver a la
+        bolsa</a>
+      <a href="index.html" class="navbar__logo">
+        <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="checkout-page section-container" id="checkout-main-view">
+    <div class="checkout-header">
+      <h1 class="checkout-title">Finalizar Compra ✦</h1>
+      <nav class="checkout-progress" aria-label="Progreso de compra">
+        <ol class="progress-steps">
+          <li class="step step--completed">Bolsa</li>
+          <li class="step step--active" id="step-envio">Envío y Pago</li>
+          <li class="step" id="step-confirmacion">Confirmación</li>
+        </ol>
+      </nav>
+    </div>
+
+    <div class="checkout-layout">
+
+      <div class="checkout-form-section">
+
+        <section class="checkout-panel">
+          <h2 class="panel-title">1. Información de Contacto</h2>
+          <div class="form-row form-row--2cols">
+            <div class="form-group">
+              <label for="contacto-nombre">Nombre Completo</label>
+              <input type="text" id="contacto-nombre" class="form-input" readonly />
+            </div>
+            <div class="form-group">
+              <label for="contacto-telefono">Teléfono</label>
+              <input type="tel" id="contacto-telefono" class="form-input" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contacto-email">Correo Electrónico</label>
+              <input type="email" id="contacto-email" class="form-input" readonly />
+            </div>
+          </div>
+        </section>
+
+        <section class="checkout-panel">
+          <h2 class="panel-title">2. Método de Entrega</h2>
+          <div class="delivery-details-panel"
+            style="display: block; border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; background: #fafafa;">
+            <div class="store-info-box">
+              <h3 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif); color: var(--color-primary);">Tienda
+                Seleccionada (Recojo Físico)</h3>
+              <p style="margin: 0; color: var(--color-muted); font-size: 0.95rem; line-height: 1.5;">
+                <strong>Dirección:</strong> Jr. Los Gatos 123, Tarapoto, San Martín<br>
+                <strong>Horario de Atención:</strong> Lunes a Sábado de 09:00 AM a 08:00 PM<br>
+                <em>Disponibilidad: El stock será reservado por 10 minutos al confirmar.</em>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <div class="action-container" style="text-align: right; margin-top: 2rem;">
+          <button style="color: black;" type="button" id="btn-procesar-orden" class="btn-primary"
+            onclick="procesarCreacionPedido()">
+            Confirmar Compra ✦
+          </button>
+        </div>
+      </div>
+
+      <aside class="checkout-summary-section">
+        <div class="order-summary-card">
+          <h2 class="summary-title">Resumen de tu pedido</h2>
+
+          <div class="summary-items-list" id="checkout-items-list-wrap">
+          </div>
+
+          <hr class="summary-divider" />
+
+          <div class="coupon-section">
+            <label for="cupon-codigo" class="sr-only">Código promocional</label>
+            <div class="coupon-input-group">
+              <input type="text" id="cupon-codigo" class="form-input" placeholder="Código de cupón" />
+              <button type="button" id="btn-aplicar-cupon" class="btn-coupon-action"
+                onclick="validarYAplicarDescuento()">Aplicar</button>
+            </div>
+            <span id="cupon-status-msg" class="coupon-hint" aria-live="polite"></span>
+          </div>
+
+          <hr class="summary-divider" />
+
+          <div class="summary-totals">
+            <div class="summary-row">
+              <span>Subtotal General</span>
+              <span id="chk-subtotal">S/. 0.00</span>
+            </div>
+            <div class="summary-row" id="row-descuento" style="display: none; color: #c94c4c;">
+              <span>Descuento aplicado</span>
+              <span id="chk-descuento">-S/. 0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Logística / Envío</span>
+              <span id="chk-envio">S/. 0.00</span>
+            </div>
+            <div class="summary-row summary-row--grand-total">
+              <span>Monto Total Final</span>
+              <strong id="chk-total">S/. 0.00</strong>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <main class="checkout-page section-container" id="checkout-success-view" style="display: none;">
+    <div class="success-card">
+      <div class="success-icon-wrap">✓</div>
+      <h1 class="success-title">¡Gracias por tu compra con alma!</h1>
+      <p class="success-subtitle">Tu pago ha sido procesado correctamente y el inventario ha sido actualizado.</p>
+
+      <div class="receipt-box">
+        <h2 class="receipt-box__title">Boleta de Venta Electrónica</h2>
+        <div class="receipt-row"><strong>Número de Boleta:</strong> <span id="rec-numero">—</span></div>
+        <div class="receipt-row"><strong>Cliente Titular:</strong> <span id="rec-cliente">—</span></div>
+        <div class="receipt-row"><strong>Estado del Pedido:</strong> <span class="badge badge--success">CONFIRMADO /
+            PAGADO</span></div>
+        <div class="receipt-row" id="rec-row-codigo-recojo" style="display:none;">
+          <strong>Código de Recojo en Tienda:</strong> <code id="rec-codigo-recojo"
+            style="background:#F3F6F1; padding:4px 8px; font-weight:600; color:var(--color-sage);">—</code>
+        </div>
+        <hr style="border:0; border-top:1px dashed #ddd; margin:1rem 0;" />
+        <div class="receipt-row"><strong>Monto Total Cancelado:</strong> <strong id="rec-total"
+            style="font-size:1.1rem; color:#2A2A2A;">—</strong></div>
+      </div>
+
+      <a href="index.html" class="btn-primary"
+        style="display:inline-block; text-decoration:none; margin-top:2rem;">Seguir explorando la tienda</a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__bottom">
+      <p>© 2026 WebRopa · Transacciones Seguras.</p>
+    </div>
+  </footer>
+
+  <script src="config/config.js"></script>
+  <script>
+    const API_URL = CONFIG.API_URL;
+
+    // Obtener parámetros de URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const empresaId = urlParams.get('empresa') || null;
+
+    // Ajustar enlace de retorno dinámicamente
+    const backLink = document.getElementById('js-back-link');
+    if (backLink) {
+      backLink.href = empresaId ? `index.html?empresa=${empresaId}` : 'index.html';
+      backLink.textContent = '← Volver a la tienda';
+    }
+
+    // Cargar y validar sesión del cliente
+    const sesion = JSON.parse(localStorage.getItem('webropa_user') || 'null');
+    if (!sesion || !sesion.token) {
+      alert("Sesión inválida o expirada. Por favor, inicia sesión para procesar tus pedidos.");
+      window.location.href = empresaId ? `index.html?empresa=${empresaId}` : 'index.html';
+    }
+
+    const TOKEN = sesion.token;
+    const USUARIO_ID = sesion.clientId;
+
+    let subtotalBaseCalculado = 0;
+    let costoEnvioCalculado = 0.00; // Siempre 0 porque es recojo en tienda
+    let descuentoCalculado = 0.00;
+    let cuponSeleccionadoObjeto = null;
+    let itemsEnBolsaGlobal = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      verificarSesionYDatos();
+      sincronizarCarritoYRecuperar();
+    });
+
+    // RF-CL-20: Validación de Autenticación
+    function verificarSesionYDatos() {
+      fetch(`${API_URL}/usuarios/me`, {
+        headers: { 'Authorization': 'Bearer ' + TOKEN }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Sesión inválida");
+          return res.json();
+        })
+        .then(user => {
+          document.getElementById('contacto-nombre').value = user.nombre || '';
+          document.getElementById('contacto-telefono').value = user.telefono || '';
+          document.getElementById('contacto-email').value = user.correo || '';
+        })
+        .catch(() => {
+          localStorage.removeItem('webropa_user');
+          alert("Sesión inválida o expirada. Por favor, inicia sesión para procesar tus pedidos.");
+          window.location.href = empresaId ? `index.html?empresa=${empresaId}` : 'index.html';
+        });
+    }
+
+    // Sincronizar carrito local (localStorage) a la base de datos (Spring Boot)
+    async function sincronizarCarritoYRecuperar() {
+      try {
+        // 1. Obtener o crear el carrito del usuario en la base de datos
+        let resCarrito = await fetch(`${API_URL}/carritos/usuario/${USUARIO_ID}`, {
+          headers: { 'Authorization': 'Bearer ' + TOKEN }
+        });
+
+        let carrito = null;
+        if (resCarrito.ok) {
+          carrito = await resCarrito.json();
+        } else {
+          let resCrear = await fetch(`${API_URL}/carritos/usuario/${USUARIO_ID}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + TOKEN,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (resCrear.ok) {
+            carrito = await resCrear.json();
+          } else {
+            throw new Error("No se pudo obtener ni crear el carrito en la base de datos.");
+          }
+        }
+
+        const carritoId = carrito.id;
+
+        // 2. Obtener los items actuales en la base de datos de este carrito para limpiarlos
+        let resItems = await fetch(`${API_URL}/carritoitems`, {
+          headers: { 'Authorization': 'Bearer ' + TOKEN }
+        });
+        if (!resItems.ok) throw new Error("Error al consultar items del carrito");
+        const allItems = await resItems.json();
+        const itemsAEliminar = allItems.filter(item => item.carrito && item.carrito.id === carritoId);
+
+        for (const item of itemsAEliminar) {
+          await fetch(`${API_URL}/carritoitems/${item.id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + TOKEN }
+          });
+        }
+
+        // 3. Insertar items del localStorage
+        const allCarts = JSON.parse(localStorage.getItem('webropa_carts') || '{}');
+        const localCart = allCarts[empresaId] || [];
+
+        if (localCart.length === 0) {
+          alert("Tu bolsa está vacía. Agrega productos antes de realizar el checkout.");
+          window.location.href = empresaId ? `index.html?empresa=${empresaId}` : 'index.html';
+          return;
+        }
+
+        for (const item of localCart) {
+          const parts = String(item.product.id).split('-');
+          let variantId = parts.length > 1 ? parseInt(parts[1]) : null;
+
+          if (!variantId && item.product.variantes && item.product.variantes.length > 0) {
+            variantId = item.product.variantes[0].id;
+          }
+
+          if (variantId) {
+            await fetch(`${API_URL}/carritoitems`, {
+              method: 'POST',
+              headers: {
+                'Authorization': 'Bearer ' + TOKEN,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                carrito: { id: carritoId },
+                variante: { id: variantId },
+                cantidad: item.quantity
+              })
+            });
+          }
+        }
+
+        // 4. Recuperar y renderizar
+        recuperarItemsParaResumen();
+
+      } catch (error) {
+        console.error("Error en sincronización del carrito:", error);
+        alert("Error al sincronizar tu bolsa de compras. Inténtalo de nuevo.");
+      }
+    }
+
+    // Recuperar items directamente de la API para sincronización de stock real
+    function recuperarItemsParaResumen() {
+      fetch(`${API_URL}/carritos/usuario/${USUARIO_ID}`, {
+        headers: { 'Authorization': 'Bearer ' + TOKEN }
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(carrito => {
+          if (!carrito) return;
+          return fetch(`${API_URL}/carritoitems`, {
+            headers: { 'Authorization': 'Bearer ' + TOKEN }
+          });
+        })
+        .then(res => res.json())
+        .then(allItems => {
+          // Filtrar del lado del cliente de forma rápida
+          itemsEnBolsaGlobal = allItems.filter(item => item.carrito && item.carrito.usuario.id === USUARIO_ID);
+          renderizarResumenDerecho(itemsEnBolsaGlobal);
+        });
+    }
+
+    function renderizarResumenDerecho(items) {
+      const wrap = document.getElementById("checkout-items-list-wrap");
+      wrap.innerHTML = "";
+      subtotalBaseCalculado = 0;
+
+      if (items.length === 0) {
+        wrap.innerHTML = "<p>No hay artículos válidos para comprar.</p>";
+        document.getElementById("btn-procesar-orden").disabled = true;
+        return;
+      }
+
+      items.forEach(item => {
+        const precioUnitario = parseFloat(item.variante.producto.precio);
+        const cant = parseInt(item.cantidad);
+        const filaTotal = precioUnitario * cant;
+        subtotalBaseCalculado += filaTotal;
+
+        const html = `
+                <div class="mini-item">
+                   <img src="${item.variante.producto.imagen_url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=100&q=80'}" class="mini-item__img" />
+                   <div class="mini-item__info">
+                       <h4 class="mini-item__name">${item.variante.producto.nombre}</h4>
+                       <span class="mini-item__meta">Talla: ${item.variante.talla} | Cantidad: ${cant}</span>
+                   </div>
+                   <div class="mini-item__price">S/. ${filaTotal.toFixed(2)}</div>
+                </div>
+            `;
+        wrap.insertAdjacentHTML("beforeend", html);
+      });
+
+      ejecutarRecalculoMontosTransaccional();
+    }
+
+    // RF-CL-22: Selección de Método de Despacho (Removido, solo recojo)
+    function alternarMetodoEntrega() {
+      // Obsoleto
+    }
+
+    // RF-CL-24: Aplicación y validación de Cupones desde la Base de Datos
+    function validarYAplicarDescuento() {
+      const inputCodigo = document.getElementById("cupon-codigo").value.trim();
+      const msg = document.getElementById("cupon-status-msg");
+
+      if (!inputCodigo) {
+        msg.textContent = "Ingresa un código de cupón.";
+        msg.style.color = "#c94c4c";
+        return;
+      }
+
+      // Consultamos la API de cupones de Spring Boot
+      fetch(`${API_URL}/cupones`, {
+        headers: { 'Authorization': 'Bearer ' + TOKEN }
+      })
+        .then(res => res.json())
+        .then(cupones => {
+          const encontrado = cupones.find(c => c.codigo.toUpperCase() === inputCodigo.toUpperCase());
+
+          if (!encontrado) {
+            throw new Error("El cupón no existe en nuestro registro.");
+          }
+          if (encontrado.estado !== 'ACTIVO') {
+            throw new Error("El código promocional ya no se encuentra activo.");
+          }
+          if (encontrado.usos_maximos && encontrado.usos_actuales >= encontrado.usos_maximos) {
+            throw new Error("El cupón ha agotado su límite de usos permitidos.");
+          }
+          if (encontrado.minimo_compra && subtotalBaseCalculado < encontrado.minimo_compra) {
+            throw new Error(`Este cupón requiere un consumo mínimo de S/. ${encontrado.minimo_compra.toFixed(2)}`);
+          }
+
+          // Si pasa las validaciones del backend, calculamos el descuento exacto
+          cuponSeleccionadoObjeto = encontrado;
+          if (encontrado.tipo === 'PORCENTAJE') {
+            descuentoCalculado = subtotalBaseCalculado * (parseFloat(encontrado.valor) / 100);
+          } else {
+            descuentoCalculado = parseFloat(encontrado.valor);
+          }
+
+          // Mostrar en UI
+          msg.textContent = "¡Cupón aplicado con éxito! ♡";
+          msg.style.color = "var(--color-sage)";
+          document.getElementById("row-descuento").style.display = "flex";
+          document.getElementById("chk-descuento").textContent = `-S/. ${descuentoCalculado.toFixed(2)}`;
+
+          ejecutarRecalculoMontosTransaccional();
+        })
+        .catch(err => {
+          msg.textContent = err.message || "Error al procesar el cupón.";
+          msg.style.color = "#c94c4c";
+          cuponSeleccionadoObjeto = null;
+          descuentoCalculado = 0.00;
+          document.getElementById("row-descuento").style.display = "none";
+          ejecutarRecalculoMontosTransaccional();
+        });
+    }
+
+    // RF-CL-17: Cálculos de montos en tiempo real con 2 decimales
+    function ejecutarRecalculoMontosTransaccional() {
+      const totalFinal = (subtotalBaseCalculado - descuentoCalculado) + costoEnvioCalculado;
+
+      document.getElementById("chk-subtotal").textContent = `S/. ${subtotalBaseCalculado.toFixed(2)}`;
+      document.getElementById("chk-envio").textContent = costoEnvioCalculado === 0 ? "Gratis" : `S/. ${costoEnvioCalculado.toFixed(2)}`;
+      document.getElementById("chk-total").textContent = `S/. ${(totalFinal < 0 ? 0 : totalFinal).toFixed(2)}`;
+    }
+
+    // RF-CL-21: Guardado del Pedido, bloqueo de stock e invocación a Pasarela de Pago
+    function procesarCreacionPedido() {
+      const btn = document.getElementById("btn-procesar-orden");
+
+      btn.disabled = true;
+      btn.textContent = "Reservando Stock...";
+
+      // Preparar objeto orden conforme espera PedidosController
+      const datosPedido = {
+        usuario: { id: USUARIO_ID },
+        cupon: cuponSeleccionadoObjeto ? { codigo: cuponSeleccionadoObjeto.codigo } : null,
+        notas: "Recojo en tienda"
+      };
+
+      // Paso A: Crear pedido en Spring Boot (Este endpoint descuenta stock temporalmente)
+      fetch(`${API_URL}/pedidos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + TOKEN
+        },
+        body: JSON.stringify(datosPedido)
+      })
+        .then(res => {
+          if (!res.ok) return res.text().then(text => { throw new Error(text) });
+          return res.json();
+        })
+        .then(pedidoInstanciado => {
+          // Limpiar carrito local
+          const allCarts = JSON.parse(localStorage.getItem('webropa_carts') || '{}');
+          delete allCarts[empresaId];
+          localStorage.setItem('webropa_carts', JSON.stringify(allCarts));
+
+          // Paso B: Redirigir a Pasarela de Pagos (pago.html)
+          window.location.href = `pago.html?pedido_id=${pedidoInstanciado.id}&empresa=${empresaId || ''}`;
+        })
+        .catch(err => {
+          alert(`Error al confirmar compra: ${err.message}`);
+          btn.disabled = false;
+          btn.textContent = "Confirmar Compra ✦";
+        });
+    }
+  </script>
+</body>
+
+</html>
