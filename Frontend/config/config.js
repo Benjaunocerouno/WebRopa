@@ -16,3 +16,40 @@ const CONFIG = {
   TOKEN_KEY: 'webropa_user',
   TENANT_SESSION_KEY: 'tenant_session',
 };
+
+// ============================
+// FUNCIONES GLOBALES COMPARTIDAS
+// ============================
+
+// Búsqueda genérica para todas las tablas
+document.addEventListener('input', function(e) {
+    if (e.target.matches('.buscador-generico')) {
+        const targetId = e.target.dataset.target;
+        if (!targetId) return;
+        
+        const tabla = document.getElementById(targetId);
+        if (!tabla) return;
+        
+        let filas;
+        // Buscar el tbody o directamente los tr dentro de la tabla
+        const tbody = tabla.tagName === 'TBODY' ? tabla : tabla.querySelector('tbody') || tabla;
+        filas = tbody.querySelectorAll('tr');
+        
+        // Función para normalizar texto (quitar acentos)
+        const normalizar = (texto) => {
+            return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        };
+        
+        const termino = normalizar(e.target.value);
+        
+        filas.forEach(fila => {
+            // Ignorar filas de carga o vacías (suelen tener un td con colspan)
+            if (fila.cells.length === 1 && fila.cells[0].colSpan > 1) return;
+            // Si tiene clase 'no-filtrable', ignorarla
+            if (fila.classList.contains('no-filtrable')) return;
+            
+            const textoFila = normalizar(fila.textContent);
+            fila.style.display = textoFila.includes(termino) ? '' : 'none';
+        });
+    }
+});

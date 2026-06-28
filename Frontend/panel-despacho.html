@@ -123,8 +123,11 @@
         <button class="btn btn-secundario btn-mini" onclick="cargarPedidos()">↻ Refrescar</button>
       </div>
       <div class="tarjeta">
-        <div class="tarjeta-titulo">
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Listado de Pedidos</h3>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" class="buscador-generico" data-target="tabla-pedidos" placeholder="Buscar pedido..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+          </div>
         </div>
         <table style="width:100%;">
           <thead>
@@ -154,12 +157,13 @@
         </div>
       </div>
       <div class="tarjeta">
-        <div class="tarjeta-titulo">
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Entregas Pendientes (Prototipo)</h3>
+          <input type="text" class="buscador-generico" data-target="tabla-recojo" placeholder="Buscar recojo..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
         </div>
         <table>
           <thead><tr><th>ID Pedido</th><th>Cliente</th><th>DNI/Doc</th><th>Fecha de Recojo Programada</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>
+          <tbody id="tabla-recojo">
             <tr>
               <td>1042</td>
               <td>María González</td>
@@ -191,12 +195,13 @@
         <button class="btn btn-primario btn-mini">+ Generar Boleta Manual</button>
       </div>
       <div class="tarjeta">
-        <div class="tarjeta-titulo">
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Últimas Boletas Emitidas (Prototipo)</h3>
+          <input type="text" class="buscador-generico" data-target="tabla-boletas" placeholder="Buscar boleta..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
         </div>
         <table>
           <thead><tr><th>Nro Boleta</th><th>Pedido Ref.</th><th>Monto Total</th><th>Fecha Emisión</th><th>Estado SUNAT</th><th>Acciones</th></tr></thead>
-          <tbody>
+          <tbody id="tabla-boletas">
             <tr>
               <td>B001-000456</td>
               <td>1042</td>
@@ -227,12 +232,13 @@
         </div>
       </div>
       <div class="tarjeta">
-        <div class="tarjeta-titulo">
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Solicitudes de Devolución (Prototipo)</h3>
+          <input type="text" class="buscador-generico" data-target="tabla-devoluciones" placeholder="Buscar devolución..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
         </div>
         <table>
           <thead><tr><th>ID Devolución</th><th>Boleta / Pedido</th><th>Motivo</th><th>Fecha Solicitud</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>
+          <tbody id="tabla-devoluciones">
             <tr>
               <td>DEV-089</td>
               <td>B001-000420</td>
