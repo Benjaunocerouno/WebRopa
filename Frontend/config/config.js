@@ -1,10 +1,12 @@
 // ============================
 // CONFIGURACIÓN DEL FRONTEND
 // ============================
-// Cambia API_URL cuando subas tu backend a la nube.
+// Cambia API_URL cuando subas tu backend a la nube. 
+// API_URL: 'http://shop.spring.informaticapp.com:2100/api'
+
 const CONFIG = {
-  // ← Cambia esta URL por la de tu backend en la nube
-  API_URL: 'http://shop.spring.informaticapp.com:2100/api',
+  // ← Configurado directamente para usar tu backend local en el puerto 2100
+  API_URL: 'http://localhost:2100/api',
 
   // Pega aquí el token generado en tu otra herramienta. 
   // Si está vacío (''), se usará el inicio de sesión normal.
