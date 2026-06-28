@@ -1100,25 +1100,30 @@ async function cargarRecojos() {
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No hay recojos registrados.</td></tr>';
       return;
     }
-    
+
     tbody.innerHTML = recojos.map(r => {
       const p = r.pedido;
       const cliNombre = p && p.usuario ? p.usuario.nombre : 'Cliente';
       const cliCorreo = p && p.usuario ? p.usuario.correo : '';
       const codigo = r.codigo_recojo;
       const fechaDisp = r.fecha_disponible || 'No asignada';
-      const estado = r.estado;
-      
+      // El estado está en el Pedido, no en RecojoTienda (la entidad no tiene campo estado)
+      const estadoPedido = p ? p.estado : null;
+
       let pildoraClase = 'estado-pendiente';
-      if (estado === 'LISTO_PARA_RECOGER') pildoraClase = 'rol-vendedor';
-      if (estado === 'RECOGIDO') pildoraClase = 'estado-ok';
-      if (estado === 'EXPIRADO') pildoraClase = 'estado-fallo';
+      if (estadoPedido === 'EN_PREPARACION')     pildoraClase = 'rol-almacenero';
+      if (estadoPedido === 'LISTO_PARA_RECOGER') pildoraClase = 'rol-vendedor';
+      if (estadoPedido === 'RECOGIDO')            pildoraClase = 'estado-ok';
+      if (estadoPedido === 'NO_RECOGIDO')         pildoraClase = 'estado-fallo';
+      if (estadoPedido === 'CANCELADO')           pildoraClase = 'estado-fallo';
 
       let accionBtn = '';
-      if (estado === 'PENDIENTE') {
-        accionBtn = `<button class="btn btn-primario btn-mini" onclick="actualizarRecojo(${r.id}, 'LISTO_PARA_RECOGER')">Listo para Recoger</button>`;
-      } else if (estado === 'LISTO_PARA_RECOGER') {
-        accionBtn = `<button class="btn btn-ok btn-mini" style="background:var(--sage); color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer;" onclick="actualizarRecojo(${r.id}, 'RECOGIDO')">Entregar al Cliente</button>`;
+      if (estadoPedido === 'EN_PREPARACION') {
+        accionBtn = `<button class="btn btn-primario btn-mini" onclick="marcarListoParaRecoger(${r.id}, ${p ? p.id : null})">Listo para Recoger</button>`;
+      } else if (estadoPedido === 'LISTO_PARA_RECOGER') {
+        accionBtn = `<button class="btn btn-ok btn-mini" style="background:var(--sage); color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer;" onclick="marcarRecogido(${p ? p.id : null})">Entregar al Cliente</button>`;
+      } else if (estadoPedido === 'NO_RECOGIDO') {
+        accionBtn = `<span style="font-size:0.8rem; color:var(--alerta); font-weight:600;">No recogido a tiempo</span>`;
       } else {
         accionBtn = `<span style="font-size:0.8rem; color:var(--cafe); opacity:0.7;">Sin acciones</span>`;
       }
@@ -1132,7 +1137,7 @@ async function cargarRecojos() {
           </td>
           <td><code class="mono" style="font-weight:600;">${codigo}</code></td>
           <td>${fechaDisp}</td>
-          <td><span class="pildora ${pildoraClase}">${estado}</span></td>
+          <td><span class="pildora ${pildoraClase}">${estadoPedido || '-'}</span></td>
           <td>${accionBtn}</td>
         </tr>
       `;
@@ -1142,31 +1147,30 @@ async function cargarRecojos() {
   }
 }
 
-async function actualizarRecojo(recojoId, nuevoEstado) {
+// Avanza el pedido a LISTO_PARA_RECOGER y registra fecha_disponible en RecojoTienda
+// (fecha_disponible inicia el temporizador del Job A para auto-transición a NO_RECOGIDO)
+async function marcarListoParaRecoger(recojoId, pedidoId) {
   try {
+    // 1. Registrar fecha_disponible en RecojoTienda para el Job A
     const recojo = await fetchAuth(`/recojotienda/${recojoId}`);
-    recojo.estado = nuevoEstado;
-    
-    if (nuevoEstado === 'RECOGIDO') {
-      const session = getSessionData();
-      const empId = session?.id || session?.clientId || 1;
-      recojo.atendido_por = { id: parseInt(empId) };
-      recojo.fecha_recogido = new Date().toISOString();
-    } else if (nuevoEstado === 'LISTO_PARA_RECOGER') {
-      recojo.fecha_disponible = new Date().toISOString();
-    }
-    
+    recojo.fecha_disponible = new Date().toISOString();
     await fetchAuth('/recojotienda', 'PUT', recojo);
-    
-    // También actualizar el estado del Pedido
-    const p = recojo.pedido;
-    if (p) {
-      const pedido = await fetchAuth(`/pedidos/${p.id}`);
-      pedido.estado = nuevoEstado;
-      await fetchAuth('/pedidos', 'PUT', pedido);
-    }
-    
-    showToast(`Recojo actualizado a ${nuevoEstado}`);
+
+    // 2. Avanzar el pedido → LISTO_PARA_RECOGER (dispara notificación al cliente)
+    await fetchAuth('/pedidos', 'PUT', { id: pedidoId, estado: 'LISTO_PARA_RECOGER' });
+
+    showToast('Pedido marcado como Listo para Recoger. Notificación enviada al cliente.');
+    cargarRecojos();
+  } catch (err) {
+    showToast(`Error: ${err.message}`, true);
+  }
+}
+
+// Avanza el pedido a RECOGIDO (registra fecha_recogido en el backend automáticamente)
+async function marcarRecogido(pedidoId) {
+  try {
+    await fetchAuth('/pedidos', 'PUT', { id: pedidoId, estado: 'RECOGIDO' });
+    showToast('Pedido entregado al cliente.');
     cargarRecojos();
   } catch (err) {
     showToast(`Error: ${err.message}`, true);

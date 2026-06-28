@@ -12,5 +12,7 @@ public interface IDevolucionesService {
     void guardar(Devoluciones devolucion);
     void aprobarDevolucion(Long id);
     void rechazarDevolucion(Long id);
+    void reembolsarDevolucion(Long id);
+    void reembolsarTodasPorPedido(Long pedidoId);
     void eliminar(Long id);
 }

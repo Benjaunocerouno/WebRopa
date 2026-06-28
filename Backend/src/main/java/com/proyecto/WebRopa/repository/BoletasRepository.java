@@ -12,10 +12,12 @@ public interface BoletasRepository extends JpaRepository<Boletas, Long> {
 
     List<Boletas> findByPedidoId(Long pedidoId);
 
-    // Para buscarPorNumeroBoleta
     @Query("SELECT b FROM Boletas b WHERE b.numero_boleta = ?1")
     Optional<Boletas> findByNumeroboleta(String numeroBoleta);
-    
-    // Para buscarPorPedidoId que devuelve Optional (una boleta por pedido)
+
     Optional<Boletas> findFirstByPedidoId(Long pedidoId);
+
+    List<Boletas> findByPedidoEmpresaId(Long empresaId);
+
+    Optional<Boletas> findByIdAndPedidoEmpresaId(Long id, Long empresaId);
 }

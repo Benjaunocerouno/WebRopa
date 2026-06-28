@@ -80,6 +80,9 @@ public class Pedidos {
     private String destinatario_telefono;
     private Double costo_envio = 0.0;
 
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime fecha_no_recogido;
+
     // GETTERS Y SETTERS
 
     public Long getId() {
@@ -185,4 +188,7 @@ public class Pedidos {
 
     public Double getCosto_envio() { return costo_envio; }
     public void setCosto_envio(Double costo_envio) { this.costo_envio = costo_envio; }
+
+    public LocalDateTime getFecha_no_recogido() { return fecha_no_recogido; }
+    public void setFecha_no_recogido(LocalDateTime fecha_no_recogido) { this.fecha_no_recogido = fecha_no_recogido; }
 }

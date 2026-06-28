@@ -19,9 +19,21 @@ public class PagosService implements IPagosService {
 
     public List<Pagos> buscarPorPedidoId(Long pedidoId) {return repoPagos.findByPedidoId(pedidoId);}
 
-    public List<Pagos> buscarTodos() {return repoPagos.findAll();}
+    public List<Pagos> buscarTodos() {
+        Long tenantId = com.proyecto.WebRopa.security.TenantContext.getCurrentTenant();
+        if (tenantId != null) {
+            return repoPagos.findByPedidoEmpresaId(tenantId);
+        }
+        return repoPagos.findAll();
+    }
 
-    public Optional<Pagos> buscarId(Long id) {return repoPagos.findById(id);}
+    public Optional<Pagos> buscarId(Long id) {
+        Long tenantId = com.proyecto.WebRopa.security.TenantContext.getCurrentTenant();
+        if (tenantId != null) {
+            return repoPagos.findByIdAndPedidoEmpresaId(id, tenantId);
+        }
+        return repoPagos.findById(id);
+    }
 
     public void guardar(Pagos pago) {repoPagos.save(pago);}
 

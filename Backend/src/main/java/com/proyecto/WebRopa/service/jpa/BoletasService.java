@@ -23,8 +23,21 @@ public class BoletasService implements IBoletasService {
         this.repoPedidos = repoPedidos;
     }
 
-    public List<Boletas> buscarTodos() { return repoBoletas.findAll(); }
-    public Optional<Boletas> buscarId(Long id) { return repoBoletas.findById(id); }
+    public List<Boletas> buscarTodos() {
+        Long tenantId = com.proyecto.WebRopa.security.TenantContext.getCurrentTenant();
+        if (tenantId != null) {
+            return repoBoletas.findByPedidoEmpresaId(tenantId);
+        }
+        return repoBoletas.findAll();
+    }
+
+    public Optional<Boletas> buscarId(Long id) {
+        Long tenantId = com.proyecto.WebRopa.security.TenantContext.getCurrentTenant();
+        if (tenantId != null) {
+            return repoBoletas.findByIdAndPedidoEmpresaId(id, tenantId);
+        }
+        return repoBoletas.findById(id);
+    }
     public void eliminar(Long id) { repoBoletas.deleteById(id); }
 
     // ── LA NUEVA LÓGICA DE GUARDADO ─────────────────────────────────

@@ -105,7 +105,44 @@
     .estado-EN_PREPARACION { background: #cce5ff; color: #004085; }
     .estado-LISTO_PARA_RECOGER { background: #FDF7E3; color: #C89B1F; }
     .estado-RECOGIDO { background: #e2e3e5; color: #383d41; }
-    .estado-CANCELADO { background: #f8d7da; color: #721c24; }
+    .estado-CANCELADO    { background: #f8d7da; color: #721c24; }
+    .estado-NO_RECOGIDO  { background: #f8d7da; color: #721c24; }
+    .estado-EN_CAMINO    { background: #cce5ff; color: #004085; }
+    .estado-ENTREGADO    { background: #e2e3e5; color: #383d41; }
+
+    /* Campanita de notificaciones */
+    .notif-wrapper { position: relative; display: none; margin-right: 1rem; }
+    .notif-btn {
+      background: none; border: none; cursor: pointer;
+      position: relative; padding: 6px; color: var(--color-text);
+      display: flex; align-items: center;
+    }
+    .notif-badge {
+      display: none; position: absolute; top: -2px; right: -2px;
+      background: #c94c4c; color: #fff; border-radius: 50%;
+      width: 17px; height: 17px; font-size: 10px;
+      align-items: center; justify-content: center; font-weight: 700;
+    }
+    .notif-dropdown {
+      display: none; position: absolute; right: 0; top: 40px;
+      background: #fff; border: 1px solid #e8e8e8;
+      border-radius: 12px; width: 320px; max-height: 400px;
+      overflow-y: auto; box-shadow: 0 6px 24px rgba(0,0,0,0.1); z-index: 1000;
+    }
+    .notif-header {
+      padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
+      font-weight: 600; font-size: 0.9rem; color: var(--color-primary);
+    }
+    .notif-item {
+      padding: 12px 16px; border-bottom: 1px solid #f8f8f8;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .notif-item:hover { background: #fafafa; }
+    .notif-item.leida { opacity: 0.55; }
+    .notif-item-inner { display: flex; gap: 10px; align-items: flex-start; }
+    .notif-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .notif-msg { font-size: 0.82rem; color: #333; line-height: 1.4; }
+    .notif-fecha { font-size: 0.72rem; color: #999; margin-top: 3px; }
 
     .empty-state {
       text-align: center;
@@ -123,6 +160,22 @@
       </a>
       
       <div class="navbar__actions">
+
+        <!-- Campanita de notificaciones -->
+        <div class="notif-wrapper" id="notif-wrapper">
+          <button class="notif-btn" id="notif-btn" aria-label="Notificaciones">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notif-badge" id="notif-badge"></span>
+          </button>
+          <div class="notif-dropdown" id="notif-dropdown">
+            <div class="notif-header">Notificaciones</div>
+            <div id="notif-list"></div>
+          </div>
+        </div>
+
         <!-- User dropdown -->
         <div class="user-menu" id="user-menu">
           <button class="user-menu__trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true" aria-label="Menú de usuario">
@@ -181,6 +234,7 @@
       if(empresaId) document.getElementById('logo-link').href = `index.html?empresa=${empresaId}`;
 
       cargarPedidos(sesion.clientId, sesion.token);
+      cargarNotificaciones(sesion.clientId, sesion.token);
     });
 
     async function cargarPedidos(usuarioId, token) {
@@ -351,6 +405,91 @@
         console.error(err);
       }
     }
+
+    /* ── Notificaciones ────────────────────────────── */
+    const NOTIF_ICONOS = {
+      LISTO_PARA_RECOGER:   '📦',
+      RECOJO_POR_VENCER:    '⚠️',
+      NO_RECOGIDO_CANCELADO:'❌'
+    };
+    const NOTIF_BG = {
+      LISTO_PARA_RECOGER:   '#e8f5e9',
+      RECOJO_POR_VENCER:    '#fff8e1',
+      NO_RECOGIDO_CANCELADO:'#fce4ec'
+    };
+
+    async function cargarNotificaciones(usuarioId, token) {
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/notificaciones/usuario/${usuarioId}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const notifs = await res.json();
+
+        const wrapper = document.getElementById('notif-wrapper');
+        wrapper.style.display = 'block';
+
+        const badge = document.getElementById('notif-badge');
+        const noLeidas = notifs.filter(n => !n.leida).length;
+        badge.textContent = noLeidas > 9 ? '9+' : String(noLeidas);
+        badge.style.display = noLeidas > 0 ? 'flex' : 'none';
+
+        const list = document.getElementById('notif-list');
+        if (notifs.length === 0) {
+          list.innerHTML = '<div style="padding:20px; text-align:center; color:#888; font-size:0.85rem;">Sin notificaciones</div>';
+          return;
+        }
+        list.innerHTML = notifs.map(n => `
+          <div class="notif-item ${n.leida ? 'leida' : ''}"
+               style="background:${n.leida ? '#fff' : (NOTIF_BG[n.tipo] || '#f9f9f9')};"
+               onclick="marcarLeida(${n.id}, '${token}', this)">
+            <div class="notif-item-inner">
+              <span class="notif-icon">${NOTIF_ICONOS[n.tipo] || '🔔'}</span>
+              <div>
+                <div class="notif-msg">${n.mensaje}</div>
+                <div class="notif-fecha">${n.fecha}</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Error al cargar notificaciones:', err);
+      }
+    }
+
+    async function marcarLeida(notifId, token, el) {
+      if (el.classList.contains('leida')) return;
+      try {
+        await fetch(`${CONFIG.API_URL}/notificaciones/${notifId}/leida`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        el.classList.add('leida');
+        el.style.background = '#fff';
+        const badge = document.getElementById('notif-badge');
+        const count = parseInt(badge.textContent, 10);
+        if (!isNaN(count) && count > 0) {
+          const next = count - 1;
+          badge.style.display = next === 0 ? 'none' : 'flex';
+          badge.textContent = next > 9 ? '9+' : String(next);
+        }
+      } catch (err) {
+        console.error('Error al marcar leída:', err);
+      }
+    }
+
+    // Toggle campanita
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('notif-btn');
+      const dd  = document.getElementById('notif-dropdown');
+      if (btn && dd) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        });
+        document.addEventListener('click', () => { dd.style.display = 'none'; });
+      }
+    });
   </script>
 </body>
 </html>
