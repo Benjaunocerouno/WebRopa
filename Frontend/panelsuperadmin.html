@@ -125,9 +125,12 @@
       </div>
 
       <div class="tarjeta">
-        <div class="tarjeta-titulo">
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Empresas registradas</h3>
-          <button class="btn btn-secundario btn-mini" onclick="cargarEmpresas()">↻ Refrescar</button>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" class="buscador-generico" data-target="tabla-empresas" placeholder="Buscar empresa..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+            <button class="btn btn-secundario btn-mini" onclick="cargarEmpresas()">↻ Refrescar</button>
+          </div>
         </div>
         <table>
           <thead><tr><th>ID</th><th>RUC</th><th>Empresa</th><th>Estado</th><th colspan="2"></th></tr></thead>
@@ -149,9 +152,12 @@
       </div>
 
       <div class="tarjeta">
-        <div class="tarjeta-titulo">
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Sesiones activas</h3>
-          <span class="nota">Tabla optimizada para 50+ sesiones simultáneas</span>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" class="buscador-generico" data-target="tabla-sesiones" placeholder="Buscar sesión..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+            <span class="nota">Tabla optimizada para 50+ sesiones simultáneas</span>
+          </div>
         </div>
         <p class="tarjeta-sub">Cierre forzado de sesión = invalida el token en curso. Revocar acceso = bloquea el nivel de permiso y devuelve HTTP 403 en la siguiente petición.</p>
         <table>
@@ -208,9 +214,12 @@
       </div>
 
       <div class="tarjeta">
-        <div class="tarjeta-titulo">
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Matriz de permisos granular</h3>
-          <button class="btn btn-secundario btn-mini" id="btn-guardar-permisos">Guardar cambios</button>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" class="buscador-generico" data-target="tabla-matriz" placeholder="Buscar rol..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+            <button class="btn btn-secundario btn-mini" id="btn-guardar-permisos">Guardar cambios</button>
+          </div>
         </div>
         <p class="tarjeta-sub">Activa o desactiva permisos individuales por rol. El cambio impacta la base de datos al instante.</p>
         <table class="matriz-permisos">
@@ -232,9 +241,12 @@
       </div>
 
       <div class="tarjeta">
-        <div class="tarjeta-titulo">
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Log de auditoría</h3>
-          <button class="btn btn-secundario btn-mini" id="btn-exportar-pdf">⭳ Exportar PDF</button>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" class="buscador-generico" data-target="tabla-logs" placeholder="Buscar registro..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+            <button class="btn btn-secundario btn-mini" id="btn-exportar-pdf">⭳ Exportar PDF</button>
+          </div>
         </div>
         <div class="barra-filtros">
           <div class="campo">

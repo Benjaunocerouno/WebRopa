@@ -1,0 +1,85 @@
+/* Estilos adicionales específicos para el panel de empresa */
+.form-variantes {
+    background: var(--crema);
+    border: 1px dashed var(--borde-trazo);
+    border-radius: var(--radio-b);
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.variante-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--borde-trazo);
+}
+
+.variante-item:last-child {
+    border-bottom: none;
+}
+
+.variante-item input {
+    flex: 1;
+    min-width: 80px;
+}
+
+.btn-quitar-variante {
+    background: var(--alerta-suave);
+    color: var(--alerta);
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.variantes-lista-expandida {
+    background: rgba(92, 74, 61, 0.03);
+    border-bottom: 1.5px solid var(--borde-trazo);
+}
+
+.variantes-lista-expandida table {
+    background: transparent;
+    margin: 10px 20px;
+    width: calc(100% - 40px);
+}
+
+.variantes-lista-expandida th {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--borde-trazo);
+}
+
+.fila-principal {
+    transition: background 0.2s;
+}
+
+.fila-principal:hover {
+    background: rgba(92, 74, 61, 0.05);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--borde-trazo);
+    color: var(--cafe);
+}
+
+.btn-outline:hover {
+    border-color: var(--sage-oscuro);
+    color: var(--sage-oscuro);
+}
+
+.img-min {
+    width: 40px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: var(--borde-trazo);
+}
+
+#tabla-proveedores .mono {
+    font-family: 'Space Mono', monospace;
+    color: var(--cafe-oscuro);
+    letter-spacing: 0.5px;
+}

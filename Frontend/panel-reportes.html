@@ -243,7 +243,11 @@
       </div>
 
       <div class="tarjeta">
-        <table>
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px;">
+          <h3 style="margin: 0;">Detalle de Registros</h3>
+          <input type="text" class="buscador-generico" data-target="tabla-rep-ventas" placeholder="Buscar en reporte..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+        </div>
+        <table id="tabla-rep-ventas">
           <thead>
             <tr>
               <th>Fecha</th>
@@ -300,7 +304,11 @@
         <div class="chart-placeholder">[ Gráfico de Barras Horizontales: Top 10 Productos ]</div>
       </div>
       <div class="tarjeta">
-        <table>
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px;">
+          <h3 style="margin: 0;">Lista de Productos Top</h3>
+          <input type="text" class="buscador-generico" data-target="tabla-rep-productos" placeholder="Buscar producto..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+        </div>
+        <table id="tabla-rep-productos">
           <thead>
             <tr>
               <th>Ranking</th>
@@ -358,8 +366,11 @@
         </div>
       </div>
       <div class="tarjeta">
-        <div class="tarjeta-titulo"><h3>Últimos Movimientos de Inventario</h3></div>
-        <table>
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+          <h3 style="margin: 0;">Últimos Movimientos de Inventario</h3>
+          <input type="text" class="buscador-generico" data-target="tabla-rep-inventario" placeholder="Buscar movimiento..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+        </div>
+        <table id="tabla-rep-inventario">
           <thead>
             <tr>
               <th>Fecha</th>
@@ -415,8 +426,11 @@
         </div>
       </div>
       <div class="tarjeta">
-        <div class="tarjeta-titulo"><h3>Efectividad de Cupones</h3></div>
-        <table>
+        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+          <h3 style="margin: 0;">Efectividad de Cupones</h3>
+          <input type="text" class="buscador-generico" data-target="tabla-rep-cupones" placeholder="Buscar cupón..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+        </div>
+        <table id="tabla-rep-cupones">
           <thead>
             <tr>
               <th>Código Cupón</th>
@@ -426,7 +440,7 @@
               <th>Estado</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="tabla-rep-cupones">
             <tr>
               <td class="mono">BIENVENIDA20</td>
               <td>20%</td>
