@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Reportes · Estadísticas y Análisis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/panel-empresa.css">
+<style>
+/* Estilos específicos para reportes */
+.grid-kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--crema-alta);
+  border: 1.5px solid var(--borde-trazo);
+  border-radius: var(--radio-a);
+  box-shadow: var(--sombra-calida);
+  padding: 18px 20px;
+  position: relative;
+  transition: transform 0.2s ease-out;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: 6px 10px 0px rgba(92,74,61,0.13); }
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 4px 4px 0 0;
+}
+.kpi-card.verde::before  { background: var(--sage-oscuro); }
+.kpi-card.terracota::before { background: var(--terracota); }
+.kpi-card.mostaza::before { background: var(--mostaza); }
+.kpi-card.cafe::before { background: var(--cafe); }
+
+.kpi-label { font-size: 0.75rem; font-weight: 600; color: var(--cafe); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.kpi-valor { font-family: 'Space Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--cafe-oscuro); }
+.kpi-delta { font-size: 0.75rem; font-weight: 700; margin-top: 5px; display: inline-block;}
+.kpi-delta.sube { color: var(--sage-oscuro); }
+.kpi-delta.baja { color: var(--alerta); }
+
+.chart-placeholder {
+  width: 100%; height: 300px;
+  background: rgba(92,74,61,0.03);
+  border: 1px dashed var(--borde-trazo);
+  border-radius: var(--radio-b);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cafe); font-weight: 500; font-size: 0.9rem;
+  margin-top: 15px;
+}
+.barra-progreso {
+  height: 12px; background: rgba(92,74,61,0.1); border-radius: 999px; overflow: hidden; margin-top: 6px;
+}
+.barra-relleno { height: 100%; border-radius: 999px; }
+.lista-top { margin-top: 15px; }
+.item-top { display: flex; align-items: center; gap: 15px; padding: 10px 0; border-bottom: 1px solid var(--borde-trazo); }
+.item-top:last-child { border-bottom: none; }
+.item-puesto { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--terracota-oscuro); width: 20px; }
+.item-nombre { flex: 1; font-size: 0.85rem; font-weight: 500; }
+.item-valor { font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; color: var(--cafe-oscuro); }
+</style>
+</head>
+<body>
+
+<!-- Login overlay estático -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-caja">
+    <div class="marca">
+      <svg class="marca-icono" viewBox="0 0 40 40" fill="none">
+        <path d="M20 4C12 4 6 10 6 18c0 9 8 14 14 18 6-4 14-9 14-18 0-8-6-14-14-14Z" stroke="#5C4A3D" stroke-width="2" fill="#7E9270" opacity="0.6"/>
+        <path d="M14 19l4 4 9-9" stroke="#5C4A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <h1>Reportes</h1>
+    </div>
+    <p class="marca-sub">Acceso Analista de Datos</p>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-form">
+      <div class="campo">
+        <label class="etiqueta-campo">Correo electrónico</label>
+        <input type="email" id="login-correo" placeholder="analista@moodandco.pe">
+      </div>
+      <div class="campo">
+        <label class="etiqueta-campo">Contraseña</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn-login" id="btn-ingresar">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="marca">
+      <svg class="marca-icono" viewBox="0 0 40 40" fill="none">
+        <path d="M20 4C12 4 6 10 6 18c0 9 8 14 14 18 6-4 14-9 14-18 0-8-6-14-14-14Z" stroke="#5C4A3D" stroke-width="2" fill="#7E9270" opacity="0.6"/>
+        <path d="M14 19l4 4 9-9" stroke="#5C4A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <h1>Mood&Co</h1>
+    </div>
+    <p class="marca-sub">Módulo de Reportes</p>
+
+    <div class="usuario-activo">
+      <div class="avatar-mini">A</div>
+      <div>
+        <div class="nombre" id="usuario-nombre">Analista</div>
+        <div class="rol">Data & Reportes</div>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <button class="menu-item activo" data-panel="dashboard">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.8"/></svg>
+        Dashboard General
+      </button>
+      <button class="menu-item" data-panel="ventas">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 9l-4.5 4.5-3-3L7 14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Reporte de Ventas
+      </button>
+      <button class="menu-item" data-panel="productos">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Top Productos
+      </button>
+      <button class="menu-item" data-panel="inventario">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 8v13H3V8M1 3h22v5H1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Movimientos Inventario
+      </button>
+      <button class="menu-item" data-panel="clientes">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Fidelización (Cupones)
+      </button>
+      <button class="menu-item" data-panel="devoluciones">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Tasas de Devolución
+      </button>
+    </nav>
+
+    <div class="menu-pie">
+      Analítica v1.0<br>Solo Lectura
+    </div>
+    <button class="btn-cerrar-sesion" id="btn-cerrar">
+      <svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Cerrar sesión
+    </button>
+  </aside>
+
+  <main>
+    
+    <!-- 1. DASHBOARD GENERAL -->
+    <section class="panel activo" id="panel-dashboard">
+      <div class="topbar">
+        <div>
+          <h2>Dashboard General</h2>
+          <p class="descripcion">Vista rápida de los indicadores principales del negocio.</p>
+        </div>
+        <div class="estado-vivo">
+          <span class="punto-pulso"></span>
+          Actualizado hace 5 min
+        </div>
+      </div>
+
+      <div class="grid-kpi">
+        <div class="kpi-card verde">
+          <div class="kpi-label">Ingresos del Mes</div>
+          <div class="kpi-valor">S/ 45,230.50</div>
+          <div class="kpi-delta sube">▲ +12% vs mes anterior</div>
+        </div>
+        <div class="kpi-card terracota">
+          <div class="kpi-label">Pedidos Completados</div>
+          <div class="kpi-valor">842</div>
+          <div class="kpi-delta sube">▲ +5% vs mes anterior</div>
+        </div>
+        <div class="kpi-card mostaza">
+          <div class="kpi-label">Ticket Promedio</div>
+          <div class="kpi-valor">S/ 53.70</div>
+          <div class="kpi-delta baja">▼ -2% vs mes anterior</div>
+        </div>
+        <div class="kpi-card cafe">
+          <div class="kpi-label">Tasa Devolución</div>
+          <div class="kpi-valor">4.2%</div>
+          <div class="kpi-delta sube">▼ -1.5% vs mes anterior</div> <!-- Baja devolucion es bueno, por eso color verde (sube class pero significa positivo) -->
+        </div>
+      </div>
+
+      <div class="grid-doble">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo"><h3>Tendencia de Ventas (Últimos 7 días)</h3></div>
+          <div class="chart-placeholder">[ Gráfico de Líneas: Ventas diarias ]<br>Tu compañero integrará Chart.js aquí.</div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo"><h3>Top 5 Categorías</h3></div>
+          <div class="lista-top">
+            <div class="item-top">
+              <span class="item-puesto">1</span><span class="item-nombre">Polos y Camisas</span>
+              <div style="flex:2; margin-right:15px;"><div class="barra-progreso"><div class="barra-relleno" style="width: 85%; background: var(--terracota);"></div></div></div>
+              <span class="item-valor">35%</span>
+            </div>
+            <div class="item-top">
+              <span class="item-puesto">2</span><span class="item-nombre">Pantalones</span>
+              <div style="flex:2; margin-right:15px;"><div class="barra-progreso"><div class="barra-relleno" style="width: 60%; background: var(--sage-oscuro);"></div></div></div>
+              <span class="item-valor">25%</span>
+            </div>
+            <div class="item-top">
+              <span class="item-puesto">3</span><span class="item-nombre">Casacas</span>
+              <div style="flex:2; margin-right:15px;"><div class="barra-progreso"><div class="barra-relleno" style="width: 45%; background: var(--mostaza);"></div></div></div>
+              <span class="item-valor">18%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. REPORTE DE VENTAS -->
+    <section class="panel" id="panel-ventas">
+      <div class="topbar">
+        <div>
+          <h2>Reporte de Ventas Financiero</h2>
+          <p class="descripcion">Desglose de ingresos, impuestos e información contable basada en Boletas y Pagos.</p>
+        </div>
+      </div>
+      
+      <div class="tarjeta">
+        <div class="form-fila">
+          <div class="campo">
+            <label class="etiqueta-campo">Fecha Inicio</label>
+            <input type="date">
+          </div>
+          <div class="campo">
+            <label class="etiqueta-campo">Fecha Fin</label>
+            <input type="date">
+          </div>
+          <div class="campo">
+            <label class="etiqueta-campo">Estado Pedido</label>
+            <select>
+              <option>Todos</option>
+              <option>Confirmados</option>
+              <option>Pendientes</option>
+            </select>
+          </div>
+          <button class="btn btn-primario" style="margin-bottom: 2px;">Generar Reporte</button>
+          <button class="btn btn-secundario" style="margin-bottom: 2px;">Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>N° Boleta</th>
+              <th>Cliente</th>
+              <th>Subtotal</th>
+              <th>IGV (18%)</th>
+              <th>Total</th>
+              <th>Método Pago</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2023-10-25</td>
+              <td class="mono">B001-000452</td>
+              <td>Juan Pérez</td>
+              <td>S/ 100.00</td>
+              <td>S/ 18.00</td>
+              <td class="mono">S/ 118.00</td>
+              <td><span class="pildora estado-ok">Tarjeta</span></td>
+            </tr>
+            <tr>
+              <td>2023-10-25</td>
+              <td class="mono">B001-000453</td>
+              <td>Ana Gómez</td>
+              <td>S/ 45.50</td>
+              <td>S/ 8.19</td>
+              <td class="mono">S/ 53.69</td>
+              <td><span class="pildora estado-pendiente">Yape</span></td>
+            </tr>
+            <tr>
+              <td>2023-10-24</td>
+              <td class="mono">B001-000454</td>
+              <td>Carlos Ruiz</td>
+              <td>S/ 200.00</td>
+              <td>S/ 36.00</td>
+              <td class="mono">S/ 236.00</td>
+              <td><span class="pildora estado-ok">Tarjeta</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. TOP PRODUCTOS -->
+    <section class="panel" id="panel-productos">
+      <div class="topbar">
+        <div>
+          <h2>Productos Más Vendidos</h2>
+          <p class="descripcion">Basado en PedidosItems, ranking de los productos con mayor rotación.</p>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="chart-placeholder">[ Gráfico de Barras Horizontales: Top 10 Productos ]</div>
+      </div>
+      <div class="tarjeta">
+        <table>
+          <thead>
+            <tr>
+              <th>Ranking</th>
+              <th>Producto</th>
+              <th>Variante (Talla/Color)</th>
+              <th>Unidades Vendidas</th>
+              <th>Ingreso Generado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>#1</td>
+              <td>Polo Básico Algodón</td>
+              <td>M / Blanco</td>
+              <td class="mono">145</td>
+              <td class="mono">S/ 4,350.00</td>
+            </tr>
+            <tr>
+              <td>#2</td>
+              <td>Jean Clásico Recto</td>
+              <td>32 / Azul Oscuro</td>
+              <td class="mono">98</td>
+              <td class="mono">S/ 8,820.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. INVENTARIO -->
+    <section class="panel" id="panel-inventario">
+      <div class="topbar">
+        <div>
+          <h2>Movimientos y Stock Crítico</h2>
+          <p class="descripcion">Reporte de alertas de inventario bajo y movimientos (Ingresos, Salidas, Ajustes).</p>
+        </div>
+      </div>
+      <div class="grid-doble">
+        <div class="tarjeta" style="border-color: var(--alerta);">
+          <div class="tarjeta-titulo"><h3 style="color: var(--alerta);">⚠️ Alertas de Stock Bajo</h3></div>
+          <div class="lista-top">
+            <div class="item-top">
+              <span class="item-nombre">Casaca Cuero Sintético (L / Negro)</span>
+              <span class="item-valor" style="color: var(--alerta);">2 unid. restantes</span>
+            </div>
+            <div class="item-top">
+              <span class="item-nombre">Polo Estampado Vintage (S / Gris)</span>
+              <span class="item-valor" style="color: var(--alerta);">0 unid. restantes</span>
+            </div>
+          </div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo"><h3>Distribución de Movimientos</h3></div>
+          <div class="chart-placeholder" style="height: 150px;">[ Gráfico de Dona: % Compras vs % Ventas ]</div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo"><h3>Últimos Movimientos de Inventario</h3></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo Movimiento</th>
+              <th>Producto/Variante</th>
+              <th>Cantidad</th>
+              <th>Observación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hoy 10:30</td>
+              <td><span class="pildora estado-ok">INGRESO_COMPRA</span></td>
+              <td>Polo Básico / M Blanco</td>
+              <td class="mono">+50</td>
+              <td>Lote Proveedor A</td>
+            </tr>
+            <tr>
+              <td>Hoy 11:15</td>
+              <td><span class="pildora estado-fallo">SALIDA_VENTA</span></td>
+              <td>Jean Clásico / 32 Azul</td>
+              <td class="mono">-2</td>
+              <td>Pedido #843</td>
+            </tr>
+            <tr>
+              <td>Ayer 16:40</td>
+              <td><span class="pildora estado-pendiente">INGRESO_DEVOLUCION</span></td>
+              <td>Casaca Denim / M Celeste</td>
+              <td class="mono">+1</td>
+              <td>Devolución Pedido #820</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. FIDELIZACIÓN (CLIENTES / CUPONES) -->
+    <section class="panel" id="panel-clientes">
+      <div class="topbar">
+        <div>
+          <h2>Uso de Cupones y Fidelización</h2>
+          <p class="descripcion">Rendimiento de los cupones de descuento y estadísticas de usuarios recurrentes.</p>
+        </div>
+      </div>
+      <div class="grid-kpi">
+        <div class="kpi-card mostaza">
+          <div class="kpi-label">Cupones Usados (Mes)</div>
+          <div class="kpi-valor">124</div>
+        </div>
+        <div class="kpi-card verde">
+          <div class="kpi-label">Ahorro Clientes</div>
+          <div class="kpi-valor">S/ 1,250.00</div>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo"><h3>Efectividad de Cupones</h3></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Código Cupón</th>
+              <th>Descuento</th>
+              <th>Veces Usado</th>
+              <th>Total Descontado</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">BIENVENIDA20</td>
+              <td>20%</td>
+              <td class="mono">85</td>
+              <td class="mono">S/ 850.00</td>
+              <td><span class="pildora estado-ok">Activo</span></td>
+            </tr>
+            <tr>
+              <td class="mono">FLASH50</td>
+              <td>S/ 50.00</td>
+              <td class="mono">39</td>
+              <td class="mono">S/ 400.00</td>
+              <td><span class="pildora estado-fallo">Expirado</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. DEVOLUCIONES -->
+    <section class="panel" id="panel-devoluciones">
+      <div class="topbar">
+        <div>
+          <h2>Reporte de Devoluciones</h2>
+          <p class="descripcion">Análisis de los motivos de devolución y reembolsos emitidos.</p>
+        </div>
+      </div>
+      <div class="grid-doble">
+        <div class="tarjeta">
+          <div class="tarjeta-titulo"><h3>Motivos Frecuentes</h3></div>
+          <div class="chart-placeholder">[ Gráfico Pie: Talla(50%), Defecto(30%), Color(20%) ]</div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo"><h3>Últimas Solicitudes</h3></div>
+          <div class="lista-top">
+            <div class="item-top">
+              <span class="item-nombre">Devolución #15 - TALLA_INCORRECTA</span>
+              <span class="pildora estado-pendiente">SOLICITADA</span>
+            </div>
+            <div class="item-top">
+              <span class="item-nombre">Devolución #14 - DEFECTUOSO</span>
+              <span class="pildora estado-ok">REEMBOLSADA</span>
+            </div>
+            <div class="item-top">
+              <span class="item-nombre">Devolución #13 - OTRO</span>
+              <span class="pildora estado-fallo">RECHAZADA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="config/config.js"></script>
+<script>
+/* ==========================================================
+   CONFIGURACIÓN Y UTILIDADES (Basado en panel-empresa)
+   ========================================================== */
+const API_URL = CONFIG.API_URL;
+const SESSION_KEY = 'tenant_session';
+
+function getToken() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY)).token; } catch { return null; }
+}
+
+function getSessionData() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
+}
+
+async function fetchAuth(endpoint, method='GET', body=null) {
+  const t = getToken();
+  if(!t) { 
+    document.getElementById('login-overlay').style.display = 'flex';
+    throw new Error("No autenticado"); 
+  }
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' }, cache: 'no-store' };
+  if(body) opts.body = JSON.stringify(body);
+  
+  const res = await fetch(API_URL + endpoint, opts);
+  if(!res.ok) {
+    let errText = "Error en petición";
+    try { const eJson = await res.json(); errText = eJson.message || eJson.error || errText; }
+    catch { errText = await res.text() || errText; }
+    throw new Error(errText);
+  }
+  if(method === 'GET' || res.headers.get('content-type')?.includes('json')) return await res.json();
+  return await res.text();
+}
+
+/* ==========================================================
+   NAVEGACIÓN Y PESTAÑAS
+   ========================================================== */
+const menuItems = document.querySelectorAll('.menu-item');
+const panels = document.querySelectorAll('.panel');
+
+menuItems.forEach(item => {
+  item.addEventListener('click', () => {
+    menuItems.forEach(m => m.classList.remove('activo'));
+    panels.forEach(p => p.classList.remove('activo'));
+    item.classList.add('activo');
+    const panelId = item.getAttribute('data-panel');
+    document.getElementById('panel-' + panelId).classList.add('activo');
+  });
+});
+
+/* ==========================================================
+   AUTH Y LOGIN
+   ========================================================== */
+async function aplicarUsuario(datos) {
+  const nombre = datos.nombre || 'Usuario';
+  document.getElementById('usuario-nombre').textContent = nombre;
+}
+
+const btnIngresar = document.getElementById('btn-ingresar');
+const btnCerrar = document.getElementById('btn-cerrar');
+const overlay = document.getElementById('login-overlay');
+
+btnIngresar.addEventListener('click', async () => {
+  const correo = document.getElementById('login-correo').value;
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  try {
+    const res = await fetch(API_URL + '/usuarios/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correo, password })
+    });
+    if(!res.ok) throw new Error('Credenciales inválidas');
+    const data = await res.json();
+    
+    // Aquí el backend podría validar si el usuario tiene permiso para reportes.
+    // if (data.rol !== 'ADMIN') throw new Error('Acceso denegado');
+
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    overlay.style.display = 'none';
+    await aplicarUsuario(data);
+    
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  }
+});
+
+btnCerrar.addEventListener('click', () => {
+  localStorage.removeItem(SESSION_KEY);
+  overlay.style.display = 'flex';
+  document.getElementById('login-correo').value = '';
+  document.getElementById('login-password').value = '';
+});
+
+// Auto-login al cargar la página si el token existe
+window.addEventListener('DOMContentLoaded', () => {
+  const data = getSessionData();
+  if (data && data.token) {
+    overlay.style.display = 'none';
+    aplicarUsuario(data);
+  }
+});
+</script>
+
+</body>
+</html>
