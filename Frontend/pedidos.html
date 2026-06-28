@@ -212,39 +212,73 @@
                 }
 
                 // Generar el Stepper visual dinámico (RF-CL-27)
-                construirStepperVisualLogistico(pedido.estado);
+                construirStepperVisualLogistico(pedido.estado, pedido.tipo_entrega);
 
-                // Consultar el código de recojo si existe
+                // Consultar el código de recojo o seguimiento si existe
                 document.getElementById("det-recojo-container").style.display = "none";
-                fetch(`${API_URL}/recojotienda/pedido/${pedidoId}`)
-                    .then(r => r.ok ? r.json() : null)
-                    .then(recojoData => {
-                        if (recojoData && recojoData.codigo_recojo) {
-                            document.getElementById("det-recojo-container").style.display = "block";
-                            const codeElem = document.getElementById("det-recojo-codigo");
-                            const avisoElem = document.getElementById("det-recojo-aviso");
-                            codeElem.textContent = recojoData.codigo_recojo;
-                            
-                            if (recojoData.estado === "RECOGIDO" || pedido.estado === "RECOGIDO") {
-                                codeElem.style.textDecoration = "line-through";
-                                codeElem.style.color = "#888";
-                                avisoElem.textContent = "(Pedido Recogido)";
-                                avisoElem.style.color = "#777";
-                            } else if (pedido.estado === "LISTO_PARA_RECOGER") {
-                                codeElem.style.textDecoration = "none";
-                                codeElem.style.color = "var(--color-sage)";
-                                avisoElem.textContent = "(¡Listo para retirar en tienda!)";
-                                avisoElem.style.color = "var(--color-sage)";
-                                codeElem.style.fontWeight = "bold";
-                            } else {
-                                codeElem.style.textDecoration = "none";
-                                codeElem.style.color = "#444";
-                                avisoElem.textContent = "(Código listo. Podrás retirar cuando el estado sea LISTO PARA RECOGER)";
-                                avisoElem.style.color = "#C89B1F";
+                if (pedido.tipo_entrega === "DELIVERY") {
+                    fetch(`${API_URL}/enviodomicilio/pedido/${pedidoId}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(envioData => {
+                            if (envioData && envioData.codigo_seguimiento) {
+                                document.getElementById("det-recojo-container").style.display = "block";
+                                const codeElem = document.getElementById("det-recojo-codigo");
+                                const avisoElem = document.getElementById("det-recojo-aviso");
+                                document.getElementById("det-recojo-container").querySelector("strong").textContent = "Código de Seguimiento:";
+                                codeElem.textContent = envioData.codigo_seguimiento;
+                                
+                                if (envioData.estado === "ENTREGADO" || pedido.estado === "ENTREGADO" || pedido.estado === "RECOGIDO") {
+                                    codeElem.style.textDecoration = "line-through";
+                                    codeElem.style.color = "#888";
+                                    avisoElem.textContent = "(Pedido Entregado)";
+                                    avisoElem.style.color = "#777";
+                                } else if (pedido.estado === "EN_CAMINO" || envioData.estado === "EN_CAMINO") {
+                                    codeElem.style.textDecoration = "none";
+                                    codeElem.style.color = "var(--color-sage)";
+                                    avisoElem.textContent = "(¡En camino a tu domicilio!)";
+                                    avisoElem.style.color = "var(--color-sage)";
+                                    codeElem.style.fontWeight = "bold";
+                                } else {
+                                    codeElem.style.textDecoration = "none";
+                                    codeElem.style.color = "#444";
+                                    avisoElem.textContent = `(Estado de envío: ${envioData.estado})`;
+                                    avisoElem.style.color = "#C89B1F";
+                                }
                             }
-                        }
-                    })
-                    .catch(err => console.error("Error al obtener recojo:", err));
+                        })
+                        .catch(err => console.error("Error al obtener envio:", err));
+                } else {
+                    fetch(`${API_URL}/recojotienda/pedido/${pedidoId}`)
+                        .then(r => r.ok ? r.json() : null)
+                        .then(recojoData => {
+                            if (recojoData && recojoData.codigo_recojo) {
+                                document.getElementById("det-recojo-container").style.display = "block";
+                                const codeElem = document.getElementById("det-recojo-codigo");
+                                const avisoElem = document.getElementById("det-recojo-aviso");
+                                document.getElementById("det-recojo-container").querySelector("strong").textContent = "Código de Recojo:";
+                                codeElem.textContent = recojoData.codigo_recojo;
+                                
+                                if (recojoData.estado === "RECOGIDO" || pedido.estado === "RECOGIDO") {
+                                    codeElem.style.textDecoration = "line-through";
+                                    codeElem.style.color = "#888";
+                                    avisoElem.textContent = "(Pedido Recogido)";
+                                    avisoElem.style.color = "#777";
+                                } else if (pedido.estado === "LISTO_PARA_RECOGER") {
+                                    codeElem.style.textDecoration = "none";
+                                    codeElem.style.color = "var(--color-sage)";
+                                    avisoElem.textContent = "(¡Listo para retirar en tienda!)";
+                                    avisoElem.style.color = "var(--color-sage)";
+                                    codeElem.style.fontWeight = "bold";
+                                } else {
+                                    codeElem.style.textDecoration = "none";
+                                    codeElem.style.color = "#444";
+                                    avisoElem.textContent = "(Código listo. Podrás retirar cuando el estado sea LISTO PARA RECOGER)";
+                                    avisoElem.style.color = "#C89B1F";
+                                }
+                            }
+                        })
+                        .catch(err => console.error("Error al obtener recojo:", err));
+                }
 
                 // Consultar los ítems asociados desde el PedidosItemsController
                 return fetch(`${API_URL}/pedidoitems/pedido/${pedidoId}`);
@@ -262,11 +296,11 @@
     }
 
     // Generador de la línea de tiempo de estados (RF-CL-27 Criteria)
-    function construirStepperVisualLogistico(estadoActual) {
+    function construirStepperVisualLogistico(estadoActual, tipoEntrega) {
         const stepperWrap = document.getElementById("js-tracking-stepper");
         
         // Flujo estándar definido en los enums del backend Spring Boot
-        const estadosFlujo = ["PENDIENTE", "CONFIRMADO", "PROCESANDO", "ENVIADO", "ENTREGADO"];
+        const estadosFlujo = ["PENDIENTE", "CONFIRMADO", "EN_PREPARACION", "EN_CAMINO", "ENTREGADO"];
         
         // Si el pedido está CANCELADO, mostramos un flujo especial de alerta
         if (estadoActual === "CANCELADO") {
@@ -284,9 +318,10 @@
 
         // Obtener índice del estado actual para encender los anteriores
         let indiceActual = estadosFlujo.indexOf(estadoActual);
-        if (indiceActual === -1 && estadoActual === "RECOGIDO") {
-            // RECOGIDO equivale al estado terminal de ciclo de vida de la orden en tienda física
-            indiceActual = 4; 
+        if (estadoActual === "LISTO_PARA_RECOGER") {
+            indiceActual = 3;
+        } else if (estadoActual === "RECOGIDO") {
+            indiceActual = 4;
         }
 
         stepperWrap.innerHTML = "";
@@ -296,18 +331,21 @@
             else if (index === indiceActual) claseStep += " step-node--active";
             
             // Traducción visual amigable
-            const nombresAmigables = {
-                "PENDIENTE": "Registrado",
-                "CONFIRMADO": "Confirmado",
-                "PROCESANDO": "En Preparación",
-                "ENVIADO": "En Camino ✈",
-                "ENTREGADO": "Entregado ♡"
-            };
+            let label = "";
+            if (est === "PENDIENTE") label = "Registrado";
+            else if (est === "CONFIRMADO") label = "Confirmado";
+            else if (est === "EN_PREPARACION") label = "En Preparación";
+            else if (est === "EN_CAMINO") {
+                label = tipoEntrega === "DELIVERY" ? "En Camino ✈" : "Listo para Retirar 🏪";
+            }
+            else if (est === "ENTREGADO") {
+                label = tipoEntrega === "DELIVERY" ? "Entregado ♡" : "Recogido ✓";
+            }
 
             const nodeHtml = `
                 <div class="${claseStep}">
                    <div class="step-node__circle">${index < indiceActual ? '✓' : index + 1}</div>
-                   <div class="step-node__label">${nombresAmigables[est] || est}</div>
+                   <div class="step-node__label">${label}</div>
                 </div>
             `;
             stepperWrap.insertAdjacentHTML("beforeend", nodeHtml);

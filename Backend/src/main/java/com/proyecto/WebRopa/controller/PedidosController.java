@@ -24,6 +24,7 @@ public class PedidosController {
     private final IPagosService servicePagos;
     private final IBoletasService serviceBoletas;
     private final IRecojoTiendaService serviceRecojoTienda;
+    private final IEnvioDomicilioService serviceEnvio;
 
     public PedidosController(
             IPedidosService servicePedidos,
@@ -35,7 +36,8 @@ public class PedidosController {
             IVariantesService serviceVariantes,
             IPagosService servicePagos,
             IBoletasService serviceBoletas,
-            IRecojoTiendaService serviceRecojoTienda) {
+            IRecojoTiendaService serviceRecojoTienda,
+            IEnvioDomicilioService serviceEnvio) {
         this.servicePedidos = servicePedidos;
         this.servicePedidosItems = servicePedidosItems;
         this.serviceCarritos = serviceCarritos;
@@ -46,6 +48,7 @@ public class PedidosController {
         this.servicePagos = servicePagos;
         this.serviceBoletas = serviceBoletas;
         this.serviceRecojoTienda = serviceRecojoTienda;
+        this.serviceEnvio = serviceEnvio;
     }
 
     // ── Ver todos los pedidos (admin) ────────────────
@@ -160,7 +163,7 @@ public class PedidosController {
         }
 
         // 7. Calcular total
-        double total = subtotal - descuento;
+        double total = subtotal - descuento + (pedido.getCosto_envio() != null ? pedido.getCosto_envio() : 0.0);
 
         // 8. Crear el pedido
         pedido.setSubtotal(subtotal);
@@ -279,12 +282,20 @@ public class PedidosController {
                 generarBoleta(existente);
             }
             
-            List<RecojoTienda> recojosExistentes = serviceRecojoTienda.buscarTodos().stream()
-                .filter(r -> r.getPedido().getId().equals(existente.getId()))
-                .collect(Collectors.toList());
-                
-            if (recojosExistentes.isEmpty()) {
-                generarRecojo(existente);
+            if (existente.getTipo_entrega() == Pedidos.TipoEntrega.DELIVERY) {
+                List<EnvioDomicilio> enviosExistentes = serviceEnvio.buscarTodos().stream()
+                    .filter(e -> e.getPedido().getId().equals(existente.getId()))
+                    .collect(Collectors.toList());
+                if (enviosExistentes.isEmpty()) {
+                    generarEnvioDomicilio(existente);
+                }
+            } else {
+                List<RecojoTienda> recojosExistentes = serviceRecojoTienda.buscarTodos().stream()
+                    .filter(r -> r.getPedido().getId().equals(existente.getId()))
+                    .collect(Collectors.toList());
+                if (recojosExistentes.isEmpty()) {
+                    generarRecojo(existente);
+                }
             }
         }
 
@@ -318,6 +329,21 @@ public class PedidosController {
         recojo.setCodigo_recojo("REC-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase());
         serviceRecojoTienda.guardar(recojo);
         return recojo;
+    }
+
+    private EnvioDomicilio generarEnvioDomicilio(Pedidos pedido) {
+        EnvioDomicilio envio = new EnvioDomicilio();
+        envio.setPedido(pedido);
+        envio.setDireccion(pedido.getDireccion_envio());
+        envio.setDistrito(pedido.getDistrito_envio());
+        envio.setReferencia(pedido.getReferencia_envio());
+        envio.setNombreDestinatario(pedido.getDestinatario_nombre());
+        envio.setTelefonoContacto(pedido.getDestinatario_telefono());
+        envio.setCostoEnvio(pedido.getCosto_envio());
+        envio.setEstado(EnvioDomicilio.Estado.PENDIENTE);
+        envio.setCodigo_seguimiento("ENV-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        serviceEnvio.guardar(envio);
+        return envio;
     }
 
     // ── Eliminar pedido (Borrado lógico y liberar stock) ─────────────

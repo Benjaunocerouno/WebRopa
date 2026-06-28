@@ -93,6 +93,15 @@
         <svg viewBox="0 0 24 24" fill="none"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Recojo en Tienda
       </button>
+      <button class="menu-item" data-panel="envios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+        Envíos a Domicilio
+      </button>
       <button class="menu-item" data-panel="boletas">
         <svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Boletas
@@ -152,30 +161,57 @@
           <h2>Recojos en Tienda</h2>
           <p class="descripcion">Gestiona los pedidos que los clientes pasarán a recoger por el local.</p>
         </div>
+        <button class="btn btn-secundario btn-mini" onclick="cargarRecojos()">↻ Refrescar</button>
       </div>
       <div class="tarjeta">
         <div class="tarjeta-titulo">
-          <h3>Entregas Pendientes (Prototipo)</h3>
+          <h3>Entregas Pendientes</h3>
         </div>
-        <table>
-          <thead><tr><th>ID Pedido</th><th>Cliente</th><th>DNI/Doc</th><th>Fecha de Recojo Programada</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>
+        <table style="width:100%;">
+          <thead>
             <tr>
-              <td>1042</td>
-              <td>María González</td>
-              <td>76543210</td>
-              <td>27/06/2026 - 15:00</td>
-              <td><span class="pildora estado-ok">Listo para Recoger</span></td>
-              <td><button class="btn btn-primario btn-mini">Marcar Entregado</button></td>
+              <th>ID Pedido</th>
+              <th>Cliente</th>
+              <th>Código Recojo</th>
+              <th>Fecha Disponible</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
+          </thead>
+          <tbody id="tabla-recojos">
+            <tr><td colspan="6" style="text-align:center; padding: 20px;">Cargando recojos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ENVÍOS A DOMICILIO -->
+    <section class="panel" id="panel-envios">
+      <div class="topbar">
+        <div>
+          <h2>Envíos a Domicilio</h2>
+          <p class="descripcion">Administra y despacha las piezas que deben llegar al hogar de los clientes.</p>
+        </div>
+        <button class="btn btn-secundario btn-mini" onclick="cargarEnvios()">↻ Refrescar</button>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Logística de Envíos</h3>
+        </div>
+        <table style="width: 100%;">
+          <thead>
             <tr>
-              <td>1045</td>
-              <td>Carlos Pérez</td>
-              <td>12345678</td>
-              <td>28/06/2026 - 10:00</td>
-              <td><span class="pildora estado-pendiente">En Preparación</span></td>
-              <td><button class="btn btn-secundario btn-mini">Notificar Listo</button></td>
+              <th>ID Pedido</th>
+              <th>Cliente / Teléfono</th>
+              <th>Dirección / Distrito / Ref</th>
+              <th>Costo Envío</th>
+              <th>Código Seguimiento</th>
+              <th>Estado Envío</th>
+              <th>Acciones</th>
             </tr>
+          </thead>
+          <tbody id="tabla-envios">
+            <tr><td colspan="7" style="text-align:center; padding: 20px;">Cargando envíos...</td></tr>
           </tbody>
         </table>
       </div>
@@ -402,6 +438,8 @@ document.getElementById('menu-navegacion').addEventListener('click', (e) => {
   if(btn.dataset.panel === 'categorias') cargarCategorias();
   if(btn.dataset.panel === 'pedidos') cargarPedidos();
   if(btn.dataset.panel === 'cupones') cargarCupones();
+  if(btn.dataset.panel === 'recojo') cargarRecojos();
+  if(btn.dataset.panel === 'envios') cargarEnvios();
 });
 
 async function aplicarUsuario(datos) {
@@ -1036,6 +1074,199 @@ async function eliminarCupon(id, codigo) {
     cargarCupones();
   } catch (e) {
     showToast(e.message, true);
+  }
+}
+
+/* ==========================================================
+   RECOJOS EN TIENDA (REAL)
+   ========================================================== */
+async function cargarRecojos() {
+  const tbody = document.getElementById('tabla-recojos');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Cargando recojos...</td></tr>';
+  try {
+    const recojos = await fetchAuth('/recojotienda');
+    if (recojos.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No hay recojos registrados.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = recojos.map(r => {
+      const p = r.pedido;
+      const cliNombre = p && p.usuario ? p.usuario.nombre : 'Cliente';
+      const cliCorreo = p && p.usuario ? p.usuario.correo : '';
+      const codigo = r.codigo_recojo;
+      const fechaDisp = r.fecha_disponible || 'No asignada';
+      const estado = r.estado;
+      
+      let pildoraClase = 'estado-pendiente';
+      if (estado === 'LISTO_PARA_RECOGER') pildoraClase = 'rol-vendedor';
+      if (estado === 'RECOGIDO') pildoraClase = 'estado-ok';
+      if (estado === 'EXPIRADO') pildoraClase = 'estado-fallo';
+
+      let accionBtn = '';
+      if (estado === 'PENDIENTE') {
+        accionBtn = `<button class="btn btn-primario btn-mini" onclick="actualizarRecojo(${r.id}, 'LISTO_PARA_RECOGER')">Listo para Recoger</button>`;
+      } else if (estado === 'LISTO_PARA_RECOGER') {
+        accionBtn = `<button class="btn btn-ok btn-mini" style="background:var(--sage); color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer;" onclick="actualizarRecojo(${r.id}, 'RECOGIDO')">Entregar al Cliente</button>`;
+      } else {
+        accionBtn = `<span style="font-size:0.8rem; color:var(--cafe); opacity:0.7;">Sin acciones</span>`;
+      }
+
+      return `
+        <tr>
+          <td>${p ? p.id : '-'}</td>
+          <td>
+            <strong>${cliNombre}</strong><br>
+            <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${cliCorreo}</span>
+          </td>
+          <td><code class="mono" style="font-weight:600;">${codigo}</code></td>
+          <td>${fechaDisp}</td>
+          <td><span class="pildora ${pildoraClase}">${estado}</span></td>
+          <td>${accionBtn}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function actualizarRecojo(recojoId, nuevoEstado) {
+  try {
+    const recojo = await fetchAuth(`/recojotienda/${recojoId}`);
+    recojo.estado = nuevoEstado;
+    
+    if (nuevoEstado === 'RECOGIDO') {
+      const session = getSessionData();
+      const empId = session?.id || session?.clientId || 1;
+      recojo.atendido_por = { id: parseInt(empId) };
+      recojo.fecha_recogido = new Date().toISOString();
+    } else if (nuevoEstado === 'LISTO_PARA_RECOGER') {
+      recojo.fecha_disponible = new Date().toISOString();
+    }
+    
+    await fetchAuth('/recojotienda', 'PUT', recojo);
+    
+    // También actualizar el estado del Pedido
+    const p = recojo.pedido;
+    if (p) {
+      const pedido = await fetchAuth(`/pedidos/${p.id}`);
+      pedido.estado = nuevoEstado;
+      await fetchAuth('/pedidos', 'PUT', pedido);
+    }
+    
+    showToast(`Recojo actualizado a ${nuevoEstado}`);
+    cargarRecojos();
+  } catch (err) {
+    showToast(`Error: ${err.message}`, true);
+  }
+}
+
+/* ==========================================================
+   ENVÍOS A DOMICILIO (REAL)
+   ========================================================== */
+async function cargarEnvios() {
+  const tbody = document.getElementById('tabla-envios');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Cargando envíos...</td></tr>';
+  try {
+    const envios = await fetchAuth('/enviodomicilio');
+    if (envios.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No hay envíos registrados.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = envios.map(e => {
+      const p = e.pedido;
+      const cliNombre = e.nombreDestinatario || (p && p.usuario ? p.usuario.nombre : 'Cliente');
+      const cliTelefono = e.telefonoContacto || (p && p.usuario ? p.usuario.telefono : '');
+      const direccion = e.direccion;
+      const distrito = e.distrito;
+      const referencia = e.referencia || '-';
+      const costo = parseFloat(e.costoEnvio || 0).toFixed(2);
+      const codigo = e.codigo_seguimiento;
+      const estado = e.estado;
+      
+      let pildoraClase = 'estado-pendiente';
+      if (estado === 'PREPARADO') pildoraClase = 'rol-vendedor';
+      if (estado === 'EN_CAMINO') pildoraClase = 'rol-almacenero';
+      if (estado === 'ENTREGADO') pildoraClase = 'estado-ok';
+      if (estado === 'DEVUELTO') pildoraClase = 'estado-fallo';
+
+      let accionBtn = '';
+      if (estado === 'PENDIENTE') {
+        accionBtn = `<button class="btn btn-secundario btn-mini" onclick="actualizarEnvio(${e.id}, 'PREPARADO')">Marcar Preparado</button>`;
+      } else if (estado === 'PREPARADO') {
+        accionBtn = `<button class="btn btn-primario btn-mini" onclick="actualizarEnvio(${e.id}, 'EN_CAMINO')">Despachar (En Camino)</button>`;
+      } else if (estado === 'EN_CAMINO') {
+        accionBtn = `<button class="btn btn-ok btn-mini" style="background:var(--sage); color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer;" onclick="actualizarEnvio(${e.id}, 'ENTREGADO')">Marcar Entregado</button>`;
+      } else {
+        accionBtn = `<span style="font-size:0.8rem; color:var(--cafe); opacity:0.7;">Entregado</span>`;
+      }
+
+      return `
+        <tr>
+          <td>${p ? p.id : '-'}</td>
+          <td>
+            <strong>${cliNombre}</strong><br>
+            <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${cliTelefono}</span>
+          </td>
+          <td>
+            <span style="font-size:0.85rem;"><strong>Dirección:</strong> ${direccion}</span><br>
+            <span style="font-size:0.8rem;"><strong>Distrito:</strong> ${distrito}</span><br>
+            <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8;"><strong>Ref:</strong> ${referencia}</span>
+          </td>
+          <td style="font-weight:600;">S/. ${costo}</td>
+          <td><code class="mono" style="font-weight:600;">${codigo}</code></td>
+          <td><span class="pildora ${pildoraClase}">${estado}</span></td>
+          <td>${accionBtn}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function actualizarEnvio(envioId, nuevoEstado) {
+  try {
+    const session = getSessionData();
+    const empId = session?.id || session?.clientId || 1;
+    
+    const payload = {
+      id: envioId,
+      estado: nuevoEstado,
+      despachado_por: { id: parseInt(empId) }
+    };
+    
+    if (nuevoEstado === 'EN_CAMINO') {
+      payload.fecha_envio = new Date().toISOString();
+    } else if (nuevoEstado === 'ENTREGADO') {
+      payload.fecha_entrega = new Date().toISOString();
+    }
+    
+    const envio = await fetchAuth('/enviodomicilio', 'PUT', payload);
+    
+    // También actualizar el estado del Pedido
+    const p = envio.pedido;
+    if (p) {
+      const pedido = await fetchAuth(`/pedidos/${p.id}`);
+      // Mapear los estados
+      if (nuevoEstado === 'PREPARADO') {
+        pedido.estado = 'EN_PREPARACION';
+      } else if (nuevoEstado === 'EN_CAMINO') {
+        pedido.estado = 'EN_CAMINO';
+      } else if (nuevoEstado === 'ENTREGADO') {
+        pedido.estado = 'ENTREGADO';
+      }
+      await fetchAuth('/pedidos', 'PUT', pedido);
+    }
+    
+    showToast(`Envío actualizado a ${nuevoEstado}`);
+    cargarEnvios();
+  } catch (err) {
+    showToast(`Error: ${err.message}`, true);
   }
 }
 </script>

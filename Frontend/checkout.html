@@ -66,11 +66,24 @@
 
         <section class="checkout-panel">
           <h2 class="panel-title">2. Método de Entrega</h2>
-          <div class="delivery-details-panel"
-            style="display: block; border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; background: #fafafa;">
+          
+          <div class="delivery-method-selector" style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+            <div id="method-recojo" class="method-card active" onclick="seleccionarMetodoEntrega('RECOJO_TIENDA')" style="flex: 1; border: 2px solid var(--color-primary); border-radius: 8px; padding: 1rem; cursor: pointer; background: #fff; transition: all 0.3s ease;">
+              <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏪</div>
+              <strong style="display: block; font-family: var(--font-serif); color: var(--color-primary);">Recojo en Tienda</strong>
+              <span style="font-size: 0.85rem; color: var(--color-muted);">Gratis</span>
+            </div>
+            <div id="method-delivery" class="method-card" onclick="seleccionarMetodoEntrega('DELIVERY')" style="flex: 1; border: 1px solid var(--color-border); border-radius: 8px; padding: 1rem; cursor: pointer; background: #fff; transition: all 0.3s ease;">
+              <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🚚</div>
+              <strong style="display: block; font-family: var(--font-serif); color: var(--color-primary);">Envío a Domicilio</strong>
+              <span style="font-size: 0.85rem; color: var(--color-muted);">S/. 15.00</span>
+            </div>
+          </div>
+
+          <!-- RECOJO DETALLES -->
+          <div id="panel-recojo-detalles" class="delivery-details-panel" style="display: block; border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; background: #fafafa; margin-bottom: 1rem;">
             <div class="store-info-box">
-              <h3 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif); color: var(--color-primary);">Tienda
-                Seleccionada (Recojo Físico)</h3>
+              <h3 style="margin: 0 0 0.5rem 0; font-family: var(--font-serif); color: var(--color-primary);">Tienda Seleccionada (Recojo Físico)</h3>
               <p style="margin: 0; color: var(--color-muted); font-size: 0.95rem; line-height: 1.5;">
                 <strong>Dirección:</strong> Jr. Los Gatos 123, Tarapoto, San Martín<br>
                 <strong>Horario de Atención:</strong> Lunes a Sábado de 09:00 AM a 08:00 PM<br>
@@ -78,6 +91,43 @@
               </p>
             </div>
           </div>
+
+          <!-- DELIVERY FORM -->
+          <div id="panel-delivery-formulario" style="display: none; border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; background: #fafafa; margin-bottom: 1rem;">
+            <h3 style="margin: 0 0 1rem 0; font-family: var(--font-serif); color: var(--color-primary);">Datos de Envío</h3>
+            <div class="form-row form-row--2cols" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label for="envio-destinatario">Nombre Destinatario</label>
+                <input type="text" id="envio-destinatario" class="form-input" placeholder="Nombre completo" />
+              </div>
+              <div class="form-group">
+                <label for="envio-telefono">Teléfono Contacto</label>
+                <input type="text" id="envio-telefono" class="form-input" placeholder="Ej: 999888777" />
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label for="envio-direccion">Dirección Completa (Calle, Nro, Dpto/Mza)</label>
+                <input type="text" id="envio-direccion" class="form-input" placeholder="Av. Principal 123..." />
+              </div>
+            </div>
+            <div class="form-row form-row--2cols">
+              <div class="form-group">
+                <label for="envio-distrito">Distrito</label>
+                <select id="envio-distrito" class="form-input" style="height: 42px; padding: 0 0.75rem; border-radius: 8px; border: 1px solid #e0e0e0; background: #fafafa; width: 100%;">
+                  <option value="Tarapoto">Tarapoto</option>
+                  <option value="Morales">Morales</option>
+                  <option value="Banda de Shilcayo">Banda de Shilcayo</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="envio-referencia">Referencia de ubicación</label>
+                <input type="text" id="envio-referencia" class="form-input" placeholder="Frente al parque, portón marrón..." />
+              </div>
+            </div>
+          </div>
+          
+          <input type="hidden" id="chk-entrega-tipo" value="RECOJO_TIENDA" />
         </section>
 
         <div class="action-container" style="text-align: right; margin-top: 2rem;">
@@ -213,6 +263,14 @@
           document.getElementById('contacto-nombre').value = user.nombre || '';
           document.getElementById('contacto-telefono').value = user.telefono || '';
           document.getElementById('contacto-email').value = user.correo || '';
+          
+          // Auto-llenar campos de despacho
+          if (document.getElementById('envio-destinatario')) {
+            document.getElementById('envio-destinatario').value = user.nombre || '';
+          }
+          if (document.getElementById('envio-telefono')) {
+            document.getElementById('envio-telefono').value = user.telefono || '';
+          }
         })
         .catch(() => {
           localStorage.removeItem('webropa_user');
@@ -353,16 +411,50 @@
                    </div>
                    <div class="mini-item__price">S/. ${filaTotal.toFixed(2)}</div>
                 </div>
-            `;
         wrap.insertAdjacentHTML("beforeend", html);
       });
 
       ejecutarRecalculoMontosTransaccional();
     }
 
-    // RF-CL-22: Selección de Método de Despacho (Removido, solo recojo)
-    function alternarMetodoEntrega() {
-      // Obsoleto
+    // Selección de método de entrega (Recojo o Delivery)
+    function seleccionarMetodoEntrega(metodo) {
+      document.getElementById("chk-entrega-tipo").value = metodo;
+      
+      const cardRecojo = document.getElementById("method-recojo");
+      const cardDelivery = document.getElementById("method-delivery");
+      const panelRecojo = document.getElementById("panel-recojo-detalles");
+      const panelDelivery = document.getElementById("panel-delivery-formulario");
+      
+      if (metodo === 'DELIVERY') {
+        cardRecojo.classList.remove("active");
+        cardRecojo.style.borderColor = "var(--color-border)";
+        cardRecojo.style.borderWidth = "1px";
+        
+        cardDelivery.classList.add("active");
+        cardDelivery.style.borderColor = "var(--color-primary)";
+        cardDelivery.style.borderWidth = "2px";
+        
+        panelRecojo.style.display = "none";
+        panelDelivery.style.display = "block";
+        
+        costoEnvioCalculado = 15.00;
+      } else {
+        cardDelivery.classList.remove("active");
+        cardDelivery.style.borderColor = "var(--color-border)";
+        cardDelivery.style.borderWidth = "1px";
+        
+        cardRecojo.classList.add("active");
+        cardRecojo.style.borderColor = "var(--color-primary)";
+        cardRecojo.style.borderWidth = "2px";
+        
+        panelDelivery.style.display = "none";
+        panelRecojo.style.display = "block";
+        
+        costoEnvioCalculado = 0.00;
+      }
+      
+      ejecutarRecalculoMontosTransaccional();
     }
 
     // RF-CL-24: Aplicación y validación de Cupones desde la Base de Datos
@@ -439,12 +531,39 @@
       btn.disabled = true;
       btn.textContent = "Reservando Stock...";
 
+      const tipoEntrega = document.getElementById("chk-entrega-tipo").value;
+
       // Preparar objeto orden conforme espera PedidosController
       const datosPedido = {
         usuario: { id: USUARIO_ID },
         cupon: cuponSeleccionadoObjeto ? { codigo: cuponSeleccionadoObjeto.codigo } : null,
-        notas: "Recojo en tienda"
+        tipo_entrega: tipoEntrega,
+        costo_envio: costoEnvioCalculado
       };
+
+      if (tipoEntrega === 'DELIVERY') {
+        const direccion = document.getElementById("envio-direccion").value.trim();
+        const distrito = document.getElementById("envio-distrito").value.trim();
+        const referencia = document.getElementById("envio-referencia").value.trim();
+        const destinatario = document.getElementById("envio-destinatario").value.trim();
+        const telefono = document.getElementById("envio-telefono").value.trim();
+
+        if (!direccion || !distrito || !destinatario || !telefono) {
+          alert("Por favor completa los campos obligatorios de envío: Dirección, Distrito, Destinatario y Teléfono.");
+          btn.disabled = false;
+          btn.textContent = "Confirmar Compra ✦";
+          return;
+        }
+
+        datosPedido.direccion_envio = direccion;
+        datosPedido.distrito_envio = distrito;
+        datosPedido.referencia_envio = referencia;
+        datosPedido.destinatario_nombre = destinatario;
+        datosPedido.destinatario_telefono = telefono;
+        datosPedido.notas = "Envío a domicilio";
+      } else {
+        datosPedido.notas = "Recojo en tienda";
+      }
 
       // Paso A: Crear pedido en Spring Boot (Este endpoint descuenta stock temporalmente)
       fetch(`${API_URL}/pedidos`, {
