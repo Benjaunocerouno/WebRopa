@@ -54,6 +54,7 @@ public class Pedidos {
         EN_PREPARACION,
         LISTO_PARA_RECOGER,
         RECOGIDO,
+        NO_RECOGIDO,
         CANCELADO
     }
 

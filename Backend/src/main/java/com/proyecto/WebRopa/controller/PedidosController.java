@@ -1,5 +1,6 @@
 package com.proyecto.WebRopa.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +25,7 @@ public class PedidosController {
     private final IPagosService servicePagos;
     private final IBoletasService serviceBoletas;
     private final IRecojoTiendaService serviceRecojoTienda;
+    private final IDevolucionesService serviceDevolucion;
 
     public PedidosController(
             IPedidosService servicePedidos,
@@ -35,7 +37,8 @@ public class PedidosController {
             IVariantesService serviceVariantes,
             IPagosService servicePagos,
             IBoletasService serviceBoletas,
-            IRecojoTiendaService serviceRecojoTienda) {
+            IRecojoTiendaService serviceRecojoTienda,
+            IDevolucionesService serviceDevolucion) {
         this.servicePedidos = servicePedidos;
         this.servicePedidosItems = servicePedidosItems;
         this.serviceCarritos = serviceCarritos;
@@ -46,6 +49,7 @@ public class PedidosController {
         this.servicePagos = servicePagos;
         this.serviceBoletas = serviceBoletas;
         this.serviceRecojoTienda = serviceRecojoTienda;
+        this.serviceDevolucion = serviceDevolucion;
     }
 
     // ── Ver todos los pedidos (admin) ────────────────
@@ -219,7 +223,7 @@ public class PedidosController {
 
     // ── Modificar pedido (admin) ─────────────────────
     @PutMapping("/pedidos")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('PEDIDOS_GESTIONAR')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('PEDIDOS_GESTIONAR') or hasAuthority('ADMIN')")
     public ResponseEntity<?> modificarPedido(@RequestBody Pedidos pedidoUpdate) {
         if (pedidoUpdate.getId() == null) {
             return ResponseEntity.badRequest().body("Debe especificar el id del pedido");
@@ -232,64 +236,91 @@ public class PedidosController {
 
         Pedidos existente = existenteOpt.get();
 
-        // Lógica: No permitir modificar un pedido que ya terminó su ciclo de vida
-        if (existente.getEstado() == Pedidos.Estado.CANCELADO || existente.getEstado() == Pedidos.Estado.RECOGIDO) {
-            return ResponseEntity.badRequest()
-                .body("No se puede modificar un pedido que ya se encuentra en estado " + existente.getEstado());
-        }
-
-        // Actualización parcial (Solo actualizamos lo que sea seguro editar)
-        boolean estadoAvanzado = false;
-        if (pedidoUpdate.getEstado() != null) {
-            Pedidos.Estado nuevoEstado = pedidoUpdate.getEstado();
-            existente.setEstado(nuevoEstado);
-            
-            // Si el admin avanza el estado a CONFIRMADO, EN_PREPARACION, LISTO_PARA_RECOGER, o RECOGIDO
-            // asumimos que el pago ha sido validado exitosamente.
-            if (!existente.isPago_confirmado() && 
-                (nuevoEstado == Pedidos.Estado.CONFIRMADO || 
-                 nuevoEstado == Pedidos.Estado.EN_PREPARACION || 
-                 nuevoEstado == Pedidos.Estado.LISTO_PARA_RECOGER || 
-                 nuevoEstado == Pedidos.Estado.RECOGIDO)) {
-                estadoAvanzado = true;
-            }
-        }
         if (pedidoUpdate.getNotas() != null) {
             existente.setNotas(pedidoUpdate.getNotas().trim());
         }
 
-        if (estadoAvanzado) {
-            existente.setPago_confirmado(true);
-            
-            // Buscar el pago pendiente asociado y aprobarlo
-            List<Pagos> pagosPedido = servicePagos.buscarPorPedidoId(existente.getId());
-            for (Pagos p : pagosPedido) {
-                if (p.getEstado() == Pagos.Estado.PENDIENTE) {
-                    p.setEstado(Pagos.Estado.APROBADO);
-                    servicePagos.guardar(p);
-                }
+        if (pedidoUpdate.getEstado() != null && !pedidoUpdate.getEstado().equals(existente.getEstado())) {
+            Pedidos.Estado actual = existente.getEstado();
+            Pedidos.Estado nuevo  = pedidoUpdate.getEstado();
+
+            if (!esTransicionValida(actual, nuevo)) {
+                return ResponseEntity.badRequest()
+                    .body("Transición de estado inválida: " + actual + " → " + nuevo);
             }
 
-            // Generar Boleta y Código de Recojo (si no existen ya)
-            List<Boletas> boletasExistentes = serviceBoletas.buscarTodos().stream()
-                .filter(b -> b.getPedido().getId().equals(existente.getId()))
-                .collect(Collectors.toList());
-                
-            if (boletasExistentes.isEmpty()) {
-                generarBoleta(existente);
+            // Cancelar siempre es permitido; cualquier otro avance requiere pago confirmado
+            if (nuevo != Pedidos.Estado.CANCELADO && !existente.isPago_confirmado()) {
+                return ResponseEntity.badRequest()
+                    .body("No se puede avanzar el estado: el pago del pedido no ha sido confirmado");
             }
-            
-            List<RecojoTienda> recojosExistentes = serviceRecojoTienda.buscarTodos().stream()
-                .filter(r -> r.getPedido().getId().equals(existente.getId()))
-                .collect(Collectors.toList());
-                
-            if (recojosExistentes.isEmpty()) {
-                generarRecojo(existente);
+
+            existente.setEstado(nuevo);
+
+            if (nuevo == Pedidos.Estado.CONFIRMADO) {
+                // Aprobar pago pendiente si existe
+                for (Pagos p : servicePagos.buscarPorPedidoId(existente.getId())) {
+                    if (p.getEstado() == Pagos.Estado.PENDIENTE) {
+                        p.setEstado(Pagos.Estado.APROBADO);
+                        servicePagos.guardar(p);
+                    }
+                }
+                // Generar boleta si no existe
+                boolean tieneBoleta = serviceBoletas.buscarTodos().stream()
+                    .anyMatch(b -> b.getPedido().getId().equals(existente.getId()));
+                if (!tieneBoleta) generarBoleta(existente);
+                // Generar recojo si no existe
+                if (serviceRecojoTienda.buscarPorPedidoId(existente.getId()).isEmpty()) {
+                    generarRecojo(existente);
+                }
+
+            } else if (nuevo == Pedidos.Estado.RECOGIDO) {
+                // Registrar fecha y hora exacta del recojo en la tabla recojo_tienda
+                serviceRecojoTienda.buscarPorPedidoId(existente.getId()).ifPresent(r -> {
+                    r.setFecha_recogido(LocalDateTime.now());
+                    serviceRecojoTienda.modificar(r);
+                });
+
+            } else if (nuevo == Pedidos.Estado.CANCELADO) {
+                // Liberar stock de todas las variantes del pedido
+                List<PedidosItems> items = servicePedidosItems.buscarPorPedidoId(existente.getId());
+                for (PedidosItems item : items) {
+                    Variantes variante = item.getVariante();
+                    if (variante != null) {
+                        variante.setStock(variante.getStock() + item.getCantidad());
+                        serviceVariantes.guardar(variante);
+                    }
+                }
+                // Si el pago ya estaba aprobado, crear solicitud de devolución por cada item
+                if (existente.isPago_confirmado()) {
+                    for (PedidosItems item : items) {
+                        Devoluciones dev = new Devoluciones();
+                        dev.setPedido(existente);
+                        dev.setPedidoItem(item);
+                        dev.setMotivo(Devoluciones.Motivo.OTRO);
+                        dev.setDescripcion("Pedido cancelado por administrador");
+                        dev.setCantidad_devuelta(item.getCantidad());
+                        dev.setMonto_reembolso(item.getPrecio_unitario() * item.getCantidad());
+                        serviceDevolucion.guardar(dev);
+                    }
+                }
             }
         }
 
         servicePedidos.modificar(existente);
         return ResponseEntity.ok(existente);
+    }
+
+    // ── Máquina de estados: transiciones válidas ─────
+    private static boolean esTransicionValida(Pedidos.Estado actual, Pedidos.Estado nuevo) {
+        return switch (actual) {
+            case PENDIENTE          -> nuevo == Pedidos.Estado.CONFIRMADO        || nuevo == Pedidos.Estado.CANCELADO;
+            case CONFIRMADO         -> nuevo == Pedidos.Estado.EN_PREPARACION    || nuevo == Pedidos.Estado.CANCELADO;
+            case EN_PREPARACION     -> nuevo == Pedidos.Estado.LISTO_PARA_RECOGER || nuevo == Pedidos.Estado.CANCELADO;
+            case LISTO_PARA_RECOGER -> nuevo == Pedidos.Estado.RECOGIDO          || nuevo == Pedidos.Estado.NO_RECOGIDO;
+            case NO_RECOGIDO        -> nuevo == Pedidos.Estado.LISTO_PARA_RECOGER || nuevo == Pedidos.Estado.CANCELADO;
+            case RECOGIDO, CANCELADO -> false;
+        };
     }
 
     // ── Helper Methods ───────────────────────────────
@@ -314,7 +345,6 @@ public class PedidosController {
     private RecojoTienda generarRecojo(Pedidos pedido) {
         RecojoTienda recojo = new RecojoTienda();
         recojo.setPedido(pedido);
-        recojo.setEstado(RecojoTienda.Estado.PENDIENTE);
         recojo.setCodigo_recojo("REC-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase());
         serviceRecojoTienda.guardar(recojo);
         return recojo;

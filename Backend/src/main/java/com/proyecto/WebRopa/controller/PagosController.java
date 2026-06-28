@@ -170,7 +170,6 @@ public class PagosController {
     private RecojoTienda generarRecojo(Pedidos pedido) {
         RecojoTienda recojo = new RecojoTienda();
         recojo.setPedido(pedido);
-        recojo.setEstado(RecojoTienda.Estado.PENDIENTE);
         recojo.setCodigo_recojo("REC-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
         serviceRecojoTienda.guardar(recojo);
         return recojo;

@@ -379,8 +379,11 @@ async function fetchAuth(endpoint, method='GET', body=null) {
   const res = await fetch(API_URL + endpoint, opts);
   if(!res.ok) {
     let errText = "Error en petición";
-    try { const eJson = await res.json(); errText = eJson.message || eJson.error || errText; }
-    catch { errText = await res.text() || errText; }
+    try {
+      const rawText = await res.text();
+      try { const eJson = JSON.parse(rawText); errText = eJson.message || eJson.error || rawText || errText; }
+      catch { errText = rawText || errText; }
+    } catch {}
     throw new Error(errText);
   }
   if(method === 'GET' || res.headers.get('content-type')?.includes('json')) return await res.json();
@@ -821,12 +824,21 @@ async function cargarPedidos() {
         ? `<span class="pildora estado-ok">Confirmado</span>`
         : `<span class="pildora estado-fallo">Pendiente</span>`;
       
-      const estados = ['PENDIENTE', 'CONFIRMADO', 'EN_PREPARACION', 'LISTO_PARA_RECOGER', 'RECOGIDO', 'CANCELADO'];
-      const selectEstado = `
-        <select onchange="cambiarEstadoPedido(${p.id}, this.value)" style="padding:4px 8px; font-size:0.8rem; border-radius:8px; border:1px solid var(--borde-trazo); background:var(--crema);">
-          ${estados.map(est => `<option value="${est}" ${p.estado === est ? 'selected' : ''}>${est}</option>`).join('')}
-        </select>
-      `;
+      const etiquetasEstado = {
+        'PENDIENTE':          'Pendiente',
+        'CONFIRMADO':         'Confirmado',
+        'EN_PREPARACION':     'En preparación',
+        'LISTO_PARA_RECOGER': 'Listo para recoger',
+        'RECOGIDO':           'Recogido',
+        'NO_RECOGIDO':        'No recogido',
+        'CANCELADO':          'Cancelado'
+      };
+      const estados = Object.keys(etiquetasEstado);
+      const selectEstado = p.pago_confirmado
+        ? `<select onchange="cambiarEstadoPedido(${p.id}, this.value)" onclick="event.stopPropagation()" style="padding:4px 8px; font-size:0.8rem; border-radius:8px; border:1px solid var(--borde-trazo); background:var(--crema);">
+            ${estados.map(est => `<option value="${est}" ${p.estado === est ? 'selected' : ''}>${etiquetasEstado[est]}</option>`).join('')}
+          </select>`
+        : `<span class="pildora estado-pendiente" style="font-size:0.75rem;">${etiquetasEstado[p.estado] || p.estado}</span>`;
 
       return `
         <tr class="fila-principal" onclick="toggleItemsPedido(${p.id})">
@@ -921,9 +933,7 @@ async function toggleItemsPedido(pedidoId) {
 
 async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
   try {
-    const pedido = await fetchAuth(`/pedidos/${pedidoId}`);
-    pedido.estado = nuevoEstado;
-    await fetchAuth('/pedidos', 'PUT', pedido);
+    await fetchAuth('/pedidos', 'PUT', { id: pedidoId, estado: nuevoEstado });
     showToast(`Pedido #${pedidoId} actualizado a ${nuevoEstado}`);
     cargarPedidos();
   } catch (err) {

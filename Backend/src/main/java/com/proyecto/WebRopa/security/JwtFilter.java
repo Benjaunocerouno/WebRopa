@@ -61,6 +61,10 @@ public class JwtFilter extends GenericFilter {
                             authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(p));
                         }
                     }
+                    String rol = claims.get("rol", String.class);
+                    if (rol != null) {
+                        authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(rol));
+                    }
 
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userId, null,
                             authorities);
