@@ -54,12 +54,31 @@ public class Pedidos {
         EN_PREPARACION,
         LISTO_PARA_RECOGER,
         RECOGIDO,
+        EN_CAMINO,
+        ENTREGADO,
+        NO_RECOGIDO,
         CANCELADO
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "empresa_id")
     private Empresas empresa;
+
+    public enum TipoEntrega {
+        RECOJO_TIENDA,
+        DELIVERY
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_entrega")
+    private TipoEntrega tipo_entrega = TipoEntrega.RECOJO_TIENDA;
+
+    private String direccion_envio;
+    private String distrito_envio;
+    private String referencia_envio;
+    private String destinatario_nombre;
+    private String destinatario_telefono;
+    private Double costo_envio = 0.0;
 
     // GETTERS Y SETTERS
 
@@ -145,4 +164,25 @@ public class Pedidos {
 
     public Empresas getEmpresa() { return empresa; }
     public void setEmpresa(Empresas empresa) { this.empresa = empresa; }
+
+    public TipoEntrega getTipo_entrega() { return tipo_entrega; }
+    public void setTipo_entrega(TipoEntrega tipo_entrega) { this.tipo_entrega = tipo_entrega; }
+
+    public String getDireccion_envio() { return direccion_envio; }
+    public void setDireccion_envio(String direccion_envio) { this.direccion_envio = direccion_envio; }
+
+    public String getDistrito_envio() { return distrito_envio; }
+    public void setDistrito_envio(String distrito_envio) { this.distrito_envio = distrito_envio; }
+
+    public String getReferencia_envio() { return referencia_envio; }
+    public void setReferencia_envio(String referencia_envio) { this.referencia_envio = referencia_envio; }
+
+    public String getDestinatario_nombre() { return destinatario_nombre; }
+    public void setDestinatario_nombre(String destinatario_nombre) { this.destinatario_nombre = destinatario_nombre; }
+
+    public String getDestinatario_telefono() { return destinatario_telefono; }
+    public void setDestinatario_telefono(String destinatario_telefono) { this.destinatario_telefono = destinatario_telefono; }
+
+    public Double getCosto_envio() { return costo_envio; }
+    public void setCosto_envio(Double costo_envio) { this.costo_envio = costo_envio; }
 }

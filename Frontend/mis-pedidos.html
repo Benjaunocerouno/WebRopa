@@ -244,42 +244,79 @@
             }
           });
 
-          // Consultar el código de recojo si existe en la base de datos
+          // Consultar el código de recojo o de envío a domicilio
           let recojoHtml = "";
           try {
-            const resRecojo = await fetch(`${CONFIG.API_URL}/recojotienda/pedido/${p.id}`, {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (resRecojo.ok) {
-              const recojoData = await resRecojo.json();
-              if (recojoData && recojoData.codigo_recojo) {
-                let recojoClase = "";
-                let recojoAviso = "";
-                
-                if (recojoData.estado === "RECOGIDO" || p.estado === "RECOGIDO") {
-                  recojoClase = "style='color:#888; text-decoration:line-through;'";
-                  recojoAviso = "<span style='color:#777; font-size:0.8rem; margin-left:8px;'>(Pedido Recogido)</span>";
-                } else if (p.estado === "LISTO_PARA_RECOGER") {
-                  recojoClase = "style='color:var(--color-sage); font-weight:bold;'";
-                  recojoAviso = "<span style='color:var(--color-sage); font-size:0.8rem; margin-left:8px; font-weight:600;'>(¡Listo para retirar en tienda!)</span>";
-                } else {
-                  recojoClase = "style='color:#444;'";
-                  recojoAviso = "<span style='color:#C89B1F; font-size:0.8rem; margin-left:8px;'>(Código listo. Podrás retirar cuando el estado sea LISTO PARA RECOGER)</span>";
-                }
+            if (p.tipo_entrega === "DELIVERY") {
+              const resEnvio = await fetch(`${CONFIG.API_URL}/enviodomicilio/pedido/${p.id}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+              });
+              if (resEnvio.ok) {
+                const envioData = await resEnvio.json();
+                if (envioData && envioData.codigo_seguimiento) {
+                  let envioClase = "";
+                  let envioAviso = "";
+                  
+                  if (envioData.estado === "ENTREGADO" || p.estado === "ENTREGADO") {
+                    envioClase = "style='color:#888; text-decoration:line-through;'";
+                    envioAviso = "<span style='color:#777; font-size:0.8rem; margin-left:8px;'>(Pedido Entregado)</span>";
+                  } else if (p.estado === "EN_CAMINO" || envioData.estado === "EN_CAMINO") {
+                    envioClase = "style='color:var(--color-sage); font-weight:bold;'";
+                    envioAviso = "<span style='color:var(--color-sage); font-size:0.8rem; margin-left:8px; font-weight:600;'>(¡En camino a tu domicilio!)</span>";
+                  } else {
+                    envioClase = "style='color:#444;'";
+                    envioAviso = `<span style='color:#C89B1F; font-size:0.8rem; margin-left:8px;'>(Estado: ${envioData.estado})</span>`;
+                  }
 
-                recojoHtml = `
-                  <div style="background:#f8faf6; border: 1px solid #e9eee6; border-radius:8px; padding:10px 14px; margin: 10px 0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-                    <div>
-                      <strong style="font-size:0.85rem; color:#555;">Código de Recojo en Tienda:</strong>
-                      <code ${recojoClase} style="background:#fff; border:1px solid #d3dbcf; padding:3px 8px; border-radius:4px; font-family:monospace; font-size:0.95rem; margin-left:6px;">${recojoData.codigo_recojo}</code>
-                      ${recojoAviso}
+                  recojoHtml = `
+                    <div style="background:#f4f7f9; border: 1px solid #e2e8f0; border-radius:8px; padding:10px 14px; margin: 10px 0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                      <div style="width: 100%;">
+                        <strong style="font-size:0.85rem; color:#555;">Código de Seguimiento de Envío:</strong>
+                        <code ${envioClase} style="background:#fff; border:1px solid #cbd5e1; padding:3px 8px; border-radius:4px; font-family:monospace; font-size:0.95rem; margin-left:6px;">${envioData.codigo_seguimiento}</code>
+                        ${envioAviso}
+                      </div>
+                      <div style="font-size:0.8rem; color:#4a5568; width:100%; margin-top:4px;">
+                        <strong>Dirección de entrega:</strong> ${envioData.direccion}, ${envioData.distrito}
+                      </div>
                     </div>
-                  </div>
-                `;
+                  `;
+                }
+              }
+            } else {
+              const resRecojo = await fetch(`${CONFIG.API_URL}/recojotienda/pedido/${p.id}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+              });
+              if (resRecojo.ok) {
+                const recojoData = await resRecojo.json();
+                if (recojoData && recojoData.codigo_recojo) {
+                  let recojoClase = "";
+                  let recojoAviso = "";
+                  
+                  if (recojoData.estado === "RECOGIDO" || p.estado === "RECOGIDO") {
+                    recojoClase = "style='color:#888; text-decoration:line-through;'";
+                    recojoAviso = "<span style='color:#777; font-size:0.8rem; margin-left:8px;'>(Pedido Recogido)</span>";
+                  } else if (p.estado === "LISTO_PARA_RECOGER") {
+                    recojoClase = "style='color:var(--color-sage); font-weight:bold;'";
+                    recojoAviso = "<span style='color:var(--color-sage); font-size:0.8rem; margin-left:8px; font-weight:600;'>(¡Listo para retirar en tienda!)</span>";
+                  } else {
+                    recojoClase = "style='color:#444;'";
+                    recojoAviso = "<span style='color:#C89B1F; font-size:0.8rem; margin-left:8px;'>(Código listo. Podrás retirar cuando el estado sea LISTO PARA RECOGER)</span>";
+                  }
+
+                  recojoHtml = `
+                    <div style="background:#f8faf6; border: 1px solid #e9eee6; border-radius:8px; padding:10px 14px; margin: 10px 0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                      <div>
+                        <strong style="font-size:0.85rem; color:#555;">Código de Recojo en Tienda:</strong>
+                        <code ${recojoClase} style="background:#fff; border:1px solid #d3dbcf; padding:3px 8px; border-radius:4px; font-family:monospace; font-size:0.95rem; margin-left:6px;">${recojoData.codigo_recojo}</code>
+                        ${recojoAviso}
+                      </div>
+                    </div>
+                  `;
+                }
               }
             }
           } catch (err) {
-            console.error("Error al consultar recojo:", err);
+            console.error("Error al consultar recojo/envio:", err);
           }
 
           const empresaNom = p.empresa ? (p.empresa.nombre_comercial || p.empresa.razon_social) : 'WebRopa Multi-Tenant';

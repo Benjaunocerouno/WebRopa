@@ -66,10 +66,15 @@
         document.getElementById("rec-total").textContent = `S/. ${tx.pago.monto.toFixed(2)}`;
       }
       
-      // Mostrar código de recojo si está presente
+      // Mostrar código de recojo o de envío a domicilio
       if (tx.recojo && tx.recojo.codigo_recojo) {
         document.getElementById("rec-row-codigo-recojo").style.display = "flex";
+        document.getElementById("rec-row-codigo-recojo").querySelector("strong").textContent = "Código de Recojo en Tienda:";
         document.getElementById("rec-codigo-recojo").textContent = tx.recojo.codigo_recojo;
+      } else if (tx.envio && tx.envio.codigo_seguimiento) {
+        document.getElementById("rec-row-codigo-recojo").style.display = "flex";
+        document.getElementById("rec-row-codigo-recojo").querySelector("strong").textContent = "Código de Seguimiento de Envío:";
+        document.getElementById("rec-codigo-recojo").textContent = tx.envio.codigo_seguimiento;
       }
 
       // Mensaje de éxito dinámico según estado

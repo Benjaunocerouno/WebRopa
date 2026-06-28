@@ -4,13 +4,8 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,8 +16,6 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "recojo_tienda")
-@SQLDelete(sql = "UPDATE recojo_tienda SET estado = 'EXPIRADO' WHERE id = ?")
-@SQLRestriction("estado != 'EXPIRADO'")
 public class RecojoTienda {
 
     @Id
@@ -31,13 +24,6 @@ public class RecojoTienda {
 
     @Column(nullable = false)
     private String codigo_recojo;
-
-    public enum Estado {
-        PENDIENTE, LISTO_PARA_RECOGER, RECOGIDO, EXPIRADO
-    }
-
-    @Enumerated(EnumType.STRING)
-    private Estado estado = Estado.PENDIENTE;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime fecha_disponible;
@@ -63,9 +49,6 @@ public class RecojoTienda {
 
     public String getCodigo_recojo() { return codigo_recojo; }
     public void setCodigo_recojo(String codigo_recojo) { this.codigo_recojo = codigo_recojo; }
-
-    public Estado getEstado() { return estado; }
-    public void setEstado(Estado estado) { this.estado = estado; }
 
     public LocalDateTime getFecha_disponible() { return fecha_disponible; }
     public void setFecha_disponible(LocalDateTime fecha_disponible) { this.fecha_disponible = fecha_disponible; }
