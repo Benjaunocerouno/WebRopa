@@ -56,6 +56,7 @@ public class Pedidos {
         RECOGIDO,
         EN_CAMINO,
         ENTREGADO,
+        NO_RECOGIDO,
         CANCELADO
     }
 

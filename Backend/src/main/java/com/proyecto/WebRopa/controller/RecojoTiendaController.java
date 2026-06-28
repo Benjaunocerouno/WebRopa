@@ -82,43 +82,38 @@ public class RecojoTiendaController {
         if (recojo.getId() == null) {
             return ResponseEntity.badRequest().body("Debe especificar el id");
         }
-        Optional<RecojoTienda> existente = serviceRecojoTienda.buscarId(recojo.getId());
-        if (!existente.isPresent()) {
+        Optional<RecojoTienda> existenteOpt = serviceRecojoTienda.buscarId(recojo.getId());
+        if (!existenteOpt.isPresent()) {
             return ResponseEntity.badRequest().body("El recojo no existe");
         }
 
-        // Si cambia a RECOGIDO debe tener empleado
-        if (recojo.getEstado() == RecojoTienda.Estado.RECOGIDO) {
-            if (recojo.getAtendido_por() == null || recojo.getAtendido_por().getId() == null) {
-                return ResponseEntity.badRequest()
-                    .body("Debe especificar el empleado que atendió el recojo");
-            }
-            
-            // Buscar el usuario en la BD para asegurarnos de traer todos sus datos (incluyendo su Rol)
+        RecojoTienda existente = existenteOpt.get();
+
+        // Si se proporciona atendido_por, validar que sea empleado o admin
+        if (recojo.getAtendido_por() != null && recojo.getAtendido_por().getId() != null) {
             Optional<Usuarios> empleadoOpt = serviceUsuarios.buscarId(recojo.getAtendido_por().getId());
             if (!empleadoOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("El empleado especificado no existe");
             }
             Usuarios empleado = empleadoOpt.get();
-
-            if (empleado.getRol() == null || 
-               (!empleado.getRol().getNombre().equalsIgnoreCase("EMPLEADO") && 
+            if (empleado.getRol() == null ||
+               (!empleado.getRol().getNombre().equalsIgnoreCase("EMPLEADO") &&
                 !empleado.getRol().getNombre().equalsIgnoreCase("ADMIN"))) {
                 return ResponseEntity.badRequest()
                     .body("El usuario especificado no tiene rol de empleado");
             }
-            recojo.setAtendido_por(empleado); // Asignamos el objeto completo traído de la base de datos
+            existente.setAtendido_por(empleado);
         }
 
-        try {
-            serviceRecojoTienda.modificar(recojo);
-            return ResponseEntity.ok(recojo);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        if (recojo.getFecha_disponible() != null) existente.setFecha_disponible(recojo.getFecha_disponible());
+        if (recojo.getFecha_recogido() != null)  existente.setFecha_recogido(recojo.getFecha_recogido());
+        if (recojo.getCodigo_recojo() != null)   existente.setCodigo_recojo(recojo.getCodigo_recojo());
+
+        serviceRecojoTienda.modificar(existente);
+        return ResponseEntity.ok(existente);
     }
 
-    // ── DELETE (borrado lógico → EXPIRADO) ───────────
+    // ── DELETE ───────────────────────────────────────
     @DeleteMapping("/recojotienda/{id}")
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('PEDIDOS_GESTIONAR')")
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
@@ -126,11 +121,11 @@ public class RecojoTiendaController {
         if (!existente.isPresent()) {
             return ResponseEntity.badRequest().body("El recojo no existe");
         }
-        if (existente.get().getEstado() == RecojoTienda.Estado.RECOGIDO) {
+        if (existente.get().getPedido().getEstado() == Pedidos.Estado.RECOGIDO) {
             return ResponseEntity.badRequest()
-                .body("No se puede expirar un recojo que ya fue completado");
+                .body("No se puede eliminar el recojo de un pedido ya completado");
         }
         serviceRecojoTienda.eliminar(id);
-        return ResponseEntity.ok("Recojo marcado como EXPIRADO");
+        return ResponseEntity.ok("Recojo eliminado");
     }
 }
