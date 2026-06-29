@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.proyecto.WebRopa.entity.Carritos;
 import com.proyecto.WebRopa.entity.Usuarios;
@@ -30,6 +31,9 @@ public class UsuariosController {
     private final IRolesServices serviceRoles;
     private final JwtUtil jwtUtil;
 
+    @Autowired
+    private com.proyecto.WebRopa.service.seguridad.SeguridadEnVivoService seguridadEnVivoService;
+
     public UsuariosController(IUsuariosService serviceUsuarios, BCryptPasswordEncoder passwordEncoder, ICarritosService serviceCarritos, IRolesServices serviceRoles, JwtUtil jwtUtil) {
         this.serviceUsuarios = serviceUsuarios;
         this.passwordEncoder = passwordEncoder;
@@ -39,7 +43,7 @@ public class UsuariosController {
     }
 
     @PostMapping("/usuarios/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales, HttpServletRequest request) {
         String correo = credenciales.get("correo");
         String password = credenciales.get("password");
 
@@ -75,6 +79,10 @@ public class UsuariosController {
             response.put("empresa_id", empresaId);
         }
         response.put("permisos", permisos);
+
+        // Registrar la sesión exitosa en el monitor de seguridad en vivo
+        seguridadEnVivoService.registrarLoginExitoso(token, user.getId(), rolNombre, request.getRemoteAddr(), user.getCorreo());
+
         return ResponseEntity.ok(response);
     }
 

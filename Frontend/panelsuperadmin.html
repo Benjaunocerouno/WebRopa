@@ -522,12 +522,6 @@ verificarSesion();
 /* ══════════════════════════════════════════
    DATOS DE DEMOSTRACIÓN
    ══════════════════════════════════════════ */
-const sesiones = [
-  { id:'USR-7741', rol:'catalogo', ip:'190.234.11.8',  actividad:'hace 2 min',  sospechosa:false },
-  { id:'USR-7742', rol:'vendedor', ip:'186.4.55.230',  actividad:'hace 4 min',  sospechosa:false },
-  { id:'USR-7743', rol:'almacenero', ip:'45.182.9.14', actividad:'hace 19 min', sospechosa:true  },
-  { id:'USR-7744', rol:'supervisor', ip:'190.234.11.91',actividad:'hace 1 min', sospechosa:false },
-];
 
 let bloqueos = [
   { usuario:'USR-6620 (vendedor)',   ip:'201.88.4.12', intentos:6, segundosRestantes: 312 },
@@ -601,35 +595,66 @@ function mostrarToast(mensaje) {
 }
 
 /* ── Sesiones ── */
+let sesiones = [];
+
+async function cargarSesionesLive() {
+  const s = obtenerSesion();
+  if (!s || !s.token) return;
+  try {
+    const res = await fetch(CONFIG.API_URL + '/superadmin/seguridad/sesiones', {
+      headers: { 'Authorization': 'Bearer ' + s.token }
+    });
+    if (res.ok) {
+      sesiones = await res.json();
+      pintarSesiones();
+    }
+  } catch (e) { console.error("Error cargando sesiones", e); }
+}
+
 function pintarSesiones() {
   const tbody = document.getElementById('tabla-sesiones');
-  tbody.innerHTML = sesiones.map(s => `
+  tbody.innerHTML = sesiones.map(s => {
+    let act = "reciente";
+    if (s.ultimaActividad) {
+      const ms = new Date() - new Date(s.ultimaActividad);
+      const min = Math.floor(ms / 60000);
+      act = min > 0 ? `hace ${min} min` : 'ahora mismo';
+    }
+    return `
     <tr class="${s.sospechosa ? 'fila-sospechosa' : ''}">
-      <td class="mono">${s.id}</td>
-      <td><span class="pildora rol-${s.rol}">${nombreRol[s.rol]}</span></td>
+      <td class="mono">USR-${s.usuarioId} (${s.correo})</td>
+      <td><span class="pildora rol-default">${s.rol}</span></td>
       <td class="mono">${s.ip}</td>
-      <td>${s.actividad}${s.sospechosa ? ' · <strong style="color:var(--alerta)">revisar</strong>' : ''}</td>
+      <td>${act}${s.sospechosa ? ' · <strong style="color:var(--alerta)">revisar</strong>' : ''}</td>
       <td><button class="btn btn-secundario btn-mini" data-revocar="${s.id}">Revocar acceso</button></td>
       <td><button class="btn btn-peligro btn-mini" data-cerrar="${s.id}">Forzar cierre</button></td>
     </tr>
-  `).join('');
+  `}).join('');
   document.getElementById('contador-sesiones').textContent = sesiones.length;
 }
-document.getElementById('tabla-sesiones').addEventListener('click', (e) => {
+document.getElementById('tabla-sesiones').addEventListener('click', async (e) => {
   const cerrar  = e.target.dataset.cerrar;
   const revocar = e.target.dataset.revocar;
+  const s = obtenerSesion();
+  if (!s || !s.token) return;
+
   if (cerrar) {
-    sesiones.splice(sesiones.findIndex(s => s.id === cerrar), 1);
-    pintarSesiones();
+    await fetch(CONFIG.API_URL + `/superadmin/seguridad/sesiones/${cerrar}/cerrar`, {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + s.token }
+    });
+    cargarSesionesLive();
     mostrarToast(`Sesión ${cerrar} cerrada · token invalidado`);
   }
   if (revocar) {
-    sesiones.splice(sesiones.findIndex(s => s.id === revocar), 1);
-    pintarSesiones();
+    await fetch(CONFIG.API_URL + `/superadmin/seguridad/sesiones/${revocar}/revocar`, {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + s.token }
+    });
+    cargarSesionesLive();
     mostrarToast(`Acceso de ${revocar} revocado · próxima petición → HTTP 403 · registrado en auditoría`);
   }
 });
-pintarSesiones();
+cargarSesionesLive();
+setInterval(cargarSesionesLive, 10000);
 
 /* ── Bloqueos ── */
 function formatoTiempo(s) {

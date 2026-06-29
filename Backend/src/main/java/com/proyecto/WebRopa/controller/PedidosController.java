@@ -141,8 +141,7 @@ public class PedidosController {
             }
         }
 
-        Double costoEnvio = pedido.getCosto_envio();
-        double total = subtotal - descuento + (costoEnvio != null ? costoEnvio : 0.0);
+        double total = subtotal - descuento;
 
         pedido.setSubtotal(subtotal);
         pedido.setDescuento(descuento);
