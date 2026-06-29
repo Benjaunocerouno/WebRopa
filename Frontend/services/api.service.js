@@ -68,14 +68,17 @@ async function fetchAuth(endpoint, method = 'GET', body = null) {
   const res = await fetch(CONFIG.API_URL + endpoint, opts);
 
   if (!res.ok) {
-    let errText = 'Error en petición';
-    try {
-      const eJson = await res.json();
-      errText = eJson.message || eJson.error || errText;
-    } catch {
-      errText = await res.text() || errText;
-    }
-    throw new Error(errText);
+      let errMsg = 'Error en la petición';
+      try {
+        const rawText = await res.text();
+        try {
+          const eJson = JSON.parse(rawText);
+          errMsg = eJson.message || eJson.error || rawText || errMsg;
+        } catch {
+          errMsg = rawText || errMsg;
+        }
+      } catch {}
+      throw new Error(errMsg);
   }
 
   if (method === 'GET' || res.headers.get('content-type')?.includes('json')) {

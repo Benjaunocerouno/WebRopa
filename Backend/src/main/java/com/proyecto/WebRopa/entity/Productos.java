@@ -36,7 +36,7 @@ public class Productos {
 
     @Enumerated(EnumType.STRING)
     private Estado estado = Estado.ACTIVO;
-    
+
     // ENUMS
 
     public enum Estado {
@@ -64,33 +64,83 @@ public class Productos {
 
     // ── Getters y Setters ────────────────────────────
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public Double getPrecio() { return precio; }
-    public void setPrecio(Double precio) { this.precio = precio; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public String getImagen_url() { return imagen_url; }
-    public void setImagen_url(String imagen_url) { this.imagen_url = imagen_url; }
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-    public Estado getEstado() { return estado; }
-    public void setEstado(Estado estado) { this.estado = estado; }
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 
-    public Categorias getCategoria() { return categoria; }
-    public void setCategoria(Categorias categoria) { this.categoria = categoria; }
+    public Double getPrecio() {
+        return precio;
+    }
 
-    public List<Variantes> getVariantes() { return variantes; }
-    public void setVariantes(List<Variantes> variantes) { this.variantes = variantes; }
+    public void setPrecio(Double precio) {
+        this.precio = precio;
+    }
 
-    public List<ImagenesProductos> getGaleriaImagenes() { return galeriaImagenes; }
-    public void setGaleriaImagenes(List<ImagenesProductos> galeriaImagenes) { this.galeriaImagenes = galeriaImagenes; }
+    public String getImagen_url() {
+        return imagen_url;
+    }
 
-    public Empresas getEmpresa() { return empresa; }
-    public void setEmpresa(Empresas empresa) { this.empresa = empresa; }
+    public void setImagen_url(String imagen_url) {
+        this.imagen_url = imagen_url;
+    }
+
+    public Estado getEstado() {
+        return estado;
+    }
+
+    public void setEstado(Estado estado) {
+        this.estado = estado;
+    }
+
+    public Categorias getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categorias categoria) {
+        this.categoria = categoria;
+    }
+
+    public List<Variantes> getVariantes() {
+        return variantes;
+    }
+
+    public void setVariantes(List<Variantes> variantes) {
+        this.variantes = variantes;
+    }
+
+    public List<ImagenesProductos> getGaleriaImagenes() {
+        return galeriaImagenes;
+    }
+
+    public void setGaleriaImagenes(List<ImagenesProductos> galeriaImagenes) {
+        this.galeriaImagenes = galeriaImagenes;
+    }
+
+    public Empresas getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Empresas empresa) {
+        this.empresa = empresa;
+    }
 }

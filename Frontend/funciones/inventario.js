@@ -99,9 +99,12 @@ async function fetchAuth(endpoint, method = 'GET', body = null) {
 
     const res = await fetch(API_URL + endpoint, opts);
     if (!res.ok) {
-        let errText = "Error en petición";
-        try { const eJson = await res.json(); errText = eJson.message || eJson.error || errText; }
-        catch { errText = await res.text() || errText; }
+        let errText = 'Error en petición';
+        try {
+            const rawText = await res.text();
+            try { const eJson = JSON.parse(rawText); errText = eJson.message || eJson.error || rawText || errText; }
+            catch { errText = rawText || errText; }
+        } catch {}
         throw new Error(errText);
     }
     if (method === 'GET' || res.headers.get('content-type')?.includes('json')) return await res.json();
