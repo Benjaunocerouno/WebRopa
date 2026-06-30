@@ -123,6 +123,39 @@
         </div>
         <button class="btn btn-secundario btn-mini" onclick="cargarPedidos()">↻ Refrescar</button>
       </div>
+
+      <!-- Tarjetas de resumen por estado (clic para filtrar) -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:12px; margin-bottom:20px;">
+        <div class="tarjeta" style="padding:14px; text-align:center; cursor:pointer;" onclick="aplicarFiltro('TODOS')" title="Ver todos los pedidos">
+          <div id="stat-total" style="font-size:1.9rem; font-weight:700; color:var(--cafe-oscuro)">—</div>
+          <div style="font-size:0.72rem; color:var(--cafe); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:0.04em;">Total</div>
+        </div>
+        <div class="tarjeta" style="padding:14px; text-align:center; cursor:pointer;" onclick="aplicarFiltro('PENDIENTE')" title="Pendientes de confirmación">
+          <div id="stat-pendiente" style="font-size:1.9rem; font-weight:700; color:#b07a1f">—</div>
+          <div style="font-size:0.72rem; color:var(--cafe); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:0.04em;">Pendientes</div>
+        </div>
+        <div class="tarjeta" style="padding:14px; text-align:center; cursor:pointer;" onclick="aplicarFiltro('CONFIRMADO')" title="Confirmados, listos para preparar">
+          <div id="stat-confirmado" style="font-size:1.9rem; font-weight:700; color:var(--sage-oscuro)">—</div>
+          <div style="font-size:0.72rem; color:var(--cafe); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:0.04em;">Confirmados</div>
+        </div>
+        <div class="tarjeta" style="padding:14px; text-align:center; cursor:pointer;" onclick="aplicarFiltro('EN_PREPARACION')" title="En preparación en almacén">
+          <div id="stat-preparacion" style="font-size:1.9rem; font-weight:700; color:#5b7fa6">—</div>
+          <div style="font-size:0.72rem; color:var(--cafe); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:0.04em;">Preparación</div>
+        </div>
+        <div class="tarjeta" style="padding:14px; text-align:center; cursor:pointer;" onclick="aplicarFiltro('LISTO_PARA_RECOGER')" title="Listos para recoger en tienda">
+          <div id="stat-listo" style="font-size:1.9rem; font-weight:700; color:#7b5ea7">—</div>
+          <div style="font-size:0.72rem; color:var(--cafe); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:0.04em;">Listo Recoger</div>
+        </div>
+        <div class="tarjeta" style="padding:14px; text-align:center; cursor:pointer;" onclick="aplicarFiltro('EN_CAMINO')" title="En camino — pedidos de delivery">
+          <div id="stat-camino" style="font-size:1.9rem; font-weight:700; color:#4a7fb5">—</div>
+          <div style="font-size:0.72rem; color:var(--cafe); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:0.04em;">En Camino</div>
+        </div>
+        <div class="tarjeta" style="padding:14px; text-align:center; cursor:pointer;" onclick="aplicarFiltro('NO_RECOGIDO')" title="No recogidos — requieren acción">
+          <div id="stat-no-recogido" style="font-size:1.9rem; font-weight:700; color:var(--alerta)">—</div>
+          <div style="font-size:0.72rem; color:var(--cafe); margin-top:4px; font-weight:500; text-transform:uppercase; letter-spacing:0.04em;">No Recogidos</div>
+        </div>
+      </div>
+
       <div class="tarjeta">
         <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Listado de Pedidos</h3>
@@ -130,6 +163,20 @@
             <input type="text" class="buscador-generico" data-target="tabla-pedidos" placeholder="Buscar pedido..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
           </div>
         </div>
+
+        <!-- Filtros por estado -->
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--borde-trazo);">
+          <button class="btn btn-mini filtro-estado btn-primario"   data-estado="TODOS"           onclick="aplicarFiltro('TODOS')">Todos</button>
+          <button class="btn btn-mini filtro-estado btn-secundario" data-estado="PENDIENTE"        onclick="aplicarFiltro('PENDIENTE')">Pendiente</button>
+          <button class="btn btn-mini filtro-estado btn-secundario" data-estado="CONFIRMADO"       onclick="aplicarFiltro('CONFIRMADO')">Confirmado</button>
+          <button class="btn btn-mini filtro-estado btn-secundario" data-estado="EN_PREPARACION"   onclick="aplicarFiltro('EN_PREPARACION')">En Preparación</button>
+          <button class="btn btn-mini filtro-estado btn-secundario" data-estado="EN_CAMINO"        onclick="aplicarFiltro('EN_CAMINO')">En Camino</button>
+          <button class="btn btn-mini filtro-estado btn-secundario" data-estado="LISTO_PARA_RECOGER" onclick="aplicarFiltro('LISTO_PARA_RECOGER')">Listo p. Recoger</button>
+          <button class="btn btn-mini filtro-estado btn-secundario" data-estado="NO_RECOGIDO"      onclick="aplicarFiltro('NO_RECOGIDO')">No Recogido</button>
+          <button class="btn btn-mini filtro-estado btn-secundario" data-estado="ENTREGADO"        onclick="aplicarFiltro('ENTREGADO')">Entregado</button>
+          <button class="btn btn-mini filtro-estado btn-secundario" data-estado="CANCELADO"        onclick="aplicarFiltro('CANCELADO')">Cancelado</button>
+        </div>
+
         <table style="width:100%;">
           <thead>
             <tr>
@@ -158,11 +205,71 @@
         </div>
         <button class="btn btn-secundario btn-mini" onclick="cargarRecojos()">↻ Refrescar</button>
       </div>
+
+      <!-- Configuración de plazos -->
+      <div class="tarjeta" id="card-config-plazos" style="margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;" onclick="toggleConfigPlazos()">
+          <h3 style="margin:0; display:flex; align-items:center; gap:8px; font-size:0.95rem;">
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16" style="opacity:0.55; flex-shrink:0;">
+              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/>
+            </svg>
+            Configuración de Plazos
+          </h3>
+          <svg id="config-chevron" viewBox="0 0 24 24" fill="none" width="16" height="16" style="opacity:0.45; transition:transform 0.2s; flex-shrink:0;">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div id="config-plazos-body" style="display:none;">
+          <div style="height:1px; background:var(--borde-trazo); margin:14px 0;"></div>
+          <p style="font-size:0.82rem; color:var(--cafe); opacity:0.8; margin:0 0 18px; line-height:1.6;">
+            Define cuántos días hábiles (lunes a viernes) tiene el cliente para recoger su pedido y cuánto tiempo adicional hay antes de que el sistema cancele automáticamente y genere el reembolso.
+          </p>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px;">
+            <div class="campo">
+              <label class="etiqueta-campo">Días hábiles para recoger</label>
+              <input type="number" id="config-dias-recojo" min="1" max="60" value="5"
+                style="width:100%; box-sizing:border-box;"
+                oninput="actualizarResumenPlazos()">
+              <span style="font-size:0.75rem; color:var(--cafe); opacity:0.7; margin-top:5px; display:block;">
+                Desde <em>Listo para Recoger</em> hasta pasar a <em>No Recogido</em>.
+              </span>
+            </div>
+            <div class="campo">
+              <label class="etiqueta-campo">Días hábiles adicionales antes de cancelar</label>
+              <input type="number" id="config-dias-cancelar" min="1" max="60" value="7"
+                style="width:100%; box-sizing:border-box;"
+                oninput="actualizarResumenPlazos()">
+              <span style="font-size:0.75rem; color:var(--cafe); opacity:0.7; margin-top:5px; display:block;">
+                Desde <em>No Recogido</em> hasta cancelación y reembolso automáticos.
+              </span>
+            </div>
+          </div>
+
+          <div id="config-plazos-resumen" style="background:rgba(92,74,61,0.04); border:1px solid var(--borde-trazo); border-radius:10px; padding:12px 16px; margin-bottom:18px;"></div>
+
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-primario" id="btn-guardar-config-plazos" onclick="guardarConfigPlazos()">Guardar cambios</button>
+            <span id="config-plazos-status" style="font-size:0.8rem; color:var(--cafe); opacity:0.7;"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="tarjeta">
         <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
           <h3>Entregas Pendientes</h3>
-          <input type="text" class="buscador-generico" data-target="tabla-recojos" placeholder="Buscar recojo..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+          <input type="text" class="buscador-generico" data-target="tabla-recojos" placeholder="Buscar por código, cliente o pedido..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif; min-width: 240px;">
         </div>
+
+        <!-- Tabs de filtro -->
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--borde-trazo);">
+          <button class="btn btn-mini filtro-recojo btn-primario" data-filtro="LISTO_PARA_RECOGER" onclick="cargarRecojos('LISTO_PARA_RECOGER')">En Espera</button>
+          <button class="btn btn-mini filtro-recojo btn-secundario" data-filtro="NO_RECOGIDO" onclick="cargarRecojos('NO_RECOGIDO')">No Recogidos</button>
+          <button class="btn btn-mini filtro-recojo btn-secundario" data-filtro="RECOGIDO" onclick="cargarRecojos('RECOGIDO')">Completados</button>
+        </div>
+
         <table style="width:100%;">
           <thead>
             <tr>
@@ -407,7 +514,7 @@ document.getElementById('menu-navegacion').addEventListener('click', (e) => {
   if(btn.dataset.panel === 'productos') cargarProductos();
   if(btn.dataset.panel === 'categorias') cargarCategorias();
   if(btn.dataset.panel === 'pedidos') cargarPedidos();
-  if(btn.dataset.panel === 'recojo') cargarRecojos();
+  if(btn.dataset.panel === 'recojo') { cargarRecojos('LISTO_PARA_RECOGER'); cargarConfigPlazos(); }
   if(btn.dataset.panel === 'boletas') cargarBoletas();
 });
 
@@ -458,8 +565,7 @@ document.getElementById('btn-ingresar').addEventListener('click', async () => {
     document.getElementById('login-overlay').classList.add('oculto');
     await aplicarUsuario(data);
     showToast(`Bienvenido ${data.nombre}`);
-    // Cargar dashboard defaults
-    cargarCategoriasParaSelect();
+    cargarPedidos();
   } catch (e) {
     errEl.textContent = e.message;
     errEl.classList.add('visible');
@@ -498,7 +604,7 @@ document.getElementById('btn-cerrar-sesion').addEventListener('click', async () 
     } else {
       document.getElementById('login-overlay').classList.add('oculto');
       await aplicarUsuario(s);
-      cargarCategoriasParaSelect();
+      cargarPedidos();
     }
   }
 })();
@@ -534,7 +640,7 @@ async function cargarCategoriasParaSelect() {
   }
 }
 
-document.getElementById('btn-guardar-cat').addEventListener('click', async () => {
+document.getElementById('btn-guardar-cat')?.addEventListener('click', async () => {
   const nombre = document.getElementById('cat-nombre').value.trim();
   if(!nombre) return showToast('El nombre no puede estar vacío', true);
   
@@ -567,14 +673,14 @@ async function eliminarCategoria(id, nombre) {
 /* ==========================================================
    PRODUCTOS
    ========================================================== */
-document.getElementById('btn-toggle-nuevo-prod').addEventListener('click', () => {
+document.getElementById('btn-toggle-nuevo-prod')?.addEventListener('click', () => {
   const form = document.getElementById('form-producto-card');
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
   if (form.style.display === 'block' && document.getElementById('contenedor-variantes-temp').children.length === 0) {
     addVarianteRow(); // Añadir una fila por defecto
   }
 });
-document.getElementById('btn-cancelar-prod').addEventListener('click', () => {
+document.getElementById('btn-cancelar-prod')?.addEventListener('click', () => {
   document.getElementById('form-producto-card').style.display = 'none';
 });
 
@@ -607,10 +713,10 @@ function addVarianteRow() {
 
   varianteRowIndex++;
 }
-document.getElementById('btn-add-variante-row').addEventListener('click', addVarianteRow);
+document.getElementById('btn-add-variante-row')?.addEventListener('click', addVarianteRow);
 
 // Guardar Producto + Variantes
-document.getElementById('btn-guardar-prod').addEventListener('click', async () => {
+document.getElementById('btn-guardar-prod')?.addEventListener('click', async () => {
   const nombre = document.getElementById('prod-nombre').value.trim();
   const catId = document.getElementById('prod-cat').value;
   const precio = document.getElementById('prod-precio').value;
@@ -818,66 +924,144 @@ document.getElementById('btn-save-single-variant').addEventListener('click', asy
 /* ==========================================================
    PEDIDOS (REAL)
    ========================================================== */
+
+// Misma máquina de estados que el backend (PedidosController.esTransicionValida)
+const ETIQUETAS_ESTADO = {
+  'PENDIENTE':          'Pendiente',
+  'CONFIRMADO':         'Confirmado',
+  'EN_PREPARACION':     'En preparación',
+  'LISTO_PARA_RECOGER': 'Listo para recoger',
+  'RECOGIDO':           'Recogido',
+  'EN_CAMINO':          'En camino',
+  'ENTREGADO':          'Entregado',
+  'NO_RECOGIDO':        'No recogido',
+  'CANCELADO':          'Cancelado'
+};
+
+const TRANSICIONES_VALIDAS = {
+  'PENDIENTE':          ['CONFIRMADO', 'CANCELADO'],
+  'CONFIRMADO':         ['EN_PREPARACION', 'CANCELADO'],
+  'EN_PREPARACION':     ['LISTO_PARA_RECOGER', 'EN_CAMINO', 'CANCELADO'],
+  'LISTO_PARA_RECOGER': ['RECOGIDO', 'NO_RECOGIDO', 'CANCELADO'],
+  'NO_RECOGIDO':        ['LISTO_PARA_RECOGER', 'CANCELADO'],
+  'EN_CAMINO':          ['ENTREGADO', 'CANCELADO'],
+  'RECOGIDO':           [],
+  'ENTREGADO':          [],
+  'CANCELADO':          []
+};
+
+const CLASE_PILDORA = {
+  'PENDIENTE':          'estado-pendiente',
+  'CONFIRMADO':         'rol-almacenero',
+  'EN_PREPARACION':     'rol-catalogo',
+  'LISTO_PARA_RECOGER': 'rol-vendedor',
+  'EN_CAMINO':          'rol-catalogo',
+  'RECOGIDO':           'estado-ok',
+  'ENTREGADO':          'estado-ok',
+  'NO_RECOGIDO':        'estado-fallo',
+  'CANCELADO':          'estado-fallo'
+};
+
+let todosLosPedidos = [];
+let estadoFiltroActual = 'TODOS';
+
+function aplicarFiltro(estado) {
+  estadoFiltroActual = estado;
+  document.querySelectorAll('.filtro-estado').forEach(b => {
+    const activo = b.dataset.estado === estado;
+    b.classList.toggle('btn-primario', activo);
+    b.classList.toggle('btn-secundario', !activo);
+  });
+  renderizarPedidos();
+}
+
+function actualizarStatsPedidos() {
+  const c = {};
+  todosLosPedidos.forEach(p => { c[p.estado] = (c[p.estado] || 0) + 1; });
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('stat-total',       todosLosPedidos.length);
+  set('stat-pendiente',   c['PENDIENTE']      || 0);
+  set('stat-confirmado',  c['CONFIRMADO']     || 0);
+  set('stat-preparacion', c['EN_PREPARACION'] || 0);
+  set('stat-listo',        c['LISTO_PARA_RECOGER'] || 0);
+  set('stat-camino',       c['EN_CAMINO']          || 0);
+  set('stat-no-recogido', c['NO_RECOGIDO']    || 0);
+}
+
+function renderizarPedidos() {
+  const tbody = document.getElementById('tabla-pedidos');
+  const pedidos = estadoFiltroActual === 'TODOS'
+    ? todosLosPedidos
+    : todosLosPedidos.filter(p => p.estado === estadoFiltroActual);
+
+  if (pedidos.length === 0) {
+    const msg = estadoFiltroActual === 'TODOS'
+      ? 'No hay pedidos registrados en tu boutique.'
+      : `No hay pedidos con estado "${ETIQUETAS_ESTADO[estadoFiltroActual] || estadoFiltroActual}".`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">${msg}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = pedidos.map(p => {
+    const cliNombre = p.usuario ? p.usuario.nombre : 'Cliente Desconocido';
+    const cliCorreo = p.usuario ? p.usuario.correo : '';
+    const pago = p.pago_confirmado
+      ? `<span class="pildora estado-ok">Confirmado</span>`
+      : `<span class="pildora estado-fallo">Pendiente</span>`;
+
+    const esTerminal = (TRANSICIONES_VALIDAS[p.estado] || []).length === 0;
+    const claseBadge = CLASE_PILDORA[p.estado] || 'estado-pendiente';
+
+    const celdaEstado = esTerminal
+      ? `<span class="pildora ${claseBadge}" style="font-size:0.75rem;">${ETIQUETAS_ESTADO[p.estado] || p.estado}</span>`
+      : `<select onchange="cambiarEstadoPedido(${p.id}, this.value, this)" onclick="event.stopPropagation()"
+           style="padding:4px 8px; font-size:0.8rem; border-radius:8px; border:1.5px solid var(--borde-trazo); background:var(--crema); cursor:pointer; font-family:'Outfit',sans-serif;">
+           ${Object.keys(ETIQUETAS_ESTADO).filter(e => e !== 'RECOGIDO' && e !== 'NO_RECOGIDO').map(est =>
+             `<option value="${est}" ${p.estado === est ? 'selected' : ''}>${ETIQUETAS_ESTADO[est]}</option>`
+           ).join('')}
+         </select>`;
+
+    return `
+      <tr class="fila-principal" onclick="toggleItemsPedido(${p.id})">
+        <td>${p.id}</td>
+        <td>
+          <strong>${cliNombre}</strong><br>
+          <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${cliCorreo}</span>
+        </td>
+        <td>${p.fecha_creacion || '—'}</td>
+        <td>${pago}</td>
+        <td style="font-weight:600;">S/. ${p.total.toFixed(2)}</td>
+        <td>${celdaEstado}</td>
+        <td>
+          <button class="btn btn-secundario btn-mini" onclick="event.stopPropagation(); toggleItemsPedido(${p.id})">Ver Detalle</button>
+        </td>
+      </tr>
+      <tr id="items-pedido-${p.id}" style="display:none;">
+        <td colspan="7" style="padding:0;">
+          <div class="variantes-lista-expandida" style="padding:15px 25px;">
+            <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+              <div style="flex:1; min-width:280px;">
+                <h4 style="margin:0 0 10px; font-size:0.9rem; color:var(--cafe-oscuro)">Ítems del Pedido #${p.id}</h4>
+                <div id="items-pedido-loader-${p.id}">Cargando ítems...</div>
+              </div>
+              <div style="min-width:260px;">
+                <h4 style="margin:0 0 10px; font-size:0.9rem; color:var(--cafe-oscuro)">Pagos del Pedido</h4>
+                <div id="pagos-pedido-loader-${p.id}">Cargando pagos...</div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
 async function cargarPedidos() {
   const tbody = document.getElementById('tabla-pedidos');
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Cargando pedidos...</td></tr>';
   try {
-    const pedidos = await fetchAuth('/pedidos');
-    if (pedidos.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No hay pedidos registrados en tu boutique.</td></tr>';
-      return;
-    }
-    
-    tbody.innerHTML = pedidos.map(p => {
-      const fecha = p.fecha_creacion || 'Desconocida';
-      const total = p.total.toFixed(2);
-      const cliNombre = p.usuario ? p.usuario.nombre : 'Cliente Desconocido';
-      const cliCorreo = p.usuario ? p.usuario.correo : '';
-      const pago = p.pago_confirmado 
-        ? `<span class="pildora estado-ok">Confirmado</span>`
-        : `<span class="pildora estado-fallo">Pendiente</span>`;
-      
-      const etiquetasEstado = {
-        'PENDIENTE':          'Pendiente',
-        'CONFIRMADO':         'Confirmado',
-        'EN_PREPARACION':     'En preparación',
-        'LISTO_PARA_RECOGER': 'Listo para recoger',
-        'RECOGIDO':           'Recogido',
-        'NO_RECOGIDO':        'No recogido',
-        'CANCELADO':          'Cancelado'
-      };
-      const estados = Object.keys(etiquetasEstado);
-      const selectEstado = p.pago_confirmado
-        ? `<select onchange="cambiarEstadoPedido(${p.id}, this.value)" onclick="event.stopPropagation()" style="padding:4px 8px; font-size:0.8rem; border-radius:8px; border:1px solid var(--borde-trazo); background:var(--crema);">
-            ${estados.map(est => `<option value="${est}" ${p.estado === est ? 'selected' : ''}>${etiquetasEstado[est]}</option>`).join('')}
-          </select>`
-        : `<span class="pildora estado-pendiente" style="font-size:0.75rem;">${etiquetasEstado[p.estado] || p.estado}</span>`;
-
-      return `
-        <tr class="fila-principal" onclick="toggleItemsPedido(${p.id})">
-          <td>${p.id}</td>
-          <td>
-            <strong>${cliNombre}</strong><br>
-            <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${cliCorreo}</span>
-          </td>
-          <td>${fecha}</td>
-          <td>${pago}</td>
-          <td style="font-weight:600;">S/. ${total}</td>
-          <td>${selectEstado}</td>
-          <td>
-            <button class="btn btn-secundario btn-mini" onclick="event.stopPropagation(); toggleItemsPedido(${p.id})">Ver Detalle</button>
-          </td>
-        </tr>
-        <tr id="items-pedido-${p.id}" style="display:none;">
-          <td colspan="7" style="padding:0;">
-            <div class="variantes-lista-expandida" style="padding: 15px 25px;">
-              <h4 style="margin:0 0 10px; font-size:0.9rem; color:var(--cafe-oscuro)">Detalle de Ítems del Pedido #${p.id}</h4>
-              <div id="items-pedido-loader-${p.id}">Cargando ítems...</div>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
+    todosLosPedidos = await fetchAuth('/pedidos');
+    actualizarStatsPedidos();
+    renderizarPedidos();
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="7" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
   }
@@ -886,74 +1070,120 @@ async function cargarPedidos() {
 async function toggleItemsPedido(pedidoId) {
   const tr = document.getElementById(`items-pedido-${pedidoId}`);
   if (!tr) return;
-  
   const isHidden = tr.style.display === 'none';
   tr.style.display = isHidden ? 'table-row' : 'none';
-  
-  if (isHidden) {
-    const loader = document.getElementById(`items-pedido-loader-${pedidoId}`);
-    if (loader && loader.textContent === 'Cargando ítems...') {
-      try {
-        const items = await fetchAuth(`/pedidoitems/pedido/${pedidoId}`);
+  if (!isHidden) return;
+
+  // Cargar ítems y pagos en paralelo
+  const loaderItems = document.getElementById(`items-pedido-loader-${pedidoId}`);
+  const loaderPagos = document.getElementById(`pagos-pedido-loader-${pedidoId}`);
+
+  if (loaderItems && loaderItems.textContent === 'Cargando ítems...') {
+    fetchAuth(`/pedidoitems/pedido/${pedidoId}`)
+      .then(items => {
         if (!items || items.length === 0) {
-          loader.innerHTML = '<span style="color:var(--cafe); font-size:0.85rem;">No hay ítems registrados para este pedido.</span>';
+          loaderItems.innerHTML = '<span style="color:var(--cafe); font-size:0.85rem;">Sin ítems registrados.</span>';
           return;
         }
-        
-        loader.innerHTML = `
-          <table style="width: 100%; font-size: 0.8rem; background: rgba(92,74,61,0.02); border-radius: 8px; border: 1px solid var(--borde-trazo);">
+        loaderItems.innerHTML = `
+          <table style="width:100%; font-size:0.8rem; background:rgba(92,74,61,0.02); border-radius:8px; border:1px solid var(--borde-trazo);">
             <thead>
-              <tr style="background: rgba(92,74,61,0.05);">
-                <th style="padding: 6px;">Producto</th>
-                <th style="padding: 6px;">SKU</th>
-                <th style="padding: 6px;">Color</th>
-                <th style="padding: 6px; text-align: center;">Talla</th>
-                <th style="padding: 6px; text-align: right;">Precio Unit.</th>
-                <th style="padding: 6px; text-align: center;">Cant.</th>
-                <th style="padding: 6px; text-align: right;">Total</th>
+              <tr style="background:rgba(92,74,61,0.05);">
+                <th style="padding:6px;">Producto</th>
+                <th style="padding:6px;">SKU</th>
+                <th style="padding:6px;">Color</th>
+                <th style="padding:6px; text-align:center;">Talla</th>
+                <th style="padding:6px; text-align:right;">Precio Unit.</th>
+                <th style="padding:6px; text-align:center;">Cant.</th>
+                <th style="padding:6px; text-align:right;">Total</th>
               </tr>
             </thead>
             <tbody>
-              ${items.map(item => {
-                const prodNombre = item.variante?.producto?.nombre || 'Producto';
-                const sku = item.variante?.sku || '-';
-                const color = item.variante?.color || '-';
-                const talla = item.variante?.talla || '-';
-                const precio = item.precio_unitario.toFixed(2);
-                const cant = item.cantidad;
-                const total = (item.precio_unitario * item.cantidad).toFixed(2);
-                return `
-                  <tr>
-                    <td style="padding: 6px;"><strong>${prodNombre}</strong></td>
-                    <td style="padding: 6px;" class="mono">${sku}</td>
-                    <td style="padding: 6px;">${color}</td>
-                    <td style="padding: 6px; text-align: center;">${talla}</td>
-                    <td style="padding: 6px; text-align: right;">S/. ${precio}</td>
-                    <td style="padding: 6px; text-align: center;">${cant}</td>
-                    <td style="padding: 6px; text-align: right;">S/. ${total}</td>
-                  </tr>
-                `;
-              }).join('')}
+              ${items.map(item => `
+                <tr>
+                  <td style="padding:6px;"><strong>${item.variante?.producto?.nombre || 'Producto'}</strong></td>
+                  <td style="padding:6px;" class="mono">${item.variante?.sku || '-'}</td>
+                  <td style="padding:6px;">${item.variante?.color || '-'}</td>
+                  <td style="padding:6px; text-align:center;">${item.variante?.talla || '-'}</td>
+                  <td style="padding:6px; text-align:right;">S/. ${item.precio_unitario.toFixed(2)}</td>
+                  <td style="padding:6px; text-align:center;">${item.cantidad}</td>
+                  <td style="padding:6px; text-align:right;">S/. ${(item.precio_unitario * item.cantidad).toFixed(2)}</td>
+                </tr>`).join('')}
             </tbody>
-          </table>
-        `;
-      } catch (err) {
-        loader.innerHTML = `<span style="color:var(--alerta)">Error cargando detalles: ${err.message}</span>`;
-      }
-    }
+          </table>`;
+      })
+      .catch(err => { loaderItems.innerHTML = `<span style="color:var(--alerta)">Error: ${err.message}</span>`; });
+  }
+
+  if (loaderPagos && loaderPagos.textContent === 'Cargando pagos...') {
+    cargarPagosDePedido(pedidoId, loaderPagos);
   }
 }
 
-async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
+async function cargarPagosDePedido(pedidoId, container) {
   try {
-    await fetchAuth('/pedidos', 'PUT', { id: pedidoId, estado: nuevoEstado });
-    showToast(`Pedido #${pedidoId} actualizado a ${nuevoEstado}`);
-    cargarPedidos();
+    const pagos = await fetchAuth(`/pagos/pedido/${pedidoId}`);
+    if (!pagos || pagos.length === 0) {
+      container.innerHTML = '<span style="color:var(--cafe); font-size:0.85rem;">Sin pagos registrados.</span>';
+      return;
+    }
+    const METODO_LABEL = { TARJETA: 'Tarjeta', YAPE: 'Yape', PLIN: 'Plin', TRANSFERENCIA: 'Transferencia' };
+    const ESTADO_CLASE = { APROBADO: 'estado-ok', PENDIENTE: 'estado-pendiente', RECHAZADO: 'estado-fallo', REEMBOLSADO: 'estado-fallo' };
+
+    container.innerHTML = pagos.map(pg => `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-radius:8px; border:1px solid var(--borde-trazo); margin-bottom:6px; background:rgba(92,74,61,0.02); font-size:0.82rem;">
+        <div>
+          <strong>${METODO_LABEL[pg.metodo] || pg.metodo}</strong>
+          &nbsp;·&nbsp; S/. ${pg.monto?.toFixed(2) ?? '?'}
+          <br>
+          <span style="font-size:0.72rem; color:var(--cafe); opacity:0.8">${pg.fecha || ''}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span class="pildora ${ESTADO_CLASE[pg.estado] || 'estado-pendiente'}" style="font-size:0.72rem;">${pg.estado}</span>
+          ${pg.estado === 'PENDIENTE'
+            ? `<button class="btn btn-primario btn-mini" onclick="aprobarPago(${pg.id}, ${pedidoId})">Aprobar</button>`
+            : ''}
+        </div>
+      </div>`).join('');
   } catch (err) {
-    showToast(`Error: ${err.message}`, true);
-    cargarPedidos();
+    container.innerHTML = `<span style="color:var(--alerta); font-size:0.82rem;">Error: ${err.message}</span>`;
   }
 }
+
+async function aprobarPago(pagoId, pedidoId) {
+  if (!confirm(`¿Aprobar el pago #${pagoId} y marcar el pedido como Confirmado?`)) return;
+  try {
+    await fetchAuth('/pagos', 'PUT', { id: pagoId, estado: 'APROBADO' });
+    showToast('Pago aprobado. Pedido pasado a Confirmado.');
+    await cargarPedidos();
+    // Reabrir el detalle para reflejar los cambios
+    setTimeout(() => {
+      const tr = document.getElementById(`items-pedido-${pedidoId}`);
+      if (tr) { tr.style.display = 'table-row'; }
+    }, 300);
+  } catch (err) {
+    showToast(`Error: ${err.message}`, true);
+  }
+}
+
+async function cambiarEstadoPedido(pedidoId, nuevoEstado, selectEl) {
+  const etiqueta = ETIQUETAS_ESTADO[nuevoEstado] || nuevoEstado;
+  if (!confirm(`¿Cambiar el pedido #${pedidoId} a "${etiqueta}"?`)) {
+    const pedido = todosLosPedidos.find(p => p.id === pedidoId);
+    if (pedido && selectEl) selectEl.value = pedido.estado;
+    return;
+  }
+  try {
+    await fetchAuth('/pedidos', 'PUT', { id: pedidoId, estado: nuevoEstado });
+    showToast(`Pedido #${pedidoId} → "${etiqueta}"`);
+    await cargarPedidos();
+  } catch (err) {
+    showToast(`Error: ${err.message}`, true);
+    await cargarPedidos();
+  }
+}
+
+async function cargarBoletas() { /* boletas usa contenido estático */ }
 
 /* ==========================================================
    CUPONES (REAL)
@@ -1065,92 +1295,198 @@ async function eliminarCupon(id, codigo) {
 /* ==========================================================
    RECOJOS EN TIENDA (REAL)
    ========================================================== */
-async function cargarRecojos() {
+async function cargarRecojos(filtro = 'LISTO_PARA_RECOGER') {
   const tbody = document.getElementById('tabla-recojos');
-  if(!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Cargando recojos...</td></tr>';
+  if (!tbody) return;
+
+  // Actualizar tab activo
+  document.querySelectorAll('.filtro-recojo').forEach(b => {
+    const activo = b.dataset.filtro === filtro;
+    b.classList.toggle('btn-primario', activo);
+    b.classList.toggle('btn-secundario', !activo);
+  });
+
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Cargando...</td></tr>';
   try {
-    const recojos = await fetchAuth('/recojotienda');
+    let todos = await fetchAuth('/recojotienda');
+
+    // Para el tab "En Espera": detectar pedidos LISTO_PARA_RECOGER sin registro de recojo
+    // y crearlos automáticamente (pedidos que llegaron a ese estado por ruta anómala)
+    if (filtro === 'LISTO_PARA_RECOGER') {
+      const pedidosListo = await fetchAuth('/pedidos').then(ps => ps.filter(p => p.estado === 'LISTO_PARA_RECOGER'));
+      const idsConRecojo = new Set(todos.filter(r => r.pedido).map(r => r.pedido.id));
+      const pedidosSinRecojo = pedidosListo.filter(p => !idsConRecojo.has(p.id));
+
+      if (pedidosSinRecojo.length > 0) {
+        await Promise.all(pedidosSinRecojo.map(p =>
+          fetchAuth('/recojotienda', 'POST', {
+            pedido: { id: p.id },
+            codigo_recojo: 'REC-' + Math.random().toString(36).substring(2, 8).toUpperCase()
+          }).catch(() => null)
+        ));
+        todos = await fetchAuth('/recojotienda');
+      }
+    }
+
+    const recojos = todos.filter(r => r.pedido && r.pedido.estado === filtro);
+
     if (recojos.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No hay recojos registrados.</td></tr>';
+      const labels = { LISTO_PARA_RECOGER: 'pedidos esperando recojo', NO_RECOGIDO: 'pedidos no recogidos', RECOGIDO: 'pedidos completados' };
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--cafe); opacity:0.6;">No hay ${labels[filtro] || 'registros'}.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = recojos.map(r => {
       const p = r.pedido;
-      const cliNombre = p && p.usuario ? p.usuario.nombre : 'Cliente';
-      const cliCorreo = p && p.usuario ? p.usuario.correo : '';
-      const codigo = r.codigo_recojo;
-      const fechaDisp = r.fecha_disponible || 'No asignada';
-      // El estado está en el Pedido, no en RecojoTienda (la entidad no tiene campo estado)
-      const estadoPedido = p ? p.estado : null;
-
-      let pildoraClase = 'estado-pendiente';
-      if (estadoPedido === 'EN_PREPARACION')     pildoraClase = 'rol-almacenero';
-      if (estadoPedido === 'LISTO_PARA_RECOGER') pildoraClase = 'rol-vendedor';
-      if (estadoPedido === 'RECOGIDO')            pildoraClase = 'estado-ok';
-      if (estadoPedido === 'NO_RECOGIDO')         pildoraClase = 'estado-fallo';
-      if (estadoPedido === 'CANCELADO')           pildoraClase = 'estado-fallo';
+      const cliNombre = p?.usuario?.nombre || 'Cliente';
+      const cliCorreo = p?.usuario?.correo || '';
+      const codigo = r.codigo_recojo || '—';
+      const fechaDisp = r.fecha_disponible
+        ? new Date(r.fecha_disponible).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })
+        : 'No asignada';
+      const estadoPedido = p?.estado;
+      const claseBadge = CLASE_PILDORA[estadoPedido] || 'estado-pendiente';
+      const etiqueta = ETIQUETAS_ESTADO[estadoPedido] || estadoPedido || '—';
 
       let accionBtn = '';
-      if (estadoPedido === 'EN_PREPARACION') {
-        accionBtn = `<button class="btn btn-primario btn-mini" onclick="marcarListoParaRecoger(${r.id}, ${p ? p.id : null})">Listo para Recoger</button>`;
-      } else if (estadoPedido === 'LISTO_PARA_RECOGER') {
-        accionBtn = `<button class="btn btn-ok btn-mini" style="background:var(--sage); color:#fff; border:none; padding:4px 8px; border-radius:6px; cursor:pointer;" onclick="marcarRecogido(${p ? p.id : null})">Entregar al Cliente</button>`;
-      } else if (estadoPedido === 'NO_RECOGIDO') {
-        accionBtn = `<span style="font-size:0.8rem; color:var(--alerta); font-weight:600;">No recogido a tiempo</span>`;
+      if (filtro === 'LISTO_PARA_RECOGER') {
+        accionBtn = `
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-mini" style="background:var(--sage-oscuro); color:#fff; border:none; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'Outfit',sans-serif;"
+              onclick="confirmarRecojo(${p?.id}, 'RECOGIDO')">✓ Recogido</button>
+            <button class="btn btn-mini" style="background:var(--alerta); color:#fff; border:none; border-radius:6px; padding:4px 10px; cursor:pointer; font-family:'Outfit',sans-serif;"
+              onclick="confirmarRecojo(${p?.id}, 'NO_RECOGIDO')">✗ No Recogido</button>
+          </div>`;
+      } else if (filtro === 'NO_RECOGIDO') {
+        accionBtn = `<button class="btn btn-mini btn-secundario" onclick="confirmarRecojo(${p?.id}, 'LISTO_PARA_RECOGER')">↩ Reactivar</button>`;
       } else {
-        accionBtn = `<span style="font-size:0.8rem; color:var(--cafe); opacity:0.7;">Sin acciones</span>`;
+        accionBtn = `<span style="font-size:0.8rem; color:var(--cafe); opacity:0.6;">Completado</span>`;
       }
 
       return `
         <tr>
-          <td>${p ? p.id : '-'}</td>
+          <td>#${p?.id || '—'}</td>
           <td>
             <strong>${cliNombre}</strong><br>
             <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${cliCorreo}</span>
           </td>
-          <td><code class="mono" style="font-weight:600;">${codigo}</code></td>
-          <td>${fechaDisp}</td>
-          <td><span class="pildora ${pildoraClase}">${estadoPedido || '-'}</span></td>
+          <td><code style="font-family:'Space Mono',monospace; font-weight:700; font-size:0.85rem; color:var(--cafe-oscuro);">${codigo}</code></td>
+          <td style="font-size:0.85rem;">${fechaDisp}</td>
+          <td><span class="pildora ${claseBadge}" style="font-size:0.72rem;">${etiqueta}</span></td>
           <td>${accionBtn}</td>
-        </tr>
-      `;
+        </tr>`;
     }).join('');
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--alerta); text-align:center; padding:20px;">Error: ${e.message}</td></tr>`;
   }
 }
 
-// Avanza el pedido a LISTO_PARA_RECOGER y registra fecha_disponible en RecojoTienda
-// (fecha_disponible inicia el temporizador del Job A para auto-transición a NO_RECOGIDO)
-async function marcarListoParaRecoger(recojoId, pedidoId) {
+/* ==========================================================
+   CONFIGURACIÓN DE PLAZOS DE RECOJO
+   ========================================================== */
+let _configPlazosAbierta = false;
+
+function toggleConfigPlazos() {
+  _configPlazosAbierta = !_configPlazosAbierta;
+  document.getElementById('config-plazos-body').style.display = _configPlazosAbierta ? 'block' : 'none';
+  const chevron = document.getElementById('config-chevron');
+  if (chevron) chevron.style.transform = _configPlazosAbierta ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function actualizarResumenPlazos() {
+  const diasRecojo   = parseInt(document.getElementById('config-dias-recojo')?.value)   || 5;
+  const diasCancelar = parseInt(document.getElementById('config-dias-cancelar')?.value) || 7;
+  const resumen = document.getElementById('config-plazos-resumen');
+  if (!resumen) return;
+  const pl = n => `${n} día${n !== 1 ? 's' : ''} hábil${n !== 1 ? 'es' : ''}`;
+  resumen.innerHTML = `
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; line-height:2.2; font-size:0.8rem;">
+      <span style="background:var(--sage-oscuro); color:#fff; padding:3px 10px; border-radius:6px; white-space:nowrap;">Listo para Recoger</span>
+      <span style="color:var(--cafe); opacity:0.55; white-space:nowrap; font-weight:600;">── ${pl(diasRecojo)} ──▶</span>
+      <span style="background:#b45309; color:#fff; padding:3px 10px; border-radius:6px; white-space:nowrap;">No Recogido</span>
+      <span style="color:var(--cafe); opacity:0.55; white-space:nowrap; font-weight:600;">── ${pl(diasCancelar)} ──▶</span>
+      <span style="background:var(--alerta); color:#fff; padding:3px 10px; border-radius:6px; white-space:nowrap;">Cancelado + Reembolso</span>
+    </div>
+    <div style="font-size:0.72rem; color:var(--cafe); opacity:0.6; margin-top:8px;">
+      Plazo total desde disponibilidad: <strong>${diasRecojo + diasCancelar} días hábiles</strong>. El sistema verifica automáticamente cada 15 minutos.
+    </div>`;
+}
+
+async function cargarConfigPlazos() {
+  const sesion = getSessionData();
+  const empresaId = sesion?.empresa_id;
+  const card = document.getElementById('card-config-plazos');
+  if (!empresaId) {
+    if (card) card.innerHTML = `<p style="font-size:0.82rem; color:var(--cafe); opacity:0.7; margin:0;">La configuración de plazos no aplica para administradores sin empresa asignada.</p>`;
+    return;
+  }
   try {
-    // 1. Registrar fecha_disponible en RecojoTienda para el Job A
-    const recojo = await fetchAuth(`/recojotienda/${recojoId}`);
-    recojo.fecha_disponible = new Date().toISOString();
-    await fetchAuth('/recojotienda', 'PUT', recojo);
+    const config = await fetchAuth(`/configuracion-despacho/${empresaId}`);
+    const inputRecojo   = document.getElementById('config-dias-recojo');
+    const inputCancelar = document.getElementById('config-dias-cancelar');
+    if (inputRecojo)   inputRecojo.value   = config.diasHabilesParaRecojo                ?? 5;
+    if (inputCancelar) inputCancelar.value = config.diasHabilesParaCancelarNoRecogido    ?? 7;
+    actualizarResumenPlazos();
+  } catch (e) {
+    const statusEl = document.getElementById('config-plazos-status');
+    if (statusEl) statusEl.textContent = 'No se pudo cargar la configuración.';
+  }
+}
 
-    // 2. Avanzar el pedido → LISTO_PARA_RECOGER (dispara notificación al cliente)
-    await fetchAuth('/pedidos', 'PUT', { id: pedidoId, estado: 'LISTO_PARA_RECOGER' });
+async function guardarConfigPlazos() {
+  const sesion = getSessionData();
+  const empresaId = sesion?.empresa_id;
+  if (!empresaId) return showToast('Sin empresa asociada en la sesión', true);
 
-    showToast('Pedido marcado como Listo para Recoger. Notificación enviada al cliente.');
-    cargarRecojos();
+  const diasRecojo   = parseInt(document.getElementById('config-dias-recojo').value);
+  const diasCancelar = parseInt(document.getElementById('config-dias-cancelar').value);
+  if (isNaN(diasRecojo) || isNaN(diasCancelar) || diasRecojo < 1 || diasCancelar < 1) {
+    return showToast('Ambos valores deben ser al menos 1 día hábil', true);
+  }
+
+  const btn      = document.getElementById('btn-guardar-config-plazos');
+  const statusEl = document.getElementById('config-plazos-status');
+  btn.disabled   = true;
+  btn.textContent = 'Guardando...';
+  if (statusEl) statusEl.textContent = '';
+
+  try {
+    await fetchAuth(`/configuracion-despacho/${empresaId}`, 'PUT', {
+      dias_habiles_para_recojo:               diasRecojo,
+      dias_habiles_para_cancelar_no_recogido: diasCancelar
+    });
+    showToast('Configuración de plazos actualizada');
+    if (statusEl) statusEl.textContent = `Guardado a las ${new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`;
+    actualizarResumenPlazos();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+    if (statusEl) statusEl.textContent = 'Error al guardar.';
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Guardar cambios';
+  }
+}
+
+async function confirmarRecojo(pedidoId, nuevoEstado) {
+  const msgs = {
+    'RECOGIDO':           `¿Confirmar que el cliente recogió el pedido #${pedidoId}?`,
+    'NO_RECOGIDO':        `¿Marcar el pedido #${pedidoId} como No Recogido?`,
+    'LISTO_PARA_RECOGER': `¿Reactivar el pedido #${pedidoId} a Listo para Recoger?`
+  };
+  if (!confirm(msgs[nuevoEstado] || '¿Confirmar?')) return;
+  try {
+    await fetchAuth('/pedidos', 'PUT', { id: pedidoId, estado: nuevoEstado });
+    const etiqueta = ETIQUETAS_ESTADO[nuevoEstado] || nuevoEstado;
+    showToast(`Pedido #${pedidoId} → "${etiqueta}"`);
+    // Recargar el tab activo
+    const tabActivo = document.querySelector('.filtro-recojo.btn-primario')?.dataset?.filtro || 'LISTO_PARA_RECOGER';
+    cargarRecojos(tabActivo);
   } catch (err) {
     showToast(`Error: ${err.message}`, true);
   }
 }
 
-// Avanza el pedido a RECOGIDO (registra fecha_recogido en el backend automáticamente)
-async function marcarRecogido(pedidoId) {
-  try {
-    await fetchAuth('/pedidos', 'PUT', { id: pedidoId, estado: 'RECOGIDO' });
-    showToast('Pedido entregado al cliente.');
-    cargarRecojos();
-  } catch (err) {
-    showToast(`Error: ${err.message}`, true);
-  }
-}
+
 
 
 </script>
