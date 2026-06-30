@@ -130,6 +130,48 @@ public class UsuariosController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/usuarios/me")
+    public ResponseEntity<?> modificarMiPerfil(HttpServletRequest request, @RequestBody Usuarios usuarioDatos) {
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autenticado");
+        }
+
+        String token = header.substring(7);
+        if (!jwtUtil.validarToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido o expirado");
+        }
+
+        String userIdStr = jwtUtil.extraerUsuarioId(token);
+        Optional<Usuarios> existenteOpt;
+        try {
+            existenteOpt = serviceUsuarios.buscarId(Long.parseLong(userIdStr));
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido");
+        }
+
+        if (existenteOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+
+        Usuarios existente = existenteOpt.get();
+
+        if (usuarioDatos.getNombre() != null && !usuarioDatos.getNombre().trim().isEmpty()) {
+            existente.setNombre(usuarioDatos.getNombre().trim());
+        }
+
+        if (usuarioDatos.getTelefono() != null) {
+            String telefono = usuarioDatos.getTelefono();
+            if (!telefono.matches("\\d{9}")) {
+                return ResponseEntity.badRequest().body("El teléfono debe contener exactamente 9 dígitos.");
+            }
+            existente.setTelefono(telefono);
+        }
+
+        serviceUsuarios.guardar(existente);
+        return ResponseEntity.ok("Perfil actualizado correctamente");
+    }
+
     // Registro de nuevo usuario
     @PostMapping("/usuarios/registro")
     public ResponseEntity<?> registrar(@RequestBody Usuarios usuario) {

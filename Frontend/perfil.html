@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis Pedidos — WebRopa</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="css/style.css" />
+  
+  <style>
+    .orders-container {
+      max-width: 900px;
+      margin: 4rem auto;
+    }
+    .order-card {
+      background: var(--color-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .order-card:hover {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transform: translateY(-2px);
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 1rem;
+    }
+    .order-header h3 {
+      font-family: var(--font-serif);
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--color-primary);
+    }
+    .order-meta {
+      display: flex;
+      gap: 2rem;
+      color: var(--color-muted);
+      font-size: 0.9rem;
+    }
+    .order-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .order-item-mini {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #fafafa;
+      padding: 0.75rem;
+      border-radius: 8px;
+    }
+    .order-item-mini img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .order-item-mini h4 {
+      margin: 0;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+    .order-item-mini p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: var(--color-muted);
+    }
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--color-border);
+    }
+    .order-total {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    
+    /* Estados */
+    .badge-estado {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .estado-PENDIENTE { background: #fff3cd; color: #856404; }
+    .estado-CONFIRMADO { background: #d4edda; color: #155724; }
+    .estado-EN_PREPARACION { background: #cce5ff; color: #004085; }
+    .estado-LISTO_PARA_RECOGER { background: #FDF7E3; color: #C89B1F; }
+    .estado-RECOGIDO { background: #e2e3e5; color: #383d41; }
+    .estado-CANCELADO    { background: #f8d7da; color: #721c24; }
+    .estado-NO_RECOGIDO  { background: #f8d7da; color: #721c24; }
+    .estado-EN_CAMINO    { background: #cce5ff; color: #004085; }
+    .estado-ENTREGADO    { background: #e2e3e5; color: #383d41; }
+
+    /* Campanita de notificaciones */
+    .notif-wrapper { position: relative; display: none; margin-right: 1rem; }
+    .notif-btn {
+      background: none; border: none; cursor: pointer;
+      position: relative; padding: 6px; color: var(--color-text);
+      display: flex; align-items: center;
+    }
+    .notif-badge {
+      display: none; position: absolute; top: -2px; right: -2px;
+      background: #c94c4c; color: #fff; border-radius: 50%;
+      width: 17px; height: 17px; font-size: 10px;
+      align-items: center; justify-content: center; font-weight: 700;
+    }
+    .notif-dropdown {
+      display: none; position: absolute; right: 0; top: 40px;
+      background: #fff; border: 1px solid #e8e8e8;
+      border-radius: 12px; width: 320px; max-height: 400px;
+      overflow-y: auto; box-shadow: 0 6px 24px rgba(0,0,0,0.1); z-index: 1000;
+    }
+    .notif-header {
+      padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
+      font-weight: 600; font-size: 0.9rem; color: var(--color-primary);
+    }
+    .notif-item {
+      padding: 12px 16px; border-bottom: 1px solid #f8f8f8;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .notif-item:hover { background: #fafafa; }
+    .notif-item.leida { opacity: 0.55; }
+    .notif-item-inner { display: flex; gap: 10px; align-items: flex-start; }
+    .notif-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .notif-msg { font-size: 0.82rem; color: #333; line-height: 1.4; }
+    .notif-fecha { font-size: 0.72rem; color: #999; margin-top: 3px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--color-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar" role="banner">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__logo" id="logo-link">
+        <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
+      </a>
+      
+      <div class="navbar__actions">
+
+        <!-- Campanita de notificaciones -->
+        <div class="notif-wrapper" id="notif-wrapper">
+          <button class="notif-btn" id="notif-btn" aria-label="Notificaciones">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notif-badge" id="notif-badge"></span>
+          </button>
+          <div class="notif-dropdown" id="notif-dropdown">
+            <div class="notif-header">Notificaciones</div>
+            <div id="notif-list"></div>
+          </div>
+        </div>
+
+        <!-- User dropdown -->
+        <div class="user-menu" id="user-menu">
+          <button class="user-menu__trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true" aria-label="Menú de usuario">
+            <!-- Guest icon -->
+            <svg class="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20 C4 16, 8 13, 12 13 S20 16, 20 20" stroke-linecap="round"/>
+            </svg>
+            <span class="user-menu__name" id="user-display-name">Entrar</span>
+          </button>
+          <div class="user-menu__dropdown" id="user-dropdown" role="menu" aria-hidden="true">
+            <!-- Guest state -->
+            <div class="dropdown-guest" id="dropdown-guest-view">
+              <button class="dropdown-item dropdown-item--cta" id="btn-open-login" role="menuitem" onclick="window.location.href='index.html'">
+                Iniciar sesión
+              </button>
+            </div>
+            <!-- Logged-in state -->
+            <div class="dropdown-user" id="dropdown-user-view" style="display:none;">
+              <a href="perfil.html" class="dropdown-item" role="menuitem">Mi Perfil</a>
+              <a href="#" id="nav-mis-pedidos" class="dropdown-item" role="menuitem">Mis Pedidos</a>
+              <hr class="dropdown-divider"/>
+              <button class="dropdown-item dropdown-item--danger" id="btn-logout" role="menuitem">Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="section-container" style="max-width: 600px; margin: 0 auto; padding-top: 4rem;">
+    <div class="orders-container" style="padding: 2.5rem; background: var(--color-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+      <h1 style="font-family: var(--font-serif); margin-bottom: 0.5rem; text-align: center; color: var(--color-brown); font-size: 2rem;">Mi Perfil</h1>
+      <p style="text-align: center; color: var(--color-text-muted); margin-bottom: 2rem;">Configura tu información básica</p>
+      
+      <form id="perfil-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label for="perfil-nombre" style="font-weight: 600; font-size: 0.9rem; color: var(--color-text);">Nombre Completo</label>
+          <input type="text" id="perfil-nombre" class="form-field__input" style="padding: 0.85rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-family: var(--font-sans);" required>
+        </div>
+        
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label for="perfil-telefono" style="font-weight: 600; font-size: 0.9rem; color: var(--color-text);">Teléfono</label>
+          <input type="text" id="perfil-telefono" class="form-field__input" style="padding: 0.85rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-family: var(--font-sans);" required>
+        </div>
+
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label for="perfil-correo" style="font-weight: 600; font-size: 0.9rem; color: var(--color-text);">Correo Electrónico (No modificable)</label>
+          <input type="email" id="perfil-correo" class="form-field__input" style="padding: 0.85rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg-secondary); color: var(--color-text-muted); cursor: not-allowed; font-family: var(--font-sans);" disabled>
+        </div>
+        
+        <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label for="perfil-password" style="font-weight: 600; font-size: 0.9rem; color: var(--color-text);">Contraseña</label>
+          <input type="password" id="perfil-password" class="form-field__input" value="********" style="padding: 0.85rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg-secondary); color: var(--color-text-muted); cursor: not-allowed; font-family: var(--font-sans);" disabled>
+          <small style="color: var(--color-text-muted); font-size: 0.8rem;">La contraseña no se puede cambiar desde aquí por el momento.</small>
+        </div>
+
+        <button type="submit" class="auth-submit-btn" style="margin-top: 1rem; width: 100%;" id="btn-save-profile">Guardar Cambios</button>
+        <p id="perfil-mensaje" style="text-align: center; margin-top: 1rem; font-weight: 500; font-size: 0.9rem; display: none;"></p>
+      </form>
+    </div>
+  </main>
+
+  <footer class="footer" style="margin-top: 4rem;">
+    <div class="footer__inner">
+      <p>&copy; 2026 WebRopa. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Modal de Confirmación -->
+  <div class="modal-overlay" id="confirm-modal" hidden style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: var(--color-white); padding: 2rem; border-radius: var(--radius-lg); max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+      <h3 style="font-family: var(--font-serif); font-size: 1.5rem; color: var(--color-brown); margin-bottom: 1rem;">¿Guardar Cambios?</h3>
+      <p style="color: var(--color-text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Estás a punto de modificar tu información básica. ¿Deseas continuar?</p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button id="btn-cancel-save" class="auth-submit-btn" style="background: var(--color-bg-secondary); color: var(--color-text); border: 1px solid var(--color-border); flex: 1;">No, Cancelar</button>
+        <button id="btn-confirm-save" class="auth-submit-btn" style="flex: 1;">Sí, Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config/config.js"></script>
+  <script src="services/api.service.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const sesion = JSON.parse(localStorage.getItem('webropa_user') || 'null');
+      if (!sesion || !sesion.token) {
+        alert("Debes iniciar sesión para ver tu perfil.");
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Cargar datos actuales del usuario
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/usuarios/me`, {
+          headers: { 'Authorization': 'Bearer ' + sesion.token }
+        });
+        
+        if (res.ok) {
+          const usuario = await res.json();
+          document.getElementById('perfil-nombre').value = usuario.nombre || '';
+          document.getElementById('perfil-telefono').value = usuario.telefono || '';
+          document.getElementById('perfil-correo').value = usuario.correo || '';
+        } else {
+          console.error("No se pudo cargar el perfil.");
+        }
+      } catch (error) {
+        console.error("Error al cargar perfil:", error);
+      }
+    });
+
+    const confirmModal = document.getElementById('confirm-modal');
+    const msgEl = document.getElementById('perfil-mensaje');
+    
+    // Al intentar enviar el form, mostramos el modal
+    document.getElementById('perfil-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      confirmModal.style.display = 'flex';
+      confirmModal.hidden = false;
+    });
+
+    // Cancelar en el modal lleva al portal
+    document.getElementById('btn-cancel-save').addEventListener('click', () => {
+      window.location.href = 'portal.html';
+    });
+
+    // Confirmar guardar
+    document.getElementById('btn-confirm-save').addEventListener('click', async () => {
+      confirmModal.style.display = 'none';
+      confirmModal.hidden = true;
+      
+      const sesion = JSON.parse(localStorage.getItem('webropa_user') || 'null');
+      const payload = {
+        id: sesion.clientId,
+        nombre: document.getElementById('perfil-nombre').value,
+        telefono: document.getElementById('perfil-telefono').value
+      };
+
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/usuarios/me`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + sesion.token 
+          },
+          body: JSON.stringify(payload)
+        });
+
+        msgEl.style.display = 'block';
+        if (res.ok) {
+          msgEl.style.color = '#3b82f6';
+          msgEl.textContent = '¡Perfil actualizado exitosamente!';
+          
+          sesion.nombre = payload.nombre;
+          localStorage.setItem('webropa_user', JSON.stringify(sesion));
+          
+          const headerName = document.getElementById('user-display-name');
+          if (headerName) headerName.textContent = payload.nombre.split(' ')[0];
+          
+          setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+        } else {
+          const text = await res.text();
+          msgEl.style.color = '#ef4444';
+          msgEl.textContent = 'Error: ' + text;
+        }
+      } catch (error) {
+        msgEl.style.display = 'block';
+        msgEl.style.color = '#ef4444';
+        msgEl.textContent = 'Error de conexión con el servidor.';
+      }
+    });
+  </script>
+</body>
+</html>
