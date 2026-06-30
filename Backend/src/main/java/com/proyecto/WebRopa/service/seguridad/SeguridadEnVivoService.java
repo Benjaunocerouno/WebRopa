@@ -70,4 +70,21 @@ public class SeguridadEnVivoService {
             }
         }
     }
+
+    public boolean esTokenValido(String token) {
+        SesionInfo sesion = sesionesPorToken.get(token);
+        // Si no está registrado en el map, lo dejamos pasar por compatibilidad si el servidor se reinició.
+        // Pero si SÍ está y fue revocado, entonces bloqueamos.
+        if (sesion != null && sesion.revocada) {
+            return false;
+        }
+        return true;
+    }
+
+    public void cerrarSesionPorToken(String token) {
+        SesionInfo sesion = sesionesPorToken.get(token);
+        if (sesion != null) {
+            sesion.revocada = true;
+        }
+    }
 }

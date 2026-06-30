@@ -590,7 +590,16 @@ btnIngresar.addEventListener('click', async () => {
   }
 });
 
-btnCerrar.addEventListener('click', () => {
+btnCerrar.addEventListener('click', async () => {
+  const s = getSessionData();
+  if (s && s.token) {
+    try {
+      await fetch(API_URL + '/usuarios/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + s.token }
+      });
+    } catch (e) { console.error("Error logging out", e); }
+  }
   localStorage.removeItem(SESSION_KEY);
   overlay.style.display = 'flex';
   document.getElementById('login-correo').value = '';

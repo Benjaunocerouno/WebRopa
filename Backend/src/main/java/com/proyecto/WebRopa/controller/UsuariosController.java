@@ -86,6 +86,16 @@ public class UsuariosController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/usuarios/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
+            seguridadEnVivoService.cerrarSesionPorToken(token);
+        }
+        return ResponseEntity.ok(Map.of("message", "Sesión cerrada"));
+    }
+
     @GetMapping("/usuarios/me")
     public ResponseEntity<?> obtenerMe(HttpServletRequest request) {
         String header = request.getHeader("Authorization");

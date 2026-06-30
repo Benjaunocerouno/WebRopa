@@ -185,7 +185,16 @@ document.getElementById('btn-ingresar').addEventListener('click', async () => {
     }
 });
 
-document.getElementById('btn-cerrar-sesion').addEventListener('click', () => {
+document.getElementById('btn-cerrar-sesion').addEventListener('click', async () => {
+    const s = getSessionData();
+    if (s && s.token) {
+        try {
+            await fetch(CONFIG.API_URL + '/usuarios/logout', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + s.token }
+            });
+        } catch (e) { console.error("Error logging out", e); }
+    }
     localStorage.removeItem(SESSION_KEY);
     document.getElementById('login-overlay').classList.remove('oculto');
 

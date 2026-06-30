@@ -156,23 +156,15 @@
           <h3>Sesiones activas</h3>
           <div style="display: flex; gap: 10px; align-items: center;">
             <input type="text" class="buscador-generico" data-target="tabla-sesiones" placeholder="Buscar sesión..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+            <button class="btn btn-secundario btn-mini" onclick="cargarSesionesLive()">↻ Refrescar</button>
             <span class="nota">Tabla optimizada para 50+ sesiones simultáneas</span>
           </div>
         </div>
         <p class="tarjeta-sub">Cierre forzado de sesión = invalida el token en curso. Revocar acceso = bloquea el nivel de permiso y devuelve HTTP 403 en la siguiente petición.</p>
         <table>
-          <thead><tr><th>ID usuario</th><th>Rol</th><th>IP</th><th>Última actividad</th><th colspan="2"></th></tr></thead>
+          <thead><tr><th>ID usuario</th><th>Rol</th><th>Última actividad</th><th colspan="2"></th></tr></thead>
           <tbody id="tabla-sesiones"></tbody>
         </table>
-      </div>
-
-      <div class="tarjeta">
-        <span class="etiqueta-doodle">Auto-bloqueo</span>
-        <div class="tarjeta-titulo">
-          <h3>Bloqueos por intentos de intrusión</h3>
-        </div>
-        <p class="tarjeta-sub">Más de 5 intentos fallidos en 10 minutos inhabilita la cuenta 15 minutos. Aun así, queda bloqueada hasta el desbloqueo manual del SuperAdmin.</p>
-        <div id="lista-bloqueos"></div>
       </div>
     </section>
 
@@ -507,7 +499,16 @@ document.getElementById('login-password').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('btn-ingresar').click();
 });
 
-document.getElementById('btn-cerrar-sesion').addEventListener('click', () => {
+document.getElementById('btn-cerrar-sesion').addEventListener('click', async () => {
+  const s = obtenerSesion();
+  if (s && s.token) {
+    try {
+      await fetch(CONFIG.API_URL + '/usuarios/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + s.token }
+      });
+    } catch (e) { console.error("Error logging out", e); }
+  }
   borrarSesion();
   document.getElementById('usuario-nombre').textContent = 'Cargando…';
   document.getElementById('avatar-iniciales').textContent = '–';
@@ -523,10 +524,6 @@ verificarSesion();
    DATOS DE DEMOSTRACIÓN
    ══════════════════════════════════════════ */
 
-let bloqueos = [
-  { usuario:'USR-6620 (vendedor)',   ip:'201.88.4.12', intentos:6, segundosRestantes: 312 },
-  { usuario:'USR-6633 (almacenero)', ip:'77.12.90.4',  intentos:8, segundosRestantes: 0   },
-];
 
 const roles = ['vendedor','almacenero','catalogo','supervisor'];
 const nombreRol = {
@@ -624,7 +621,6 @@ function pintarSesiones() {
     <tr class="${s.sospechosa ? 'fila-sospechosa' : ''}">
       <td class="mono">USR-${s.usuarioId} (${s.correo})</td>
       <td><span class="pildora rol-default">${s.rol}</span></td>
-      <td class="mono">${s.ip}</td>
       <td>${act}${s.sospechosa ? ' · <strong style="color:var(--alerta)">revisar</strong>' : ''}</td>
       <td><button class="btn btn-secundario btn-mini" data-revocar="${s.id}">Revocar acceso</button></td>
       <td><button class="btn btn-peligro btn-mini" data-cerrar="${s.id}">Forzar cierre</button></td>
@@ -633,8 +629,12 @@ function pintarSesiones() {
   document.getElementById('contador-sesiones').textContent = sesiones.length;
 }
 document.getElementById('tabla-sesiones').addEventListener('click', async (e) => {
-  const cerrar  = e.target.dataset.cerrar;
-  const revocar = e.target.dataset.revocar;
+  const btnCerrar = e.target.closest('[data-cerrar]');
+  const btnRevocar = e.target.closest('[data-revocar]');
+  
+  const cerrar = btnCerrar ? btnCerrar.dataset.cerrar : null;
+  const revocar = btnRevocar ? btnRevocar.dataset.revocar : null;
+  
   const s = obtenerSesion();
   if (!s || !s.token) return;
 
@@ -656,49 +656,6 @@ document.getElementById('tabla-sesiones').addEventListener('click', async (e) =>
 cargarSesionesLive();
 setInterval(cargarSesionesLive, 10000);
 
-/* ── Bloqueos ── */
-function formatoTiempo(s) {
-  if (s <= 0) return null;
-  const m = Math.floor(s / 60), sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, '0')}`;
-}
-function pintarBloqueos() {
-  const cont = document.getElementById('lista-bloqueos');
-  if (bloqueos.length === 0) {
-    cont.innerHTML = `<p class="tarjeta-sub" style="margin:0;">No hay cuentas bloqueadas por intrusión en este momento.</p>`;
-    return;
-  }
-  cont.innerHTML = bloqueos.map((b, i) => {
-    const tiempo = formatoTiempo(b.segundosRestantes);
-    return `
-      <div class="fila-bloqueo">
-        <div class="detalle">
-          <strong>${b.usuario}</strong> · <span class="ip mono">${b.ip}</span><br>
-          <span class="nota">${b.intentos} intentos fallidos en 10 min</span>
-        </div>
-        ${tiempo
-          ? `<span class="cronometro">⏱ ${tiempo} restante (auto)</span>`
-          : `<span class="pildora estado-fallo">Tiempo expirado · pendiente</span>`
-        }
-        <button class="btn btn-secundario btn-mini" data-desbloquear="${i}">Desbloquear manualmente</button>
-      </div>
-    `;
-  }).join('');
-}
-document.getElementById('lista-bloqueos').addEventListener('click', (e) => {
-  const idx = e.target.dataset.desbloquear;
-  if (idx === undefined) return;
-  const u = bloqueos[idx].usuario;
-  bloqueos.splice(idx, 1);
-  pintarBloqueos();
-  mostrarToast(`${u} desbloqueado manualmente`);
-});
-pintarBloqueos();
-setInterval(() => {
-  let cambio = false;
-  bloqueos.forEach(b => { if (b.segundosRestantes > 0) { b.segundosRestantes--; cambio = true; } });
-  if (cambio) pintarBloqueos();
-}, 1000);
 
 /* ── Roles ── */
 document.getElementById('btn-asignar-rol').addEventListener('click', () => {
@@ -1072,6 +1029,19 @@ verificarSesion = async function() {
 };
 verificarSesion();
 
+// Buscador genérico funcional
+document.querySelectorAll('.buscador-generico').forEach(input => {
+  input.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const targetId = e.target.dataset.target;
+    const tbody = document.getElementById(targetId);
+    if (!tbody) return;
+    Array.from(tbody.getElementsByTagName('tr')).forEach(tr => {
+      const text = tr.textContent.toLowerCase();
+      tr.style.display = text.includes(term) ? '' : 'none';
+    });
+  });
+});
 </script>
 
 </body>
