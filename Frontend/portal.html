@@ -94,18 +94,41 @@
 </head>
 <body>
 
-  <!-- Header / Navbar Simplificado para el Portal -->
-  <header class="header">
+  <!-- Header / Navbar adaptado del index -->
+  <header class="navbar" role="banner">
     <div class="navbar__inner">
-      <a href="portal.html" class="logo" aria-label="Volver al inicio del portal">
-        <span class="logo__text">Mood&Co</span>
+
+      <!-- Logo -->
+      <a href="portal.html" class="navbar__logo" aria-label="WebRopa - Portal">
+        <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
+        <!-- Doodle leaf decoration -->
         <svg class="logo__doodle" viewBox="0 0 40 40" fill="none" aria-hidden="true">
           <path d="M20 35 C10 25, 5 10, 20 5 C35 10, 30 25, 20 35Z" stroke="#A8B89C" stroke-width="1.5" fill="none"/>
           <line x1="20" y1="5" x2="20" y2="35" stroke="#A8B89C" stroke-width="1" stroke-dasharray="3,2"/>
         </svg>
       </a>
       
-      <span style="font-family: var(--font-serif); font-style: italic; color: var(--color-text-muted); font-size: 0.95rem;">Portal de Boutiques Independientes</span>
+      <div style="flex-grow: 1; display: flex; align-items: center; padding-left: 20px;">
+        <span style="font-family: var(--font-serif); font-style: italic; color: var(--color-text-muted); font-size: 1.1rem; opacity: 0.8; display: none;">Portal de Boutiques Independientes</span>
+      </div>
+
+      <!-- Search bar -->
+      <div class="navbar__search">
+        <label for="search-input" class="sr-only">Buscar productos o boutiques</label>
+        <div class="search-box">
+          <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M16.5 16.5 L21 21" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            id="search-input-portal"
+            class="search-box__input"
+            placeholder="Buscar productos o tiendas..."
+            autocomplete="off"
+          />
+        </div>
+      </div>
 
       <div class="navbar__actions">
         <!-- User dropdown -->
@@ -320,5 +343,23 @@
   <script src="services/api.service.js"></script>
   <script src="js/app.js"></script>
   <script src="js/portal.js"></script>
+  <script>
+    document.getElementById('search-input-portal').addEventListener('input', (e) => {
+      const normalizar = (texto) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const termino = normalizar(e.target.value);
+
+      // Filtrar boutiques
+      document.querySelectorAll('.portal-company-card').forEach(card => {
+        const texto = normalizar(card.textContent);
+        card.style.display = texto.includes(termino) ? '' : 'none';
+      });
+
+      // Filtrar productos
+      document.querySelectorAll('.product-card').forEach(card => {
+        const texto = normalizar(card.textContent);
+        card.style.display = texto.includes(termino) ? '' : 'none';
+      });
+    });
+  </script>
 </body>
 </html>
