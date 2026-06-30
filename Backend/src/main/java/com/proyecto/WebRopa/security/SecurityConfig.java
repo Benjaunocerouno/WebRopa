@@ -29,7 +29,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/token", "/api/registros").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/usuarios/login", "/api/usuarios/registro").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/usuarios/me").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/productos", "/api/productos/**", "/api/categorias", "/api/categorias/**", "/api/empresas", "/api/empresas/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/productos", "/api/productos/**", "/api/categorias", "/api/categorias/**", "/api/empresas", "/api/empresas/**", "/api/sucursales", "/api/sucursales/**").permitAll()
                     .anyRequest().authenticated())
                     .addFilterBefore(jwtFilter,
                     UsernamePasswordAuthenticationFilter.class);

@@ -89,6 +89,10 @@
         <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
         Dashboard Admin
       </button>
+      <button class="menu-item" data-panel="sucursales">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M9 9h6M9 13h6M9 17h6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Sucursales
+      </button>
       <button class="menu-item" data-panel="empleados">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
         Empleados
@@ -138,31 +142,138 @@
       </div>
     </section>
 
+    <!-- SUCURSALES -->
+    <section class="panel" id="panel-sucursales">
+      <div class="topbar">
+        <div>
+          <h2>Gestión de Sucursales</h2>
+          <p class="descripcion">Registra y administra las sucursales y puntos de venta físicos de tu boutique.</p>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Registrar Nueva Sucursal</h3>
+        </div>
+        <div class="grid-doble" style="margin-bottom: 15px;">
+          <input type="hidden" id="suc-id">
+          <div class="campo"><label class="etiqueta-campo">Nombre / Etiqueta</label><input type="text" id="suc-nombre" placeholder="Ej. Tienda Jockey Plaza"></div>
+          <div class="campo"><label class="etiqueta-campo">Ciudad / Distrito</label><input type="text" id="suc-ciudad" placeholder="Ej. Lima, Surco"></div>
+          <div class="campo" style="grid-column: span 2;"><label class="etiqueta-campo">Dirección Completa</label><input type="text" id="suc-direccion" placeholder="Av. Javier Prado Este 4200"></div>
+          <div class="campo"><label class="etiqueta-campo">Teléfono de Contacto</label><input type="text" id="suc-telefono" placeholder="Opcional"></div>
+          <div class="campo"><label class="etiqueta-campo">Estado</label>
+            <select id="suc-estado">
+              <option value="ACTIVO">ACTIVA</option>
+              <option value="INACTIVO">INACTIVA</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primario" id="btn-guardar-sucursal">Guardar Sucursal</button>
+          <button class="btn btn-secundario oculto" id="btn-cancelar-sucursal">Cancelar Edición</button>
+        </div>
+      </div>
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Listado de Sucursales</h3>
+          <button class="btn btn-secundario btn-mini" onclick="cargarSucursales()">↻ Refrescar</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Ciudad</th>
+              <th>Dirección</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-sucursales">
+            <tr><td colspan="6" style="text-align:center;">Cargando sucursales...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- EMPLEADOS -->
     <section class="panel" id="panel-empleados">
       <div class="topbar">
         <div>
           <h2>Gestión de Empleados</h2>
-          <p class="descripcion">Registra y administra los accesos para el personal de tu empresa.</p>
+          <p class="descripcion">Registra y administra los accesos para el personal de tu empresa, incluyendo detalles específicos para tiendas de moda.</p>
         </div>
       </div>
       <div class="tarjeta">
         <div class="tarjeta-titulo">
-          <h3>Registrar Empleado (Prototipo)</h3>
+          <h3>Registrar / Editar Empleado</h3>
         </div>
         <div class="grid-doble" style="margin-bottom: 15px;">
-          <div class="campo"><label class="etiqueta-campo">Nombres</label><input type="text" placeholder="Ej. Juan Pérez"></div>
-          <div class="campo"><label class="etiqueta-campo">Correo</label><input type="email" placeholder="juan@boutique.com"></div>
+          <input type="hidden" id="emp-id">
+          <div class="campo"><label class="etiqueta-campo">Nombres Completos</label><input type="text" id="emp-nombre" placeholder="Ej. Juan Pérez"></div>
+          <div class="campo"><label class="etiqueta-campo">Correo</label><input type="email" id="emp-correo" placeholder="juan@boutique.com"></div>
+          <div class="campo"><label class="etiqueta-campo">Teléfono</label><input type="text" id="emp-telefono" placeholder="Ej. 987654321"></div>
+          <div class="campo"><label class="etiqueta-campo">Contraseña</label><input type="password" id="emp-password" placeholder="Solo para nuevos o cambiar"></div>
+          
           <div class="campo"><label class="etiqueta-campo">Rol Principal</label>
-            <select>
-              <option>Administrador</option>
-              <option>Encargado de Mantenimiento</option>
-              <option>Encargado de Despacho</option>
+            <select id="emp-rol">
+              <option value="">Cargando roles...</option>
             </select>
           </div>
-          <div class="campo"><label class="etiqueta-campo">Contraseña Temporal</label><input type="password" placeholder="••••••••"></div>
+          <div class="campo"><label class="etiqueta-campo">Sucursal Asignada</label>
+            <select id="emp-sucursal">
+              <option value="">Cargando sucursales...</option>
+            </select>
+          </div>
+          
+          <!-- Datos específicos del negocio de ropa -->
+          <div class="campo"><label class="etiqueta-campo">Especialidad de Venta</label>
+            <select id="emp-especialidad">
+              <option value="General">General / Múltiple</option>
+              <option value="Calzado">Calzado</option>
+              <option value="Vestimenta Formal">Vestimenta Formal</option>
+              <option value="Ropa Deportiva">Ropa Deportiva / Sport</option>
+              <option value="Accesorios">Joyería y Accesorios</option>
+            </select>
+          </div>
+          <div class="campo"><label class="etiqueta-campo">Talla de Uniforme</label>
+            <select id="emp-talla">
+              <option value="">No asignada</option>
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
+            </select>
+          </div>
+          <div class="campo"><label class="etiqueta-campo">Descuento Empleado (%)</label><input type="number" id="emp-descuento" placeholder="Ej. 15" min="0" max="100" value="0"></div>
         </div>
-        <button class="btn btn-primario">Registrar Empleado</button>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primario" id="btn-guardar-empleado">Guardar Empleado</button>
+          <button class="btn btn-secundario oculto" id="btn-cancelar-empleado">Cancelar Edición</button>
+        </div>
+      </div>
+      
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <h3>Lista de Empleados Activos</h3>
+          <button class="btn btn-secundario btn-mini" onclick="cargarEmpleados()">↻ Refrescar</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Rol</th>
+              <th>Sucursal</th>
+              <th>Especialidad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-empleados">
+            <tr><td colspan="6" style="text-align:center;">Cargando empleados...</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -393,6 +504,12 @@ document.getElementById('menu-navegacion').addEventListener('click', (e) => {
   if(btn.dataset.panel === 'categorias') cargarCategorias();
   if(btn.dataset.panel === 'pedidos') cargarPedidos();
   if(btn.dataset.panel === 'cupones') cargarCupones();
+  if(btn.dataset.panel === 'sucursales') cargarSucursales();
+  if(btn.dataset.panel === 'empleados') {
+    cargarEmpleados();
+    cargarRoles();
+    cargarSucursalesSelect();
+  }
 });
 
 async function aplicarUsuario(datos) {
@@ -1038,6 +1155,245 @@ async function eliminarCupon(id, codigo) {
     showToast(e.message, true);
   }
 }
+
+/* ==========================================================
+   SUCURSALES
+   ========================================================== */
+async function cargarSucursales() {
+  const tbody = document.getElementById('tabla-sucursales');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Cargando sucursales...</td></tr>';
+  try {
+    const sucursales = await fetchAuth('/sucursales');
+    if (sucursales.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No hay sucursales registradas.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = sucursales.map(s => `
+      <tr>
+        <td>${s.id}</td>
+        <td><strong>${s.nombre}</strong></td>
+        <td>${s.ciudad || '-'}</td>
+        <td>${s.direccion}</td>
+        <td><span class="pildora ${s.estado === 'ACTIVO' ? 'estado-ok' : 'estado-fallo'}">${s.estado}</span></td>
+        <td>
+          <button class="btn btn-secundario btn-mini" onclick="editarSucursal(${s.id}, '${s.nombre}', '${s.direccion}', '${s.telefono || ''}', '${s.ciudad || ''}', '${s.estado}')">Editar</button>
+          <button class="btn btn-peligro btn-mini" onclick="eliminarSucursal(${s.id}, '${s.nombre}')">Eliminar</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function cargarSucursalesSelect() {
+  const select = document.getElementById('emp-sucursal');
+  if(!select) return;
+  try {
+    const sucursales = await fetchAuth('/sucursales');
+    select.innerHTML = '<option value="">-- Seleccione Sucursal --</option>' + sucursales.map(s => `<option value="${s.id}">${s.nombre} (${s.ciudad || 'N/A'})</option>`).join('');
+  } catch (e) {
+    select.innerHTML = '<option value="">Error cargando sucursales</option>';
+  }
+}
+
+document.getElementById('btn-guardar-sucursal')?.addEventListener('click', async () => {
+  const id = document.getElementById('suc-id').value;
+  const nombre = document.getElementById('suc-nombre').value.trim();
+  const direccion = document.getElementById('suc-direccion').value.trim();
+  const ciudad = document.getElementById('suc-ciudad').value.trim();
+  const telefono = document.getElementById('suc-telefono').value.trim();
+  const estado = document.getElementById('suc-estado').value;
+  
+  if(!nombre || !direccion) return showToast('Nombre y dirección son obligatorios', true);
+  
+  const payload = { nombre, direccion, ciudad, telefono, estado };
+  const sesion = getSessionData();
+  if (sesion?.empresa_id) payload.empresa = { id: parseInt(sesion.empresa_id) };
+  
+  try {
+    if (id) {
+      payload.id = parseInt(id);
+      await fetchAuth('/sucursales', 'PUT', payload);
+      showToast('Sucursal actualizada');
+    } else {
+      await fetchAuth('/sucursales', 'POST', payload);
+      showToast('Sucursal creada');
+    }
+    cancelarEdicionSucursal();
+    cargarSucursales();
+  } catch(e) { showToast(e.message, true); }
+});
+
+function editarSucursal(id, nombre, direccion, telefono, ciudad, estado) {
+  document.getElementById('suc-id').value = id;
+  document.getElementById('suc-nombre').value = nombre;
+  document.getElementById('suc-direccion').value = direccion;
+  document.getElementById('suc-telefono').value = telefono;
+  document.getElementById('suc-ciudad').value = ciudad;
+  document.getElementById('suc-estado').value = estado;
+  
+  document.getElementById('btn-guardar-sucursal').textContent = 'Actualizar Sucursal';
+  document.getElementById('btn-cancelar-sucursal').classList.remove('oculto');
+  document.getElementById('suc-nombre').focus();
+}
+
+function cancelarEdicionSucursal() {
+  document.getElementById('suc-id').value = '';
+  document.getElementById('suc-nombre').value = '';
+  document.getElementById('suc-direccion').value = '';
+  document.getElementById('suc-telefono').value = '';
+  document.getElementById('suc-ciudad').value = '';
+  document.getElementById('suc-estado').value = 'ACTIVO';
+  document.getElementById('btn-guardar-sucursal').textContent = 'Guardar Sucursal';
+  document.getElementById('btn-cancelar-sucursal').classList.add('oculto');
+}
+document.getElementById('btn-cancelar-sucursal')?.addEventListener('click', cancelarEdicionSucursal);
+
+async function eliminarSucursal(id, nombre) {
+  if(!confirm(`¿Eliminar la sucursal "${nombre}"?`)) return;
+  try {
+    await fetchAuth(`/sucursales/${id}`, 'DELETE');
+    showToast('Sucursal eliminada');
+    cargarSucursales();
+  } catch (e) { showToast(e.message, true); }
+}
+
+
+/* ==========================================================
+   EMPLEADOS (Usuarios)
+   ========================================================== */
+async function cargarRoles() {
+  const select = document.getElementById('emp-rol');
+  if(!select) return;
+  try {
+    const roles = await fetchAuth('/roles');
+    select.innerHTML = '<option value="">-- Seleccione Rol --</option>' + roles.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
+  } catch (e) {
+    select.innerHTML = '<option value="">Error cargando roles</option>';
+  }
+}
+
+async function cargarEmpleados() {
+  const tbody = document.getElementById('tabla-empleados');
+  if(!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Cargando empleados...</td></tr>';
+  try {
+    const empleados = await fetchAuth('/usuarios');
+    if (empleados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No hay empleados registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = empleados.map(emp => {
+      const rolName = emp.rol ? emp.rol.nombre : 'Sin Rol';
+      const sucName = emp.sucursal ? emp.sucursal.nombre : 'General';
+      const esp = emp.especialidad || '-';
+      
+      return `
+        <tr>
+          <td>${emp.id}</td>
+          <td><strong>${emp.nombre}</strong><br><span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${emp.correo}</span></td>
+          <td><span class="pildora rol-catalogo">${rolName}</span></td>
+          <td>${sucName}</td>
+          <td>${esp}</td>
+          <td>
+            <button class="btn btn-secundario btn-mini" onclick="editarEmpleado(${emp.id}, '${emp.nombre}', '${emp.correo}', '${emp.telefono || ''}', ${emp.rol ? emp.rol.id : null}, ${emp.sucursal ? emp.sucursal.id : null}, '${emp.especialidad || ''}', '${emp.tallaUniforme || ''}', ${emp.descuentoEmpleado || 0})">Editar</button>
+            <button class="btn btn-peligro btn-mini" onclick="eliminarEmpleado(${emp.id}, '${emp.nombre}')">Eliminar</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+document.getElementById('btn-guardar-empleado')?.addEventListener('click', async () => {
+  const id = document.getElementById('emp-id').value;
+  const nombre = document.getElementById('emp-nombre').value.trim();
+  const correo = document.getElementById('emp-correo').value.trim();
+  const telefono = document.getElementById('emp-telefono').value.trim();
+  const password = document.getElementById('emp-password').value;
+  const rolId = document.getElementById('emp-rol').value;
+  const sucursalId = document.getElementById('emp-sucursal').value;
+  const especialidad = document.getElementById('emp-especialidad').value;
+  const tallaUniforme = document.getElementById('emp-talla').value;
+  const descuentoEmpleado = parseFloat(document.getElementById('emp-descuento').value) || 0;
+  
+  if(!nombre || !correo || !rolId) return showToast('Nombre, correo y rol son obligatorios', true);
+  
+  const payload = { 
+    nombre, correo, telefono, 
+    especialidad, tallaUniforme, descuentoEmpleado,
+    rol: { id: parseInt(rolId) }
+  };
+  
+  if (sucursalId) payload.sucursal = { id: parseInt(sucursalId) };
+  if (password) payload.password = password;
+  
+  const sesion = getSessionData();
+  if (sesion?.empresa_id) payload.empresa = { id: parseInt(sesion.empresa_id) };
+  
+  try {
+    if (id) {
+      payload.id = parseInt(id);
+      await fetchAuth('/usuarios', 'PUT', payload);
+      showToast('Empleado actualizado exitosamente');
+    } else {
+      if(!password) return showToast('Se requiere contraseña para empleado nuevo', true);
+      // Usaremos el endpoint admin para registrar a cualquier trabajador de su empresa
+      await fetchAuth('/usuarios/admin', 'POST', payload);
+      showToast('Empleado creado exitosamente');
+    }
+    cancelarEdicionEmpleado();
+    cargarEmpleados();
+  } catch(e) { showToast(e.message, true); }
+});
+
+function editarEmpleado(id, nombre, correo, telefono, rolId, sucursalId, especialidad, talla, descuento) {
+  document.getElementById('emp-id').value = id;
+  document.getElementById('emp-nombre').value = nombre;
+  document.getElementById('emp-correo').value = correo;
+  document.getElementById('emp-telefono').value = telefono;
+  document.getElementById('emp-password').value = '';
+  document.getElementById('emp-rol').value = rolId || '';
+  document.getElementById('emp-sucursal').value = sucursalId || '';
+  document.getElementById('emp-especialidad').value = especialidad || 'General';
+  document.getElementById('emp-talla').value = talla || '';
+  document.getElementById('emp-descuento').value = descuento || 0;
+  
+  document.getElementById('btn-guardar-empleado').textContent = 'Actualizar Empleado';
+  document.getElementById('btn-cancelar-empleado').classList.remove('oculto');
+  document.getElementById('emp-nombre').focus();
+}
+
+function cancelarEdicionEmpleado() {
+  document.getElementById('emp-id').value = '';
+  document.getElementById('emp-nombre').value = '';
+  document.getElementById('emp-correo').value = '';
+  document.getElementById('emp-telefono').value = '';
+  document.getElementById('emp-password').value = '';
+  document.getElementById('emp-rol').value = '';
+  document.getElementById('emp-sucursal').value = '';
+  document.getElementById('emp-especialidad').value = 'General';
+  document.getElementById('emp-talla').value = '';
+  document.getElementById('emp-descuento').value = 0;
+  
+  document.getElementById('btn-guardar-empleado').textContent = 'Guardar Empleado';
+  document.getElementById('btn-cancelar-empleado').classList.add('oculto');
+}
+document.getElementById('btn-cancelar-empleado')?.addEventListener('click', cancelarEdicionEmpleado);
+
+async function eliminarEmpleado(id, nombre) {
+  if(!confirm(`¿Eliminar permanentemente al empleado "${nombre}"?`)) return;
+  try {
+    await fetchAuth(`/usuarios/${id}`, 'DELETE');
+    showToast('Empleado eliminado');
+    cargarEmpleados();
+  } catch (e) { showToast(e.message, true); }
+}
+
 </script>
 </body>
 </html>
