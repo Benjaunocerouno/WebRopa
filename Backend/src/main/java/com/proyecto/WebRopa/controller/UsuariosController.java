@@ -316,6 +316,11 @@ public class UsuariosController {
             existente.setRol(rolOpt.get());
         }
 
+        if (usuario.getTallaUniforme() != null) existente.setTallaUniforme(usuario.getTallaUniforme());
+        if (usuario.getDescuentoEmpleado() != null) existente.setDescuentoEmpleado(usuario.getDescuentoEmpleado());
+        if (usuario.getEspecialidad() != null) existente.setEspecialidad(usuario.getEspecialidad());
+        if (usuario.getSucursal() != null) existente.setSucursal(usuario.getSucursal());
+
         serviceUsuarios.guardar(existente);
         return ResponseEntity.ok(existente);
     }

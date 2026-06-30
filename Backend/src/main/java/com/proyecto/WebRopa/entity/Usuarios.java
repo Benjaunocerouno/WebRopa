@@ -49,6 +49,19 @@ public class Usuarios {
     @JoinColumn(name = "empresa_id")
     private Empresas empresa;
 
+    @Column(name = "talla_uniforme", length = 10)
+    private String tallaUniforme;
+
+    @Column(name = "descuento_empleado")
+    private Double descuentoEmpleado;
+
+    @Column(length = 100)
+    private String especialidad;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "sucursal_id")
+    private Sucursales sucursal;
+
     // ─── Getters y Setters ──────────────────────────
 
     public Long getId() { return id; }
@@ -83,4 +96,16 @@ public class Usuarios {
 
     public Empresas getEmpresa() { return empresa; }
     public void setEmpresa(Empresas empresa) { this.empresa = empresa; }
+
+    public String getTallaUniforme() { return tallaUniforme; }
+    public void setTallaUniforme(String tallaUniforme) { this.tallaUniforme = tallaUniforme; }
+
+    public Double getDescuentoEmpleado() { return descuentoEmpleado; }
+    public void setDescuentoEmpleado(Double descuentoEmpleado) { this.descuentoEmpleado = descuentoEmpleado; }
+
+    public String getEspecialidad() { return especialidad; }
+    public void setEspecialidad(String especialidad) { this.especialidad = especialidad; }
+
+    public Sucursales getSucursal() { return sucursal; }
+    public void setSucursal(Sucursales sucursal) { this.sucursal = sucursal; }
 }
