@@ -1019,6 +1019,141 @@ document.getElementById('buscador-prov')?.addEventListener('input', function(e) 
 });
 
 /* ==========================================================
+<<<<<<< HEAD
+   CARGA DE STOCK
+   ========================================================== */
+const selCargaProd = document.getElementById('carga-producto');
+const selCargaVar = document.getElementById('carga-variante');
+const selCargaProv = document.getElementById('carga-proveedor');
+
+if (selCargaProd) {
+    selCargaProd.addEventListener('change', () => {
+        const prodId = selCargaProd.value;
+        selCargaVar.innerHTML = '<option value="">Cargando variantes...</option>';
+        if (!prodId) {
+            selCargaVar.innerHTML = '<option value="">Primero seleccione un producto...</option>';
+            return;
+        }
+        
+        const producto = lastProducts.find(p => p.id == prodId);
+        if (producto && producto.variantes) {
+            const variantesActivas = producto.variantes.filter(v => v.estado !== 'INACTIVO');
+            if (variantesActivas.length === 0) {
+                selCargaVar.innerHTML = '<option value="">No hay variantes activas para este producto</option>';
+            } else {
+                selCargaVar.innerHTML = '<option value="">Seleccione una variante...</option>' + 
+                    variantesActivas.map(v => `<option value="${v.id}">${v.color} - ${v.talla} (Stock actual: ${v.stock})</option>`).join('');
+            }
+        }
+    });
+}
+
+async function inicializarCargaStock() {
+    if (!selCargaProd || !selCargaProv) return;
+    
+    // Cargar productos en el select (solo activos)
+    try {
+        if (!lastProducts || lastProducts.length === 0) {
+            lastProducts = await fetchAuth('/productos');
+        }
+        const prodActivos = lastProducts.filter(p => p.estado !== 'INACTIVO');
+        selCargaProd.innerHTML = '<option value="">Seleccione un producto...</option>' + 
+            prodActivos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+    } catch (e) {
+        selCargaProd.innerHTML = '<option value="">Error al cargar productos</option>';
+    }
+
+    // Cargar proveedores
+    try {
+        const proveedores = await fetchAuth('/proveedores');
+        const provActivos = proveedores.filter(p => p.estado !== 'INACTIVO');
+        selCargaProv.innerHTML = '<option value="">Seleccione un proveedor...</option>' + 
+            provActivos.map(p => `<option value="${p.id}">${p.razonSocial || p.nombreComercial}</option>`).join('');
+    } catch (e) {
+        selCargaProv.innerHTML = '<option value="">Error al cargar proveedores</option>';
+    }
+    
+    // Set fecha actual
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('carga-fecha').value = now.toISOString().slice(0, 16);
+}
+
+// Hookear en el menu-item click
+document.getElementById('menu-navegacion').addEventListener('click', (e) => {
+    const btn = e.target.closest('.menu-item');
+    if (btn && btn.dataset.panel === 'carga-stock') {
+        inicializarCargaStock();
+    }
+});
+
+document.getElementById('btn-guardar-carga')?.addEventListener('click', async () => {
+    const varianteId = selCargaVar.value;
+    const cantidad = document.getElementById('carga-cantidad').value;
+    const fecha = document.getElementById('carga-fecha').value;
+    const proveedorId = selCargaProv.value;
+    const observaciones = document.getElementById('carga-observaciones').value;
+
+    if (!varianteId || !cantidad || !fecha || !proveedorId) {
+        return showToast('Producto, Variante, Cantidad, Fecha y Proveedor son obligatorios', true);
+    }
+    
+    if (parseInt(cantidad) <= 0) {
+        return showToast('La cantidad debe ser mayor a 0', true);
+    }
+
+    // Formatear la fecha como DD/MM/YYYY HH:mm:ss esperado por Spring Boot
+    const dateObj = new Date(fecha);
+    const dia = String(dateObj.getDate()).padStart(2, '0');
+    const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const anio = dateObj.getFullYear();
+    const hora = String(dateObj.getHours()).padStart(2, '0');
+    const min = String(dateObj.getMinutes()).padStart(2, '0');
+    const sec = String(dateObj.getSeconds()).padStart(2, '0');
+    const fechaFormat = `${dia}/${mes}/${anio} ${hora}:${min}:${sec}`;
+
+    const payload = {
+        tipo_movimiento: 'INGRESO_COMPRA',
+        cantidad: parseInt(cantidad),
+        observacion: observaciones,
+        fecha: fechaFormat,
+        variante: { id: parseInt(varianteId) },
+        proveedor: { id: parseInt(proveedorId) }
+    };
+
+    const btnGuardar = document.getElementById('btn-guardar-carga');
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = 'Guardando...';
+
+    try {
+        await fetchAuth('/inventario-movimientos', 'POST', payload);
+        showToast('Carga de stock registrada correctamente');
+        
+        // Limpiar form
+        document.getElementById('btn-limpiar-carga').click();
+        
+        // Refrescar productos en memoria
+        lastProducts = await fetchAuth('/productos');
+    } catch (e) {
+        showToast(e.message, true);
+    } finally {
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = 'Guardar Carga';
+    }
+});
+
+document.getElementById('btn-limpiar-carga')?.addEventListener('click', () => {
+    selCargaProd.value = '';
+    selCargaVar.innerHTML = '<option value="">Primero seleccione un producto...</option>';
+    document.getElementById('carga-cantidad').value = '';
+    document.getElementById('carga-observaciones').value = '';
+    selCargaProv.value = '';
+    
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('carga-fecha').value = now.toISOString().slice(0, 16);
+});
+=======
    ALERTAS DE INVENTARIO (REAL)
    ========================================================== */
 async function cargarAlertas() {
@@ -1113,3 +1248,4 @@ function contactarProveedor(prov, prodNombre, sku, color, talla, stock, critico)
         alert(`No hay teléfono ni correo registrado para ${prov.razonSocial}. \nRUC: ${prov.ruc}\nNombre Comercial: ${prov.nombreComercial || '-'}`);
     }
 }
+>>>>>>> 1a9c28f0b620bdd5c654765d797db9aef50745b4
