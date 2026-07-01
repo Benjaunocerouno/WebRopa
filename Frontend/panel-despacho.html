@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/panel-empresa.css">
 <style>
+.pildora.estado-info { background: rgba(59,130,246,0.15); color: #1d4ed8; }
+
 /* Estilos adicionales específicos para el panel de empresa */
 .form-variantes {
   background: var(--crema);
@@ -296,32 +298,38 @@
           <h2>Generación de Boletas</h2>
           <p class="descripcion">Administra y genera los comprobantes de pago para las ventas de la boutique.</p>
         </div>
-        <button class="btn btn-primario btn-mini">+ Generar Boleta Manual</button>
+        <button class="btn btn-primario btn-mini" onclick="abrirModalBoletaManual()">+ Generar Boleta Manual</button>
       </div>
+
+      <!-- Modal boleta manual -->
+      <div class="login-overlay oculto" id="modal-boleta-manual" style="z-index:200;">
+        <div class="login-caja" style="max-width:420px;">
+          <h2 style="margin-bottom:6px;font-size:1.3rem;">Generar Boleta Manual</h2>
+          <p style="font-size:0.83rem;color:var(--cafe);opacity:0.75;margin-bottom:20px;">Para pedidos pagados que no tienen boleta generada.</p>
+          <div class="campo" style="margin-bottom:14px;">
+            <label class="etiqueta-campo">ID del Pedido</label>
+            <input type="number" id="modal-boleta-pedido-id" min="1" placeholder="Ej: 33" style="width:100%;box-sizing:border-box;">
+          </div>
+          <div class="campo" style="margin-bottom:20px;">
+            <label class="etiqueta-campo">Nombre del Cliente</label>
+            <input type="text" id="modal-boleta-nombre-cliente" placeholder="Nombre completo" style="width:100%;box-sizing:border-box;">
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-primario" onclick="generarBoletaManual()">Generar</button>
+            <button class="btn btn-secundario" onclick="cerrarModalBoletaManual()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
       <div class="tarjeta">
         <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
-          <h3>Últimas Boletas Emitidas (Prototipo)</h3>
-          <input type="text" class="buscador-generico" data-target="tabla-boletas" placeholder="Buscar boleta..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+          <h3>Boletas Emitidas</h3>
+          <input type="text" id="buscador-boletas" placeholder="Buscar boleta, cliente, pedido..." oninput="filtrarBoletas()" style="padding: 6px 12px; border-radius: 8px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif; min-width: 240px;">
         </div>
         <table>
-          <thead><tr><th>Nro Boleta</th><th>Pedido Ref.</th><th>Monto Total</th><th>Fecha Emisión</th><th>Estado SUNAT</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Nro Boleta</th><th>Pedido Ref.</th><th>Cliente</th><th>Monto Total</th><th>Fecha Emisión</th><th>Estado</th><th>Acciones</th></tr></thead>
           <tbody id="tabla-boletas">
-            <tr>
-              <td>B001-000456</td>
-              <td>1042</td>
-              <td>S/. 120.00</td>
-              <td>26/06/2026</td>
-              <td><span class="pildora estado-ok">Aceptado</span></td>
-              <td><button class="btn btn-secundario btn-mini">Imprimir PDF</button></td>
-            </tr>
-            <tr>
-              <td>B001-000457</td>
-              <td>1045</td>
-              <td>S/. 85.50</td>
-              <td>26/06/2026</td>
-              <td><span class="pildora estado-pendiente">Procesando</span></td>
-              <td><button class="btn btn-secundario btn-mini">Consultar</button></td>
-            </tr>
+            <tr><td colspan="7" style="text-align:center; color:var(--cafe); opacity:0.5; padding:24px;">Cargando boletas...</td></tr>
           </tbody>
         </table>
       </div>
@@ -332,27 +340,61 @@
       <div class="topbar">
         <div>
           <h2>Gestión de Devoluciones</h2>
-          <p class="descripcion">Atiende las solicitudes de cambio o reembolso de productos traídos a tienda.</p>
+          <p class="descripcion">Atiende las solicitudes de cambio o reembolso de productos.</p>
         </div>
       </div>
+
+      <!-- Tabs de filtro -->
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;">
+        <button class="btn btn-mini filtro-dev btn-primario"  data-filtro="TODAS"       onclick="cargarDevoluciones('TODAS')">Todas</button>
+        <button class="btn btn-mini filtro-dev btn-secundario" data-filtro="SOLICITADA"  onclick="cargarDevoluciones('SOLICITADA')">Pendientes</button>
+        <button class="btn btn-mini filtro-dev btn-secundario" data-filtro="APROBADA"    onclick="cargarDevoluciones('APROBADA')">Aprobadas</button>
+        <button class="btn btn-mini filtro-dev btn-secundario" data-filtro="REEMBOLSADA" onclick="cargarDevoluciones('REEMBOLSADA')">Reembolsadas</button>
+        <button class="btn btn-mini filtro-dev btn-secundario" data-filtro="RECHAZADA"   onclick="cargarDevoluciones('RECHAZADA')">Rechazadas</button>
+      </div>
+
       <div class="tarjeta">
-        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
-          <h3>Solicitudes de Devolución (Prototipo)</h3>
-          <input type="text" class="buscador-generico" data-target="tabla-devoluciones" placeholder="Buscar devolución..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
+          <h3 style="margin:0;" id="titulo-dev">Todas las solicitudes</h3>
+          <input type="text" id="buscador-devoluciones" placeholder="Buscar por pedido, cliente, motivo..." oninput="filtrarDevoluciones()" style="padding:6px 12px; border-radius:8px; border:1px solid var(--borde-trazo); outline:none; font-family:'Outfit',sans-serif; min-width:260px;">
         </div>
         <table>
-          <thead><tr><th>ID Devolución</th><th>Boleta / Pedido</th><th>Motivo</th><th>Fecha Solicitud</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>#</th><th>Pedido</th><th>Cliente</th><th>Producto</th><th>Monto</th><th>Motivo</th><th>Fecha</th><th>Estado</th><th>Acción</th></tr></thead>
           <tbody id="tabla-devoluciones">
-            <tr>
-              <td>DEV-089</td>
-              <td>B001-000420</td>
-              <td>Talla incorrecta</td>
-              <td>25/06/2026</td>
-              <td><span class="pildora estado-fallo">Pendiente de Revisión</span></td>
-              <td><button class="btn btn-primario btn-mini">Revisar Caso</button></td>
-            </tr>
+            <tr><td colspan="9" style="text-align:center;color:var(--cafe);opacity:0.5;padding:24px;">Cargando...</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Modal Revisar Caso -->
+      <div class="login-overlay oculto" id="modal-devolucion" style="z-index:200;">
+        <div class="login-caja" style="max-width:520px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;">
+            <div>
+              <h2 style="margin:0 0 4px; font-size:1.25rem;" id="modal-dev-titulo">Devolución #—</h2>
+              <span id="modal-dev-estado-badge"></span>
+            </div>
+            <button onclick="cerrarModalDevolucion()" style="background:none;border:none;cursor:pointer;font-size:1.4rem;color:var(--cafe);opacity:0.5;line-height:1;">✕</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; font-size:0.85rem; margin-bottom:18px;">
+            <div><span style="opacity:0.6;">Pedido Ref.</span><br><strong id="modal-dev-pedido">—</strong></div>
+            <div><span style="opacity:0.6;">Fecha solicitud</span><br><strong id="modal-dev-fecha">—</strong></div>
+            <div><span style="opacity:0.6;">Cliente</span><br><strong id="modal-dev-cliente">—</strong></div>
+            <div><span style="opacity:0.6;">Motivo</span><br><strong id="modal-dev-motivo">—</strong></div>
+            <div><span style="opacity:0.6;">Producto</span><br><strong id="modal-dev-producto">—</strong></div>
+            <div><span style="opacity:0.6;">Cantidad devuelta</span><br><strong id="modal-dev-cantidad">—</strong></div>
+            <div><span style="opacity:0.6;">Monto a reembolsar</span><br><strong id="modal-dev-monto" style="font-size:1.05rem;color:var(--sage-oscuro);">—</strong></div>
+          </div>
+
+          <div id="modal-dev-descripcion-wrap" style="background:rgba(92,74,61,0.04); border:1px solid var(--borde-trazo); border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:0.83rem; display:none;">
+            <span style="opacity:0.6; display:block; margin-bottom:4px;">Descripción del cliente</span>
+            <span id="modal-dev-descripcion"></span>
+          </div>
+
+          <!-- Botones de acción según estado -->
+          <div id="modal-dev-acciones" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+        </div>
       </div>
     </section>
   </main>
@@ -516,6 +558,7 @@ document.getElementById('menu-navegacion').addEventListener('click', (e) => {
   if(btn.dataset.panel === 'pedidos') cargarPedidos();
   if(btn.dataset.panel === 'recojo') { cargarRecojos('LISTO_PARA_RECOGER'); cargarConfigPlazos(); }
   if(btn.dataset.panel === 'boletas') cargarBoletas();
+  if(btn.dataset.panel === 'devoluciones') cargarDevoluciones('TODAS');
 });
 
 async function aplicarUsuario(datos) {
@@ -1183,7 +1226,339 @@ async function cambiarEstadoPedido(pedidoId, nuevoEstado, selectEl) {
   }
 }
 
-async function cargarBoletas() { /* boletas usa contenido estático */ }
+/* ==========================================================
+   BOLETAS (REAL)
+   ========================================================== */
+let _boletasCache = [];
+
+async function cargarBoletas() {
+  const tbody = document.getElementById('tabla-boletas');
+  try {
+    const sync = await fetchAuth('/boletas/sincronizar', 'POST');
+    if (sync?.generadas > 0) showToast(`${sync.generadas} boleta${sync.generadas > 1 ? 's' : ''} generada${sync.generadas > 1 ? 's' : ''} automáticamente`);
+    _boletasCache = await fetchAuth('/boletas');
+    renderBoletas(_boletasCache);
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--alerta);padding:24px;">Error al cargar boletas: ${e.message}</td></tr>`;
+  }
+}
+
+function renderBoletas(lista) {
+  const tbody = document.getElementById('tabla-boletas');
+  if (!lista || lista.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--cafe);opacity:0.5;padding:24px;">No hay boletas registradas.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = lista.map(b => {
+    const fecha = b.fecha_emision ? b.fecha_emision.split(' ')[0] : '—';
+    const total = `S/. ${(b.total ?? 0).toFixed(2)}`;
+    const cliente = b.nombre_cliente ?? '—';
+    const pedidoId = b.pedido?.id ?? '—';
+    const esActiva = b.estado === 'ACTIVA';
+    const estadoBadge = esActiva
+      ? `<span class="pildora estado-ok">Activa</span>`
+      : `<span class="pildora estado-fallo">Anulada</span>`;
+    const acciones = esActiva
+      ? `<div style="display:flex;gap:6px;flex-wrap:wrap;">
+           <button class="btn btn-secundario btn-mini" onclick="imprimirBoleta(${b.id})">Imprimir</button>
+           <button class="btn btn-mini" style="background:var(--alerta);color:#fff;border:none;" onclick="anularBoleta(${b.id},'${b.numero_boleta}')">Anular</button>
+         </div>`
+      : `<span style="font-size:0.78rem;color:var(--cafe);opacity:0.5;">Anulada</span>`;
+    return `<tr>
+      <td><strong>${b.numero_boleta}</strong></td>
+      <td>#${pedidoId}</td>
+      <td>${cliente}</td>
+      <td>${total}</td>
+      <td>${fecha}</td>
+      <td>${estadoBadge}</td>
+      <td>${acciones}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrarBoletas() {
+  const q = (document.getElementById('buscador-boletas')?.value ?? '').toLowerCase();
+  if (!q) { renderBoletas(_boletasCache); return; }
+  renderBoletas(_boletasCache.filter(b =>
+    (b.numero_boleta ?? '').toLowerCase().includes(q) ||
+    (b.nombre_cliente ?? '').toLowerCase().includes(q) ||
+    String(b.pedido?.id ?? '').includes(q)
+  ));
+}
+
+async function imprimirBoleta(id) {
+  try {
+    const b = await fetchAuth(`/boletas/${id}`);
+    const win = window.open('', '_blank', 'width=600,height=700');
+    const fecha = b.fecha_emision ? b.fecha_emision.split(' ')[0] : '—';
+    win.document.write(`<!DOCTYPE html><html><head>
+      <meta charset="UTF-8"><title>Boleta ${b.numero_boleta}</title>
+      <style>
+        body{font-family:'Segoe UI',sans-serif;padding:32px;color:#2d1e10;max-width:520px;margin:auto;}
+        h1{font-size:1.1rem;margin-bottom:4px;}
+        .sub{font-size:0.82rem;color:#777;margin-bottom:24px;}
+        hr{border:none;border-top:1px solid #e0d5c5;margin:16px 0;}
+        table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+        td{padding:6px 0;}
+        td:last-child{text-align:right;}
+        .total-row td{font-weight:700;font-size:1rem;border-top:2px solid #2d1e10;padding-top:10px;}
+        .footer{margin-top:28px;font-size:0.75rem;color:#aaa;text-align:center;}
+        @media print{.no-print{display:none;}}
+      </style>
+    </head><body>
+      <h1>${b.numero_boleta}</h1>
+      <div class="sub">Fecha de emisión: ${fecha}</div>
+      <hr>
+      <table>
+        <tr><td>Cliente</td><td>${b.nombre_cliente ?? '—'}</td></tr>
+        ${b.dni_cliente ? `<tr><td>DNI</td><td>${b.dni_cliente}</td></tr>` : ''}
+        <tr><td>Pedido Ref.</td><td>#${b.pedido?.id ?? '—'}</td></tr>
+      </table>
+      <hr>
+      <table>
+        <tr><td>Subtotal</td><td>S/. ${(b.subtotal ?? 0).toFixed(2)}</td></tr>
+        <tr><td>IGV (18%)</td><td>S/. ${(b.igv ?? 0).toFixed(2)}</td></tr>
+        <tr class="total-row"><td>Total</td><td>S/. ${(b.total ?? 0).toFixed(2)}</td></tr>
+      </table>
+      <div class="footer">Comprobante generado por sistema • ${new Date().toLocaleDateString('es-PE')}</div>
+      <br>
+      <div class="no-print" style="text-align:center;margin-top:20px;">
+        <button onclick="window.print()" style="padding:10px 24px;background:#5c4a3d;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;">Imprimir / Guardar PDF</button>
+      </div>
+    </body></html>`);
+    win.document.close();
+  } catch (e) {
+    showToast('Error al cargar la boleta: ' + e.message, true);
+  }
+}
+
+async function anularBoleta(id, numeroBoleta) {
+  if (!confirm(`¿Anular la boleta ${numeroBoleta}? Esta acción no se puede deshacer.`)) return;
+  try {
+    await fetchAuth(`/boletas/${id}`, 'DELETE');
+    showToast(`Boleta ${numeroBoleta} anulada`);
+    await cargarBoletas();
+  } catch (e) {
+    showToast('Error al anular: ' + e.message, true);
+  }
+}
+
+function abrirModalBoletaManual() {
+  document.getElementById('modal-boleta-pedido-id').value = '';
+  document.getElementById('modal-boleta-nombre-cliente').value = '';
+  document.getElementById('modal-boleta-manual').classList.remove('oculto');
+}
+function cerrarModalBoletaManual() {
+  document.getElementById('modal-boleta-manual').classList.add('oculto');
+}
+
+async function generarBoletaManual() {
+  const pedidoId = parseInt(document.getElementById('modal-boleta-pedido-id').value);
+  const nombreCliente = document.getElementById('modal-boleta-nombre-cliente').value.trim();
+  if (!pedidoId || pedidoId < 1) return showToast('Ingresa un ID de pedido válido', true);
+  if (!nombreCliente) return showToast('Ingresa el nombre del cliente', true);
+  try {
+    const nro = 'BOL-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    await fetchAuth('/boletas', 'POST', {
+      pedido: { id: pedidoId },
+      nombre_cliente: nombreCliente,
+      numero_boleta: nro,
+      subtotal: 0, igv: 0, total: 0
+    });
+    showToast('Boleta generada correctamente');
+    cerrarModalBoletaManual();
+    await cargarBoletas();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+/* ==========================================================
+   DEVOLUCIONES (REAL)
+   ========================================================== */
+let _devolucionesCache = [];
+let _filtroDevActual   = 'TODAS';
+
+const MOTIVO_LABEL = {
+  DEFECTUOSO:       'Producto defectuoso',
+  TALLA_INCORRECTA: 'Talla incorrecta',
+  COLOR_INCORRECTO: 'Color incorrecto',
+  OTRO:             'Otro motivo'
+};
+const TITULOS_DEV = {
+  TODAS:       'Todas las solicitudes',
+  SOLICITADA:  'Solicitudes pendientes',
+  APROBADA:    'Solicitudes aprobadas',
+  REEMBOLSADA: 'Solicitudes reembolsadas',
+  RECHAZADA:   'Solicitudes rechazadas'
+};
+
+async function cargarDevoluciones(filtro = 'TODAS') {
+  _filtroDevActual = filtro;
+  const tbody = document.getElementById('tabla-devoluciones');
+  tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--cafe);opacity:0.5;padding:24px;">Cargando...</td></tr>`;
+
+  // Actualizar tabs activos
+  document.querySelectorAll('.filtro-dev').forEach(b => {
+    const activo = b.dataset.filtro === filtro;
+    b.classList.toggle('btn-primario', activo);
+    b.classList.toggle('btn-secundario', !activo);
+  });
+  const tituloEl = document.getElementById('titulo-dev');
+  if (tituloEl) tituloEl.textContent = TITULOS_DEV[filtro] ?? 'Solicitudes';
+
+  try {
+    const endpoint = filtro === 'TODAS' ? '/devoluciones' : `/devoluciones/estado/${filtro}`;
+    _devolucionesCache = await fetchAuth(endpoint);
+    renderDevoluciones(_devolucionesCache);
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--alerta);padding:24px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function renderDevoluciones(lista) {
+  const tbody = document.getElementById('tabla-devoluciones');
+  if (!lista || lista.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--cafe);opacity:0.5;padding:24px;">No hay solicitudes en esta categoría.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(d => {
+    const fecha   = d.fecha ? d.fecha.split(' ')[0] : '—';
+    const pedidoId = d.pedido?.id ?? '—';
+    const cliente  = d.pedido?.usuario?.nombre ?? '—';
+    const variante = d.pedidoItem?.variante;
+    const producto = variante?.producto?.nombre
+      ? `${variante.producto.nombre}${variante.talla ? ' · ' + variante.talla : ''}`
+      : '—';
+    const monto   = `S/. ${(d.monto_reembolso ?? 0).toFixed(2)}`;
+    const motivo  = MOTIVO_LABEL[d.motivo] ?? d.motivo ?? '—';
+
+    const estadoBadge = badgeEstadoDev(d.estado);
+    const accionBtn   = botonAccionDev(d.id, d.estado);
+
+    return `<tr>
+      <td><strong>DEV-${d.id}</strong></td>
+      <td>#${pedidoId}</td>
+      <td>${cliente}</td>
+      <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${producto}</td>
+      <td>${monto}</td>
+      <td>${motivo}</td>
+      <td>${fecha}</td>
+      <td>${estadoBadge}</td>
+      <td>${accionBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrarDevoluciones() {
+  const q = (document.getElementById('buscador-devoluciones')?.value ?? '').toLowerCase();
+  if (!q) { renderDevoluciones(_devolucionesCache); return; }
+  renderDevoluciones(_devolucionesCache.filter(d =>
+    String(d.pedido?.id ?? '').includes(q) ||
+    (d.pedido?.usuario?.nombre ?? '').toLowerCase().includes(q) ||
+    (MOTIVO_LABEL[d.motivo] ?? '').toLowerCase().includes(q) ||
+    String(d.id).includes(q)
+  ));
+}
+
+function badgeEstadoDev(estado) {
+  const map = {
+    SOLICITADA:  ['estado-pendiente', 'Pendiente'],
+    APROBADA:    ['estado-info',      'Aprobada'],
+    REEMBOLSADA: ['estado-ok',        'Reembolsada'],
+    RECHAZADA:   ['estado-fallo',     'Rechazada'],
+    CANCELADA:   ['estado-fallo',     'Cancelada']
+  };
+  const [cls, label] = map[estado] ?? ['', estado];
+  return `<span class="pildora ${cls}">${label}</span>`;
+}
+
+function botonAccionDev(id, estado) {
+  if (estado === 'SOLICITADA') {
+    return `<button class="btn btn-primario btn-mini" onclick="abrirModalDevolucion(${id})">Revisar</button>`;
+  }
+  if (estado === 'APROBADA') {
+    return `<button class="btn btn-mini btn-secundario" onclick="abrirModalDevolucion(${id})">Ver / Reembolsar</button>`;
+  }
+  return `<button class="btn btn-mini btn-secundario" onclick="abrirModalDevolucion(${id})">Ver detalle</button>`;
+}
+
+/* Modal de detalle */
+let _devModalId = null;
+
+async function abrirModalDevolucion(id) {
+  _devModalId = id;
+  document.getElementById('modal-devolucion').classList.remove('oculto');
+  document.getElementById('modal-dev-acciones').innerHTML = '';
+  document.getElementById('modal-dev-titulo').textContent = `Devolución DEV-${id}`;
+
+  try {
+    const d = await fetchAuth(`/devoluciones/${id}`);
+    const variante = d.pedidoItem?.variante;
+    const producto = variante?.producto?.nombre
+      ? `${variante.producto.nombre}${variante.talla ? ' (Talla ' + variante.talla + ')' : ''}`
+      : '—';
+
+    document.getElementById('modal-dev-estado-badge').innerHTML = badgeEstadoDev(d.estado);
+    document.getElementById('modal-dev-pedido').textContent    = `#${d.pedido?.id ?? '—'}`;
+    document.getElementById('modal-dev-fecha').textContent     = d.fecha ? d.fecha.split(' ')[0] : '—';
+    document.getElementById('modal-dev-cliente').textContent   = d.pedido?.usuario?.nombre ?? '—';
+    document.getElementById('modal-dev-motivo').textContent    = MOTIVO_LABEL[d.motivo] ?? d.motivo ?? '—';
+    document.getElementById('modal-dev-producto').textContent  = producto;
+    document.getElementById('modal-dev-cantidad').textContent  = `${d.cantidad_devuelta ?? '—'} unid.`;
+    document.getElementById('modal-dev-monto').textContent     = `S/. ${(d.monto_reembolso ?? 0).toFixed(2)}`;
+
+    const descWrap = document.getElementById('modal-dev-descripcion-wrap');
+    const descEl   = document.getElementById('modal-dev-descripcion');
+    if (d.descripcion) {
+      descEl.textContent = d.descripcion;
+      descWrap.style.display = 'block';
+    } else {
+      descWrap.style.display = 'none';
+    }
+
+    // Botones según estado
+    const accionesEl = document.getElementById('modal-dev-acciones');
+    if (d.estado === 'SOLICITADA') {
+      accionesEl.innerHTML = `
+        <button class="btn btn-primario" onclick="cambiarEstadoDev(${id},'APROBADA')">Aprobar devolución</button>
+        <button class="btn btn-mini" style="background:#b45309;color:#fff;border:none;" onclick="cambiarEstadoDev(${id},'RECHAZADA')">Rechazar</button>`;
+    } else if (d.estado === 'APROBADA') {
+      accionesEl.innerHTML = `
+        <button class="btn btn-primario" onclick="cambiarEstadoDev(${id},'REEMBOLSADA')">Confirmar reembolso entregado</button>`;
+    } else {
+      accionesEl.innerHTML = `<span style="font-size:0.82rem;color:var(--cafe);opacity:0.6;">Esta solicitud ya fue procesada (${d.estado}).</span>`;
+    }
+  } catch (e) {
+    document.getElementById('modal-dev-acciones').innerHTML =
+      `<span style="color:var(--alerta);font-size:0.85rem;">Error al cargar: ${e.message}</span>`;
+  }
+}
+
+function cerrarModalDevolucion() {
+  document.getElementById('modal-devolucion').classList.add('oculto');
+  _devModalId = null;
+}
+
+async function cambiarEstadoDev(id, nuevoEstado) {
+  const confirmMsg = {
+    APROBADA:    '¿Aprobar esta solicitud de devolución?',
+    RECHAZADA:   '¿Rechazar esta solicitud? El cliente no recibirá reembolso.',
+    REEMBOLSADA: '¿Confirmar que el reembolso ya fue entregado al cliente?'
+  };
+  if (!confirm(confirmMsg[nuevoEstado] ?? '¿Continuar?')) return;
+
+  try {
+    await fetchAuth(`/devoluciones/${id}`, 'PUT', { estado: nuevoEstado });
+    const labels = { APROBADA: 'aprobada', RECHAZADA: 'rechazada', REEMBOLSADA: 'marcada como reembolsada' };
+    showToast(`Devolución DEV-${id} ${labels[nuevoEstado] ?? 'actualizada'}`);
+    cerrarModalDevolucion();
+    cargarDevoluciones(_filtroDevActual);
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
 
 /* ==========================================================
    CUPONES (REAL)

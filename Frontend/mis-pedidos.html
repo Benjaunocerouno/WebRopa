@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mis Pedidos — WebRopa</title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  
+
   <link rel="stylesheet" href="css/style.css" />
-  
+
   <style>
     .orders-container {
       max-width: 900px;
@@ -49,6 +49,7 @@
       gap: 2rem;
       color: var(--color-muted);
       font-size: 0.9rem;
+      flex-wrap: wrap;
     }
     .order-items {
       display: grid;
@@ -83,15 +84,17 @@
     .order-footer {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       padding-top: 1rem;
       border-top: 1px dashed var(--color-border);
+      gap: 1rem;
+      flex-wrap: wrap;
     }
     .order-total {
       font-weight: 600;
       font-size: 1.1rem;
     }
-    
+
     /* Estados */
     .badge-estado {
       padding: 0.4rem 0.8rem;
@@ -100,17 +103,17 @@
       font-weight: 600;
       text-transform: uppercase;
     }
-    .estado-PENDIENTE { background: #fff3cd; color: #856404; }
-    .estado-CONFIRMADO { background: #d4edda; color: #155724; }
-    .estado-EN_PREPARACION { background: #cce5ff; color: #004085; }
+    .estado-PENDIENTE        { background: #fff3cd; color: #856404; }
+    .estado-CONFIRMADO       { background: #d4edda; color: #155724; }
+    .estado-EN_PREPARACION   { background: #cce5ff; color: #004085; }
     .estado-LISTO_PARA_RECOGER { background: #FDF7E3; color: #C89B1F; }
-    .estado-RECOGIDO { background: #e2e3e5; color: #383d41; }
-    .estado-CANCELADO    { background: #f8d7da; color: #721c24; }
-    .estado-NO_RECOGIDO  { background: #f8d7da; color: #721c24; }
-    .estado-EN_CAMINO    { background: #cce5ff; color: #004085; }
-    .estado-ENTREGADO    { background: #e2e3e5; color: #383d41; }
+    .estado-RECOGIDO         { background: #e2e3e5; color: #383d41; }
+    .estado-CANCELADO        { background: #f8d7da; color: #721c24; }
+    .estado-NO_RECOGIDO      { background: #f8d7da; color: #721c24; }
+    .estado-EN_CAMINO        { background: #cce5ff; color: #004085; }
+    .estado-ENTREGADO        { background: #e2e3e5; color: #383d41; }
 
-    /* Campanita de notificaciones */
+    /* Campanita */
     .notif-wrapper { position: relative; display: none; margin-right: 1rem; }
     .notif-btn {
       background: none; border: none; cursor: pointer;
@@ -141,7 +144,7 @@
     .notif-item.leida { opacity: 0.55; }
     .notif-item-inner { display: flex; gap: 10px; align-items: flex-start; }
     .notif-icon { font-size: 1.2rem; flex-shrink: 0; }
-    .notif-msg { font-size: 0.82rem; color: #333; line-height: 1.4; }
+    .notif-msg  { font-size: 0.82rem; color: #333; line-height: 1.4; }
     .notif-fecha { font-size: 0.72rem; color: #999; margin-top: 3px; }
 
     .empty-state {
@@ -149,6 +152,151 @@
       padding: 4rem 1rem;
       color: var(--color-muted);
     }
+
+    /* Badges de pago */
+    .badge-pagado    { background: #d4edda; color: #155724; }
+    .badge-sin-pagar { background: #fff3cd; color: #856404; }
+
+    /* Tabs de filtro */
+    .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .filter-tab {
+      padding: 0.35rem 1.1rem; border-radius: 20px;
+      border: 1.5px solid var(--color-border);
+      background: transparent; font-size: 0.85rem; cursor: pointer;
+      color: var(--color-muted); transition: all 0.2s; font-family: inherit;
+    }
+    .filter-tab.active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+    .filter-tab:hover:not(.active) { background: #f5f5f5; }
+
+    /* Resumen estadístico */
+    .stats-bar {
+      gap: 2rem; flex-wrap: wrap;
+      background: var(--color-bg); border: 1px solid var(--color-border);
+      border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+    }
+    .stat-item  { display: flex; flex-direction: column; gap: 0.15rem; }
+    .stat-label { font-size: 0.7rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+    .stat-value { font-size: 1.15rem; font-weight: 600; color: var(--color-primary); }
+
+    /* Timeline */
+    .order-timeline {
+      display: flex; align-items: flex-start;
+      overflow-x: auto; padding: 0.5rem 0;
+      scrollbar-width: none;
+    }
+    .order-timeline::-webkit-scrollbar { display: none; }
+    .tl-step {
+      display: flex; flex-direction: column; align-items: center;
+      min-width: 60px; flex: 1; position: relative;
+    }
+    .tl-step:not(:last-child)::after {
+      content: ''; position: absolute; top: 10px;
+      left: calc(50% + 12px); right: calc(-50% + 12px);
+      height: 2px; background: #e0e0e0; z-index: 0;
+    }
+    .tl-step.done:not(:last-child)::after { background: #6b8f71; }
+    .tl-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid #e0e0e0; background: #fff;
+      z-index: 1; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; transition: all 0.2s;
+    }
+    .tl-step.done .tl-dot {
+      background: #6b8f71; border-color: #6b8f71; color: #fff;
+    }
+    .tl-step.active .tl-dot {
+      background: var(--color-primary, #2c2c2c);
+      border-color: var(--color-primary, #2c2c2c);
+      color: #fff; box-shadow: 0 0 0 3px rgba(44,44,44,0.12);
+    }
+    .tl-label {
+      font-size: 0.6rem; color: var(--color-muted);
+      margin-top: 5px; text-align: center;
+      line-height: 1.2; white-space: nowrap;
+    }
+    .tl-step.active .tl-label { color: var(--color-primary); font-weight: 600; }
+    .tl-step.done   .tl-label { color: #6b8f71; }
+
+    /* Botones de acción en tarjeta */
+    .order-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .btn-action {
+      padding: 0.35rem 0.9rem; border-radius: 20px; font-size: 0.8rem;
+      font-weight: 500; border: 1.5px solid; cursor: pointer;
+      font-family: inherit; transition: all 0.2s; background: transparent;
+    }
+    .btn-action-boleta     { border-color: #004085; color: #004085; }
+    .btn-action-boleta:hover     { background: #004085; color: #fff; }
+    .btn-action-devolucion { border-color: #721c24; color: #721c24; }
+    .btn-action-devolucion:hover { background: #721c24; color: #fff; }
+
+    /* Badge de devolución */
+    .badge-dev {
+      display: inline-block; font-size: 0.72rem; padding: 3px 9px;
+      border-radius: 12px; font-weight: 600;
+    }
+    .dev-SOLICITADA  { background: #fff3cd; color: #856404; }
+    .dev-APROBADA    { background: #d4edda; color: #155724; }
+    .dev-RECHAZADA   { background: #f8d7da; color: #721c24; }
+    .dev-REEMBOLSADA { background: #e2e3e5; color: #383d41; }
+
+    /* Modal overlay */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,0.45);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 14px; padding: 2rem;
+      width: 95%; max-width: 480px; max-height: 90vh;
+      overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+      position: relative;
+    }
+    .modal-box h2 {
+      font-family: var(--font-serif);
+      margin: 0 0 1.25rem; font-size: 1.35rem;
+    }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none; font-size: 1.3rem;
+      cursor: pointer; color: var(--color-muted); line-height: 1;
+    }
+    .modal-field { margin-bottom: 1rem; }
+    .modal-field label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.35rem; }
+    .modal-field select,
+    .modal-field input[type="number"],
+    .modal-field textarea {
+      width: 100%; padding: 0.6rem 0.8rem;
+      border: 1.5px solid var(--color-border);
+      border-radius: 8px; font-family: inherit; font-size: 0.9rem;
+      box-sizing: border-box; transition: border-color 0.15s;
+    }
+    .modal-field select:focus,
+    .modal-field input:focus,
+    .modal-field textarea:focus { outline: none; border-color: var(--color-primary); }
+    .btn-modal-submit {
+      width: 100%; padding: 0.75rem; background: var(--color-primary); color: #fff;
+      border: none; border-radius: 8px; font-family: inherit;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      margin-top: 0.5rem; transition: opacity 0.2s;
+    }
+    .btn-modal-submit:hover    { opacity: 0.9; }
+    .btn-modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Recibo de boleta */
+    .boleta-receipt {
+      border: 1px solid var(--color-border); border-radius: 8px;
+      padding: 1rem; margin-bottom: 1rem;
+    }
+    .boleta-num { font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.75rem; }
+    .boleta-row { display: flex; justify-content: space-between; padding: 0.3rem 0; font-size: 0.88rem; }
+    .boleta-divider { border: none; border-top: 1px dashed var(--color-border); margin: 0.5rem 0; }
+    .boleta-row.total-row { font-weight: 700; font-size: 1rem; }
   </style>
 </head>
 <body>
@@ -158,9 +306,8 @@
       <a href="index.html" class="navbar__logo" id="logo-link">
         <span class="logo__script">Web</span><span class="logo__block">Ropa</span>
       </a>
-      
-      <div class="navbar__actions">
 
+      <div class="navbar__actions">
         <!-- Campanita de notificaciones -->
         <div class="notif-wrapper" id="notif-wrapper">
           <button class="notif-btn" id="notif-btn" aria-label="Notificaciones">
@@ -179,7 +326,6 @@
         <!-- User dropdown -->
         <div class="user-menu" id="user-menu">
           <button class="user-menu__trigger" id="user-menu-trigger" aria-expanded="false" aria-haspopup="true" aria-label="Menú de usuario">
-            <!-- Guest icon -->
             <svg class="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
               <circle cx="12" cy="8" r="4"/>
               <path d="M4 20 C4 16, 8 13, 12 13 S20 16, 20 20" stroke-linecap="round"/>
@@ -187,13 +333,11 @@
             <span class="user-menu__name" id="user-display-name">Entrar</span>
           </button>
           <div class="user-menu__dropdown" id="user-dropdown" role="menu" aria-hidden="true">
-            <!-- Guest state -->
             <div class="dropdown-guest" id="dropdown-guest-view">
               <button class="dropdown-item dropdown-item--cta" id="btn-open-login" role="menuitem" onclick="window.location.href='index.html'">
                 Iniciar sesión
               </button>
             </div>
-            <!-- Logged-in state -->
             <div class="dropdown-user" id="dropdown-user-view" style="display:none;">
               <a href="perfil.html" class="dropdown-item" role="menuitem">Mi Perfil</a>
               <a href="#" id="nav-mis-pedidos" class="dropdown-item" role="menuitem">Mis Pedidos</a>
@@ -208,19 +352,101 @@
 
   <main class="section-container">
     <div class="orders-container">
-      <h1 style="font-family: var(--font-serif); margin-bottom: 2rem;">Mis Pedidos</h1>
-      
+      <h1 style="font-family: var(--font-serif); margin-bottom: 1.5rem;">Mis Pedidos</h1>
+
+      <!-- Barra de resumen estadístico -->
+      <div class="stats-bar" id="stats-bar" style="display:none;">
+        <div class="stat-item">
+          <span class="stat-label">Total de pedidos</span>
+          <span class="stat-value" id="stat-total">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Completados</span>
+          <span class="stat-value" id="stat-completados">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Total gastado</span>
+          <span class="stat-value" id="stat-gastado">S/. 0.00</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Por pagar</span>
+          <span class="stat-value" id="stat-por-pagar">0</span>
+        </div>
+      </div>
+
+      <div class="filter-tabs" id="filter-tabs" style="display:none;">
+        <button class="filter-tab active" data-filter="todos"       onclick="filtrarPedidos('todos')">Todos</button>
+        <button class="filter-tab"        data-filter="por-pagar"   onclick="filtrarPedidos('por-pagar')">Por pagar</button>
+        <button class="filter-tab"        data-filter="en-proceso"  onclick="filtrarPedidos('en-proceso')">En proceso</button>
+        <button class="filter-tab"        data-filter="completados" onclick="filtrarPedidos('completados')">Completados</button>
+      </div>
+
       <div id="orders-list">
-        <!-- Loader inicial -->
         <p style="text-align:center;">Cargando pedidos...</p>
       </div>
     </div>
   </main>
 
+  <!-- Modal: Ver Boleta -->
+  <div class="modal-overlay" id="modal-boleta">
+    <div class="modal-box">
+      <button class="modal-close" onclick="cerrarBoleta()">&#x2715;</button>
+      <h2>Boleta de Venta</h2>
+      <div class="boleta-receipt">
+        <div class="boleta-num" id="bol-numero"></div>
+        <div class="boleta-row"><span style="color:var(--color-muted);">Cliente</span><span id="bol-cliente"></span></div>
+        <div class="boleta-row"><span style="color:var(--color-muted);">DNI</span><span id="bol-dni"></span></div>
+        <div class="boleta-row"><span style="color:var(--color-muted);">Pedido</span><span id="bol-pedido"></span></div>
+        <hr class="boleta-divider"/>
+        <div class="boleta-row"><span>Subtotal</span><span id="bol-subtotal"></span></div>
+        <div class="boleta-row"><span>IGV (18%)</span><span id="bol-igv"></span></div>
+        <hr class="boleta-divider"/>
+        <div class="boleta-row total-row"><span>Total</span><span id="bol-total"></span></div>
+      </div>
+      <p id="bol-estado-wrap" style="font-size:0.82rem; color:var(--color-muted); margin:0 0 1rem;"></p>
+      <button class="btn-modal-submit" onclick="imprimirBoleta()">Imprimir / Guardar PDF</button>
+    </div>
+  </div>
+
+  <!-- Modal: Solicitar Devolución -->
+  <div class="modal-overlay" id="modal-devolucion">
+    <div class="modal-box">
+      <button class="modal-close" onclick="cerrarModalDevolucion()">&#x2715;</button>
+      <h2>Solicitar Devolución</h2>
+      <div class="modal-field">
+        <label>Producto a devolver</label>
+        <select id="dev-item-select" onchange="actualizarMontoPreview()"></select>
+      </div>
+      <div class="modal-field">
+        <label>Motivo</label>
+        <select id="dev-motivo">
+          <option value="DEFECTUOSO">Producto defectuoso</option>
+          <option value="TALLA_INCORRECTA">Talla incorrecta</option>
+          <option value="COLOR_INCORRECTO">Color incorrecto</option>
+          <option value="OTRO">Otro motivo</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Cantidad a devolver</label>
+        <input type="number" id="dev-cantidad" min="1" value="1" oninput="actualizarMontoPreview()" />
+      </div>
+      <p id="dev-monto-preview" style="font-size:0.85rem; color:var(--color-muted); margin:0 0 0.75rem;"></p>
+      <p id="dev-error" style="color:#c94c4c; font-size:0.85rem; display:none; margin:0 0 0.5rem;"></p>
+      <button class="btn-modal-submit" id="dev-submit-btn" onclick="enviarDevolucion()">Enviar solicitud</button>
+    </div>
+  </div>
+
   <script src="config/config.js"></script>
   <script src="services/api.service.js"></script>
   <script src="js/app.js"></script>
   <script>
+    let _authToken      = '';
+    const _boletasMap      = {};
+    const _itemsMap        = {};
+    const _devolucionesMap = {};
+    let _modalPedidoId  = null;
+    let _boletaPedidoId = null;
+
     document.addEventListener("DOMContentLoaded", () => {
       const sesion = JSON.parse(localStorage.getItem('webropa_user') || 'null');
       if (!sesion || !sesion.token) {
@@ -231,36 +457,37 @@
 
       const urlParams = new URLSearchParams(window.location.search);
       const empresaId = urlParams.get('empresa');
-      if(empresaId) document.getElementById('logo-link').href = `index.html?empresa=${empresaId}`;
+      if (empresaId) document.getElementById('logo-link').href = `index.html?empresa=${empresaId}`;
 
       cargarPedidos(sesion.clientId, sesion.token);
       cargarNotificaciones(sesion.clientId, sesion.token);
     });
 
     async function cargarPedidos(usuarioId, token) {
+      _authToken = token;
       const container = document.getElementById("orders-list");
+      const headers   = { 'Authorization': 'Bearer ' + token };
+
       try {
-        const res = await fetch(`${CONFIG.API_URL}/pedidos/usuario/${usuarioId}`, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        
+        const res = await fetch(`${CONFIG.API_URL}/pedidos/usuario/${usuarioId}`, { headers });
+
         if (!res.ok) {
-            if (res.status === 404 || res.status === 200) { // Dependiendo de como responda la API
-                const text = await res.text();
-                if (text.includes("no tiene pedidos")) {
-                    container.innerHTML = `<div class="empty-state">
-                      <h2>Aún no has realizado ninguna compra ✦</h2>
-                      <p>Explora nuestras boutiques y encuentra prendas únicas.</p>
-                      <a href="portal.html" class="btn-primary" style="display:inline-block; margin-top:1rem; text-decoration:none;">Ver Tiendas</a>
-                    </div>`;
-                    return;
-                }
+          if (res.status === 404 || res.status === 200) {
+            const text = await res.text();
+            if (text.includes("no tiene pedidos")) {
+              container.innerHTML = `<div class="empty-state">
+                <h2>Aún no has realizado ninguna compra ✦</h2>
+                <p>Explora nuestras boutiques y encuentra prendas únicas.</p>
+                <a href="portal.html" class="btn-primary" style="display:inline-block; margin-top:1rem; text-decoration:none;">Ver Tiendas</a>
+              </div>`;
+              return;
             }
-            throw new Error("Error de API");
+          }
+          throw new Error("Error de API");
         }
 
         const pedidos = await res.json();
-        
+
         if (!Array.isArray(pedidos) || pedidos.length === 0) {
           container.innerHTML = `<div class="empty-state">
             <h2>Aún no has realizado ninguna compra ✦</h2>
@@ -270,18 +497,27 @@
           return;
         }
 
-        // Ordenar por fecha descendente
-        pedidos.sort((a,b) => b.id - a.id);
-        
+        pedidos.sort((a, b) => b.id - a.id);
         container.innerHTML = "";
 
-        // Para cada pedido, necesitamos consultar los items
         for (const p of pedidos) {
-          const resItems = await fetch(`${CONFIG.API_URL}/pedidoitems/pedido/${p.id}`, {
-            headers: { 'Authorization': 'Bearer ' + token }
-          });
-          const items = resItems.ok ? await resItems.json() : [];
-          
+          // 4 fetches en paralelo por pedido
+          const [resItems, resBoleta, resDevs, resRecojo] = await Promise.all([
+            fetch(`${CONFIG.API_URL}/pedidoitems/pedido/${p.id}`,    { headers }),
+            fetch(`${CONFIG.API_URL}/boletas/pedido/${p.id}`,        { headers }),
+            fetch(`${CONFIG.API_URL}/devoluciones/pedido/${p.id}`,   { headers }),
+            fetch(`${CONFIG.API_URL}/recojotienda/pedido/${p.id}`,   { headers })
+          ]);
+
+          const items   = resItems.ok  ? await resItems.json()  : [];
+          const boletas = resBoleta.ok ? await resBoleta.json() : [];
+          const devs    = resDevs.ok   ? await resDevs.json()   : [];
+
+          _itemsMap[p.id]        = items;
+          _boletasMap[p.id]      = boletas.length > 0 ? boletas[0] : null;
+          _devolucionesMap[p.id] = Array.isArray(devs) ? devs : [];
+
+          // ── Items HTML ──
           let itemsHtml = "";
           items.forEach(item => {
             const prod = item.variante?.producto;
@@ -298,47 +534,78 @@
             }
           });
 
-          // Consultar el código de recojo
+          // ── Recojo HTML ──
           let recojoHtml = "";
+          let esRecojo   = false;
           try {
-              const resRecojo = await fetch(`${CONFIG.API_URL}/recojotienda/pedido/${p.id}`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-              });
-              if (resRecojo.ok) {
-                const recojoData = await resRecojo.json();
-                if (recojoData && recojoData.codigo_recojo) {
-                  let recojoClase = "";
-                  let recojoAviso = "";
-                  
-                  if (recojoData.estado === "RECOGIDO" || p.estado === "RECOGIDO") {
-                    recojoClase = "style='color:#888; text-decoration:line-through;'";
-                    recojoAviso = "<span style='color:#777; font-size:0.8rem; margin-left:8px;'>(Pedido Recogido)</span>";
-                  } else if (p.estado === "LISTO_PARA_RECOGER") {
-                    recojoClase = "style='color:var(--color-sage); font-weight:bold;'";
-                    recojoAviso = "<span style='color:var(--color-sage); font-size:0.8rem; margin-left:8px; font-weight:600;'>(¡Listo para retirar en tienda!)</span>";
-                  } else {
-                    recojoClase = "style='color:#444;'";
-                    recojoAviso = "<span style='color:#C89B1F; font-size:0.8rem; margin-left:8px;'>(Código listo. Podrás retirar cuando el estado sea LISTO PARA RECOGER)</span>";
-                  }
-
-                  recojoHtml = `
-                    <div style="background:#f8faf6; border: 1px solid #e9eee6; border-radius:8px; padding:10px 14px; margin: 10px 0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-                      <div>
-                        <strong style="font-size:0.85rem; color:#555;">Código de Recojo en Tienda:</strong>
-                        <code ${recojoClase} style="background:#fff; border:1px solid #d3dbcf; padding:3px 8px; border-radius:4px; font-family:monospace; font-size:0.95rem; margin-left:6px;">${recojoData.codigo_recojo}</code>
-                        ${recojoAviso}
-                      </div>
+            if (resRecojo.ok) {
+              const recojoData = await resRecojo.json();
+              if (recojoData && recojoData.codigo_recojo) {
+                esRecojo = true;
+                let recojoClase = "";
+                let recojoAviso = "";
+                if (recojoData.estado === "RECOGIDO" || p.estado === "RECOGIDO") {
+                  recojoClase = "style='color:#888; text-decoration:line-through;'";
+                  recojoAviso = "<span style='color:#777; font-size:0.8rem; margin-left:8px;'>(Pedido Recogido)</span>";
+                } else if (p.estado === "LISTO_PARA_RECOGER") {
+                  recojoClase = "style='color:var(--color-sage); font-weight:bold;'";
+                  recojoAviso = "<span style='color:var(--color-sage); font-size:0.8rem; margin-left:8px; font-weight:600;'>(¡Listo para retirar en tienda!)</span>";
+                } else {
+                  recojoClase = "style='color:#444;'";
+                  recojoAviso = "<span style='color:#C89B1F; font-size:0.8rem; margin-left:8px;'>(Código listo. Podrás retirar cuando el estado sea LISTO PARA RECOGER)</span>";
+                }
+                recojoHtml = `
+                  <div style="background:#f8faf6; border:1px solid #e9eee6; border-radius:8px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                    <div>
+                      <strong style="font-size:0.85rem; color:#555;">Código de Recojo en Tienda:</strong>
+                      <code ${recojoClase} style="background:#fff; border:1px solid #d3dbcf; padding:3px 8px; border-radius:4px; font-family:monospace; font-size:0.95rem; margin-left:6px;">${recojoData.codigo_recojo}</code>
+                      ${recojoAviso}
                     </div>
-                  `;
+                  </div>
+                `;
               }
-            } catch (err) {
-            console.error("Error al consultar recojo/envio:", err);
+            }
+          } catch (err) {
+            console.error("Error al consultar recojo:", err);
           }
 
-          const empresaNom = p.empresa ? (p.empresa.nombre_comercial || p.empresa.razon_social) : 'WebRopa Multi-Tenant';
+          // ── Timeline ──
+          const timelineHtml = buildTimeline(p.estado, esRecojo);
+
+          // ── Botón Ver Boleta ──
+          let boletaBtn = '';
+          if (p.pago_confirmado && _boletasMap[p.id]) {
+            boletaBtn = `<button class="btn-action btn-action-boleta" onclick="verBoleta(${p.id})">Ver Boleta</button>`;
+          }
+
+          // ── Devolución ──
+          let devHtml = '';
+          const DEVOLVIBLES = ['RECOGIDO', 'ENTREGADO'];
+          if (DEVOLVIBLES.includes(p.estado)) {
+            const devsArr = _devolucionesMap[p.id];
+            if (devsArr.length > 0) {
+              const ultima = devsArr[devsArr.length - 1];
+              devHtml = `<span class="badge-dev dev-${ultima.estado}">&#x21A9; Dev. ${ultima.estado}</span>`;
+              if (ultima.estado === 'SOLICITADA') {
+                devHtml += ` <button class="btn-action btn-action-devolucion" onclick="abrirDevolucion(${p.id})">+ Otra</button>`;
+              }
+            } else {
+              devHtml = `<button class="btn-action btn-action-devolucion" onclick="abrirDevolucion(${p.id})">Solicitar devolución</button>`;
+            }
+          }
+
+          const notaHtml = p.notas
+            ? `<div style="font-size:0.82rem; color:var(--color-muted); margin-top:4px; font-style:italic;">Nota: ${p.notas}</div>`
+            : '';
+
+          const empresaNom = p.empresa
+            ? (p.empresa.nombre_comercial || p.empresa.razon_social)
+            : 'WebRopa Multi-Tenant';
 
           const card = document.createElement("div");
-          card.className = "order-card";
+          card.className    = "order-card";
+          card.dataset.estado = p.estado;
+          card.dataset.pagado = String(p.pago_confirmado);
           card.innerHTML = `
             <div class="order-header">
               <div>
@@ -348,19 +615,41 @@
                   <span><strong>Tienda:</strong> ${empresaNom}</span>
                 </div>
               </div>
-              <span class="badge-estado estado-${p.estado}">${p.estado.replace(/_/g, ' ')}</span>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                <span class="badge-estado estado-${p.estado}">${p.estado.replace(/_/g, ' ')}</span>
+                ${p.pago_confirmado
+                  ? `<span class="badge-estado badge-pagado">&#x2713; Pagado</span>`
+                  : `<span class="badge-estado badge-sin-pagar">Pago pendiente</span>`}
+              </div>
             </div>
-            <div class="order-items">
-              ${itemsHtml}
-            </div>
+            <div class="order-items">${itemsHtml}</div>
+            ${timelineHtml}
             ${recojoHtml}
             <div class="order-footer">
-              <span style="color:var(--color-muted); font-size:0.9rem;">Subtotal: S/. ${p.subtotal.toFixed(2)} | Dscto: S/. ${p.descuento.toFixed(2)}</span>
-              <div class="order-total">Total: S/. ${p.total.toFixed(2)}</div>
+              <div>
+                <span style="color:var(--color-muted); font-size:0.9rem;">Subtotal: S/. ${p.subtotal.toFixed(2)} | Dscto: S/. ${p.descuento.toFixed(2)}</span>
+                ${notaHtml}
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                <div class="order-total">Total: S/. ${p.total.toFixed(2)}</div>
+                <div class="order-actions">${boletaBtn}${devHtml}</div>
+              </div>
             </div>
           `;
           container.appendChild(card);
         }
+
+        // Mostrar tabs y stats
+        document.getElementById('filter-tabs').style.display = 'flex';
+        const COMPS = ['RECOGIDO', 'ENTREGADO'];
+        document.getElementById('stat-total').textContent       = pedidos.length;
+        document.getElementById('stat-completados').textContent = pedidos.filter(p => COMPS.includes(p.estado)).length;
+        document.getElementById('stat-gastado').textContent     = 'S/. ' + pedidos
+          .filter(p => p.pago_confirmado)
+          .reduce((s, p) => s + p.total, 0)
+          .toFixed(2);
+        document.getElementById('stat-por-pagar').textContent   = pedidos.filter(p => !p.pago_confirmado).length;
+        document.getElementById('stats-bar').style.display      = 'flex';
 
       } catch (err) {
         container.innerHTML = `<p style="color:#c94c4c;">Hubo un problema al cargar tu historial. Intenta nuevamente.</p>`;
@@ -368,16 +657,243 @@
       }
     }
 
+    /* ── Timeline ──────────────────────────────────── */
+    function buildTimeline(estado, esRecojo) {
+      const PASOS_R  = ['PENDIENTE','CONFIRMADO','EN_PREPARACION','LISTO_PARA_RECOGER','RECOGIDO'];
+      const LABELS_R = ['Pendiente','Confirmado','Preparando','Listo','Recogido'];
+      const PASOS_E  = ['PENDIENTE','CONFIRMADO','EN_PREPARACION','EN_CAMINO','ENTREGADO'];
+      const LABELS_E = ['Pendiente','Confirmado','Preparando','En Camino','Entregado'];
+
+      const pasos  = esRecojo ? PASOS_R  : PASOS_E;
+      const labels = esRecojo ? LABELS_R : LABELS_E;
+
+      let eff = estado;
+      if (estado === 'NO_RECOGIDO') eff = 'LISTO_PARA_RECOGER';
+      const idx = pasos.indexOf(eff);
+
+      let html = '<div class="order-timeline">';
+      for (let i = 0; i < pasos.length; i++) {
+        let cls = '', dot = '';
+        if      (i < idx)  { cls = 'done';   dot = '&#10003;'; }
+        else if (i === idx) { cls = 'active'; dot = '&#9679;';  }
+        html += `<div class="tl-step ${cls}"><div class="tl-dot">${dot}</div><div class="tl-label">${labels[i]}</div></div>`;
+      }
+      html += '</div>';
+      return html;
+    }
+
+    /* ── Modal: Ver Boleta ─────────────────────────── */
+    function verBoleta(pedidoId) {
+      const b = _boletasMap[pedidoId];
+      if (!b) return;
+      _boletaPedidoId = pedidoId;
+      document.getElementById('bol-numero').textContent   = b.numero_boleta || '-';
+      document.getElementById('bol-cliente').textContent  = b.nombre_cliente || '-';
+      document.getElementById('bol-dni').textContent      = b.dni_cliente    || '-';
+      document.getElementById('bol-pedido').textContent   = '#' + pedidoId;
+      document.getElementById('bol-subtotal').textContent = 'S/. ' + (b.subtotal || 0).toFixed(2);
+      document.getElementById('bol-igv').textContent      = 'S/. ' + (b.igv     || 0).toFixed(2);
+      document.getElementById('bol-total').textContent    = 'S/. ' + (b.total   || 0).toFixed(2);
+      document.getElementById('bol-estado-wrap').textContent = 'Estado: ' + (b.estado || 'ACTIVA');
+      document.getElementById('modal-boleta').classList.add('open');
+    }
+
+    function cerrarBoleta() {
+      document.getElementById('modal-boleta').classList.remove('open');
+    }
+
+    function imprimirBoleta() {
+      const b         = _boletasMap[_boletaPedidoId];
+      const pedidoNum = _boletaPedidoId;
+      if (!b) return;
+
+      const css = [
+        '* { margin:0; padding:0; box-sizing:border-box; }',
+        "body { font-family:'Courier New',monospace; padding:32px 28px; font-size:13px; color:#222; }",
+        'h1 { font-size:18px; text-align:center; letter-spacing:2px; margin-bottom:4px; }',
+        '.sub { text-align:center; color:#666; font-size:11px; margin-bottom:16px; }',
+        'hr  { border:none; border-top:1px dashed #999; margin:10px 0; }',
+        '.row { display:flex; justify-content:space-between; padding:3px 0; }',
+        '.label { color:#555; }',
+        '.total { font-weight:bold; font-size:15px; }',
+        '.num { font-size:14px; font-weight:bold; text-align:center; margin-bottom:12px; letter-spacing:1px; }',
+        '.footer { text-align:center; font-size:10px; color:#888; margin-top:20px; }',
+        '@media print { body { padding:16px; } .btn-print { display:none; } }'
+      ].join('\n');
+
+      const rows = [
+        ['Pedido',  '#' + pedidoNum],
+        ['Cliente', b.nombre_cliente || '-'],
+        ['DNI',     b.dni_cliente    || '-'],
+        ['Estado',  b.estado         || 'ACTIVA']
+      ].map(([l, v]) => `<div class="row"><span class="label">${l}</span><span>${v}</span></div>`).join('');
+
+      const html = [
+        '<!DOCTYPE html><html lang="es"><head>',
+        '<meta charset="UTF-8"/>',
+        '<title>Boleta ' + (b.numero_boleta || '') + '</title>',
+        '<style>' + css + '</style>',
+        '</head><body>',
+        '<h1>WebRopa</h1>',
+        '<p class="sub">Boleta de Venta Electrónica</p>',
+        '<div class="num">' + (b.numero_boleta || '-') + '</div>',
+        '<hr/>', rows, '<hr/>',
+        '<div class="row"><span>Subtotal</span><span>S/. ' + (b.subtotal || 0).toFixed(2) + '</span></div>',
+        '<div class="row"><span>IGV (18%)</span><span>S/. ' + (b.igv     || 0).toFixed(2) + '</span></div>',
+        '<hr/>',
+        '<div class="row total"><span>TOTAL</span><span>S/. ' + (b.total || 0).toFixed(2) + '</span></div>',
+        '<p class="footer">Gracias por tu compra &#x2764;</p>',
+        '<br/>',
+        '<button class="btn-print" onclick="window.print()" style="width:100%;padding:10px;background:#222;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;">Imprimir / Guardar PDF</button>',
+        '</body></html>'
+      ].join('');
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const url  = URL.createObjectURL(blob);
+      const win  = window.open(url, '_blank');
+      if (win) win.focus();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+    /* ── Modal: Solicitar Devolución ───────────────── */
+    function abrirDevolucion(pedidoId) {
+      _modalPedidoId = pedidoId;
+      const items  = _itemsMap[pedidoId] || [];
+      const select = document.getElementById('dev-item-select');
+
+      select.innerHTML = items.map(item => {
+        const prod  = item.variante?.producto;
+        const label = prod
+          ? `${prod.nombre} — ${item.variante.talla} (x${item.cantidad})`
+          : `Item #${item.id}`;
+        return `<option value="${item.id}" data-precio="${item.precio_unitario}" data-max="${item.cantidad}">${label}</option>`;
+      }).join('');
+
+      const cantInput = document.getElementById('dev-cantidad');
+      cantInput.value = 1;
+      if (items.length > 0) cantInput.max = items[0].cantidad;
+
+      document.getElementById('dev-error').style.display   = 'none';
+      document.getElementById('dev-submit-btn').disabled   = false;
+      document.getElementById('dev-submit-btn').textContent = 'Enviar solicitud';
+      actualizarMontoPreview();
+      document.getElementById('modal-devolucion').classList.add('open');
+    }
+
+    function cerrarModalDevolucion() {
+      document.getElementById('modal-devolucion').classList.remove('open');
+    }
+
+    function actualizarMontoPreview() {
+      const select = document.getElementById('dev-item-select');
+      const opt    = select.options[select.selectedIndex];
+      if (!opt) return;
+      const precio  = parseFloat(opt.dataset.precio || 0);
+      const maxCant = parseInt(opt.dataset.max || 1);
+      const cantInput = document.getElementById('dev-cantidad');
+      cantInput.max   = maxCant;
+      const cant  = Math.max(1, Math.min(parseInt(cantInput.value || 1), maxCant));
+      const monto = precio * cant;
+      document.getElementById('dev-monto-preview').textContent =
+        monto > 0 ? `Monto estimado a reembolsar: S/. ${monto.toFixed(2)}` : '';
+    }
+
+    async function enviarDevolucion() {
+      const itemId   = parseInt(document.getElementById('dev-item-select').value);
+      const motivo   = document.getElementById('dev-motivo').value;
+      const cantidad = parseInt(document.getElementById('dev-cantidad').value);
+      const errorEl  = document.getElementById('dev-error');
+      const btn      = document.getElementById('dev-submit-btn');
+
+      if (!itemId || !motivo || !cantidad || cantidad < 1) {
+        errorEl.textContent    = 'Por favor completa todos los campos.';
+        errorEl.style.display  = 'block';
+        return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = 'Enviando...';
+      errorEl.style.display = 'none';
+
+      try {
+        const res = await fetch(`${CONFIG.API_URL}/devoluciones`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + _authToken
+          },
+          body: JSON.stringify({
+            pedido:            { id: _modalPedidoId },
+            pedidoItem:        { id: itemId },
+            motivo:            motivo,
+            cantidad_devuelta: cantidad
+          })
+        });
+
+        if (res.ok) {
+          cerrarModalDevolucion();
+          window.location.reload();
+        } else {
+          const msg              = await res.text();
+          errorEl.textContent    = msg || 'Error al enviar la solicitud.';
+          errorEl.style.display  = 'block';
+          btn.disabled           = false;
+          btn.textContent        = 'Enviar solicitud';
+        }
+      } catch (err) {
+        errorEl.textContent   = 'Error de conexión.';
+        errorEl.style.display = 'block';
+        btn.disabled          = false;
+        btn.textContent       = 'Enviar solicitud';
+      }
+    }
+
+    /* ── Filtrado de pedidos ──────────────────────── */
+    function filtrarPedidos(filtro) {
+      document.querySelectorAll('.filter-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.filter === filtro);
+      });
+
+      const ESTADOS_COMPLETADOS = ['RECOGIDO', 'ENTREGADO'];
+      const cards = document.querySelectorAll('#orders-list .order-card');
+
+      cards.forEach(card => {
+        const estado = card.dataset.estado;
+        const pagado = card.dataset.pagado === 'true';
+        let mostrar  = true;
+
+        if (filtro === 'por-pagar')
+          mostrar = !pagado;
+        else if (filtro === 'en-proceso')
+          mostrar = pagado && !ESTADOS_COMPLETADOS.includes(estado);
+        else if (filtro === 'completados')
+          mostrar = ESTADOS_COMPLETADOS.includes(estado);
+
+        card.style.display = mostrar ? '' : 'none';
+      });
+
+      const hayVisible = [...cards].some(c => c.style.display !== 'none');
+      const anterior   = document.getElementById('filter-empty');
+      if (anterior) anterior.remove();
+      if (!hayVisible) {
+        const div       = document.createElement('div');
+        div.id          = 'filter-empty';
+        div.className   = 'empty-state';
+        div.innerHTML   = '<p>No tienes pedidos en esta categoría.</p>';
+        document.getElementById('orders-list').appendChild(div);
+      }
+    }
+
     /* ── Notificaciones ────────────────────────────── */
     const NOTIF_ICONOS = {
-      LISTO_PARA_RECOGER:   '📦',
-      RECOJO_POR_VENCER:    '⚠️',
-      NO_RECOGIDO_CANCELADO:'❌'
+      LISTO_PARA_RECOGER:    '📦',
+      RECOJO_POR_VENCER:     '⚠️',
+      NO_RECOGIDO_CANCELADO: '❌'
     };
     const NOTIF_BG = {
-      LISTO_PARA_RECOGER:   '#e8f5e9',
-      RECOJO_POR_VENCER:    '#fff8e1',
-      NO_RECOGIDO_CANCELADO:'#fce4ec'
+      LISTO_PARA_RECOGER:    '#e8f5e9',
+      RECOJO_POR_VENCER:     '#fff8e1',
+      NO_RECOGIDO_CANCELADO: '#fce4ec'
     };
 
     async function cargarNotificaciones(usuarioId, token) {
@@ -388,10 +904,9 @@
         if (!res.ok) return;
         const notifs = await res.json();
 
-        const wrapper = document.getElementById('notif-wrapper');
-        wrapper.style.display = 'block';
+        document.getElementById('notif-wrapper').style.display = 'block';
 
-        const badge = document.getElementById('notif-badge');
+        const badge    = document.getElementById('notif-badge');
         const noLeidas = notifs.filter(n => !n.leida).length;
         badge.textContent = noLeidas > 9 ? '9+' : String(noLeidas);
         badge.style.display = noLeidas > 0 ? 'flex' : 'none';
@@ -433,7 +948,7 @@
         if (!isNaN(count) && count > 0) {
           const next = count - 1;
           badge.style.display = next === 0 ? 'none' : 'flex';
-          badge.textContent = next > 9 ? '9+' : String(next);
+          badge.textContent   = next > 9 ? '9+' : String(next);
         }
       } catch (err) {
         console.error('Error al marcar leída:', err);
@@ -445,7 +960,7 @@
       const btn = document.getElementById('notif-btn');
       const dd  = document.getElementById('notif-dropdown');
       if (btn && dd) {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', e => {
           e.stopPropagation();
           dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
         });
