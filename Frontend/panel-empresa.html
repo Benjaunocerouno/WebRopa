@@ -100,6 +100,42 @@
   color: var(--cafe-oscuro);
 }
 .permiso-panel-nota strong { display: block; margin-bottom: 4px; }
+.permisos-preferencias {
+  display: grid;
+  gap: 10px;
+}
+.permiso-preferencia {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(92,74,61,0.08);
+}
+.permiso-preferencia strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--cafe-oscuro);
+}
+.permiso-preferencia .detalle {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--cafe);
+}
+.permiso-nivel-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--borde-trazo);
+  background: #fff;
+  color: var(--cafe-oscuro);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem;
+}
 .permiso-matriz {
   width: 100%;
   border-collapse: collapse;
@@ -351,15 +387,15 @@
               <h3 style="margin:0;">Permisos rápidos</h3>
             </div>
             <div class="tarjeta" style="margin:0; background:rgba(255,255,255,0.6);">
-              <div class="grid-doble" style="margin-bottom: 8px;">
-                <label class="permiso-toggle"><input type="checkbox" checked><span>Ver panel admin</span></label>
-                <label class="permiso-toggle"><input type="checkbox" checked><span>Gestionar catálogo</span></label>
-                <label class="permiso-toggle"><input type="checkbox"><span>Gestionar usuarios</span></label>
-                <label class="permiso-toggle"><input type="checkbox" checked><span>Ver pedidos</span></label>
-                <label class="permiso-toggle"><input type="checkbox" checked><span>Cambiar estados</span></label>
-                <label class="permiso-toggle"><input type="checkbox"><span>Ajustar configuración</span></label>
+              <div class="permiso-panel-nota">
+                <strong>Permisos por preferencia</strong>
+                Ajusta el nivel de acceso de cada módulo y guarda la configuración en este navegador.
               </div>
-              <button class="btn btn-primario" type="button">Guardar cambios de permisos</button>
+              <div class="permisos-preferencias" id="lista-permisos-rapidos"></div>
+              <div style="display:flex; justify-content:flex-start; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                <button class="btn btn-primario" type="button" id="btn-guardar-permisos-rapidos">Guardar cambios de permisos</button>
+                <button class="btn btn-secundario btn-mini" type="button" id="btn-restaurar-permisos-rapidos">Restaurar valores base</button>
+              </div>
             </div>
           </div>
         </div>
@@ -648,6 +684,69 @@ function cargarSugerenciasPermisosUsuarios(usuarios) {
   datalist.innerHTML = nombresUnicos.map(nombre => `<option value="${escapeHtml(nombre)}"></option>`).join('');
 }
 
+const PERMISOS_RAPIDOS_BASE = [
+  { key: 'ver_panel_admin', titulo: 'Ver panel admin', detalle: 'Permite entrar al panel principal de administración.', nivel: 'Total' },
+  { key: 'gestionar_usuarios', titulo: 'Gestionar usuarios', detalle: 'Crear, editar o desactivar empleados.', nivel: 'Restringido' },
+  { key: 'editar_catalogo', titulo: 'Editar catálogo', detalle: 'Cambiar información de categorías y productos.', nivel: 'Activo' },
+  { key: 'gestionar_variantes', titulo: 'Gestionar variantes', detalle: 'Editar tallas, colores y stock por variante.', nivel: 'Activo' },
+  { key: 'ver_pedidos', titulo: 'Ver pedidos', detalle: 'Consultar pedidos y su estado actual.', nivel: 'Activo' },
+  { key: 'cambiar_estados', titulo: 'Cambiar estados', detalle: 'Actualizar estados de pedidos y despachos.', nivel: 'Activo' },
+  { key: 'gestionar_devoluciones', titulo: 'Gestionar devoluciones', detalle: 'Aprobar o rechazar devoluciones del cliente.', nivel: 'Restringido' },
+  { key: 'ver_reportes', titulo: 'Ver reportes', detalle: 'Consultar métricas y resúmenes operativos.', nivel: 'Restringido' },
+  { key: 'ajustar_configuracion', titulo: 'Ajustar configuración', detalle: 'Modificar parámetros generales del panel.', nivel: 'Restringido' },
+  { key: 'gestionar_promociones', titulo: 'Gestionar promociones', detalle: 'Crear cupones, descuentos y campañas.', nivel: 'Restringido' }
+];
+
+const NIVEL_PERMISO_OPCIONES = ['Total', 'Activo', 'Restringido'];
+const CONFIG_PERMISOS_RAPIDOS_KEY = 'webropa_permiso_preferencias_panel';
+
+function leerPermisosRapidosGuardados() {
+  const base = Object.fromEntries(PERMISOS_RAPIDOS_BASE.map(item => [item.key, item.nivel]));
+  try {
+    const guardados = JSON.parse(localStorage.getItem(CONFIG_PERMISOS_RAPIDOS_KEY) || '{}');
+    return { ...base, ...guardados };
+  } catch {
+    return base;
+  }
+}
+
+function renderPermisosRapidos() {
+  const contenedor = document.getElementById('lista-permisos-rapidos');
+  if (!contenedor) return;
+
+  const niveles = leerPermisosRapidosGuardados();
+
+  contenedor.innerHTML = PERMISOS_RAPIDOS_BASE.map(item => {
+    const nivelActual = niveles[item.key] || item.nivel;
+    return `
+      <label class="permiso-preferencia" data-permiso-item="${escapeHtml(item.key)}">
+        <div>
+          <strong>${escapeHtml(item.titulo)}</strong>
+          <span class="detalle">${escapeHtml(item.detalle)}</span>
+        </div>
+        <select class="permiso-nivel-select" data-permiso-key="${escapeHtml(item.key)}">
+          ${NIVEL_PERMISO_OPCIONES.map(opcion => `<option value="${escapeHtml(opcion)}" ${opcion === nivelActual ? 'selected' : ''}>${escapeHtml(opcion)}</option>`).join('')}
+        </select>
+      </label>
+    `;
+  }).join('');
+}
+
+function guardarPermisosRapidos() {
+  const seleccion = {};
+  document.querySelectorAll('[data-permiso-key]').forEach(select => {
+    seleccion[select.dataset.permisoKey] = select.value;
+  });
+  localStorage.setItem(CONFIG_PERMISOS_RAPIDOS_KEY, JSON.stringify(seleccion));
+  showToast('Permisos guardados en este navegador');
+}
+
+function restaurarPermisosRapidos() {
+  localStorage.removeItem(CONFIG_PERMISOS_RAPIDOS_KEY);
+  renderPermisosRapidos();
+  showToast('Valores base restaurados');
+}
+
 async function cargarPermisosUsuarios() {
   const tbody = document.getElementById('tabla-permisos-empresa');
   if (!tbody) return;
@@ -689,6 +788,11 @@ async function cargarPermisosUsuarios() {
     tbody.innerHTML = `<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--alerta);">Error cargando usuarios: ${escapeHtml(e.message)}</td></tr>`;
   }
 }
+
+document.getElementById('btn-guardar-permisos-rapidos')?.addEventListener('click', guardarPermisosRapidos);
+document.getElementById('btn-restaurar-permisos-rapidos')?.addEventListener('click', restaurarPermisosRapidos);
+
+renderPermisosRapidos();
 
 /* ==========================================================
    NAVEGACIÓN Y AUTH
