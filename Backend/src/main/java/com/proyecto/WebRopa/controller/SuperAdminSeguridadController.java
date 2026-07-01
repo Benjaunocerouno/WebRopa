@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.proyecto.WebRopa.service.seguridad.SeguridadEnVivoService;
+import com.proyecto.WebRopa.service.jpa.AuditoriaService;
 
 @RestController
 @RequestMapping("/api/superadmin/seguridad")
@@ -20,6 +21,9 @@ public class SuperAdminSeguridadController {
 
     @Autowired
     private SeguridadEnVivoService seguridadService;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     // 1. Obtener sesiones activas
     @GetMapping("/sesiones")
@@ -31,6 +35,7 @@ public class SuperAdminSeguridadController {
     @PostMapping("/sesiones/{id}/cerrar")
     public ResponseEntity<?> cerrarSesion(@PathVariable String id) {
         seguridadService.cerrarSesionPorId(id);
+        auditoriaService.registrar("REVOCAR_SESION", "SESION", "Se forzó el cierre de la sesión ID: " + id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Sesión cerrada correctamente");
         return ResponseEntity.ok(response);
@@ -40,6 +45,7 @@ public class SuperAdminSeguridadController {
     @PostMapping("/sesiones/{id}/revocar")
     public ResponseEntity<?> revocarSesion(@PathVariable String id) {
         seguridadService.revocarSesionPorId(id);
+        auditoriaService.registrar("REVOCAR_SESION", "SESION", "Se revocó el acceso de la sesión ID: " + id);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Acceso revocado correctamente");
         return ResponseEntity.ok(response);

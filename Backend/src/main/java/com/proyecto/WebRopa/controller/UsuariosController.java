@@ -20,6 +20,7 @@ import com.proyecto.WebRopa.service.IUsuariosService;
 import com.proyecto.WebRopa.service.IRolesServices;
 
 import jakarta.servlet.http.HttpServletRequest;
+import com.proyecto.WebRopa.service.jpa.AuditoriaService;
 
 @RestController
 @RequestMapping("/api")
@@ -30,16 +31,18 @@ public class UsuariosController {
     private final ICarritosService serviceCarritos;
     private final IRolesServices serviceRoles;
     private final JwtUtil jwtUtil;
+    private final AuditoriaService auditoriaService;
 
     @Autowired
     private com.proyecto.WebRopa.service.seguridad.SeguridadEnVivoService seguridadEnVivoService;
 
-    public UsuariosController(IUsuariosService serviceUsuarios, BCryptPasswordEncoder passwordEncoder, ICarritosService serviceCarritos, IRolesServices serviceRoles, JwtUtil jwtUtil) {
+    public UsuariosController(IUsuariosService serviceUsuarios, BCryptPasswordEncoder passwordEncoder, ICarritosService serviceCarritos, IRolesServices serviceRoles, JwtUtil jwtUtil, AuditoriaService auditoriaService) {
         this.serviceUsuarios = serviceUsuarios;
         this.passwordEncoder = passwordEncoder;
         this.serviceCarritos = serviceCarritos;
         this.serviceRoles = serviceRoles;
         this.jwtUtil = jwtUtil;
+        this.auditoriaService = auditoriaService;
     }
 
     @PostMapping("/usuarios/login")
@@ -246,6 +249,7 @@ public class UsuariosController {
         carrito.setUsuario(usuario);
         serviceCarritos.guardar(carrito);
         
+        auditoriaService.registrar("CREAR_CUENTA_ADMIN", "USUARIO", "Se creó la cuenta Admin para " + usuario.getCorreo() + " asociada a la empresa ID " + usuario.getEmpresa().getId());
         return ResponseEntity.ok(usuario);
     }
 
@@ -308,12 +312,19 @@ public class UsuariosController {
         }
 
         // Actualización del rol (para que un admin pueda ascender/cambiar roles)
+        boolean rolCambiado = false;
+        String rolAnterior = existente.getRol() != null ? existente.getRol().getNombre() : "Ninguno";
+        String nuevoRolNombre = "";
         if (usuario.getRol() != null && usuario.getRol().getId() != null) {
             Optional<Roles> rolOpt = serviceRoles.buscarId(usuario.getRol().getId());
             if (!rolOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("El rol especificado no existe");
             }
-            existente.setRol(rolOpt.get());
+            if (existente.getRol() == null || !existente.getRol().getId().equals(rolOpt.get().getId())) {
+                existente.setRol(rolOpt.get());
+                nuevoRolNombre = rolOpt.get().getNombre();
+                rolCambiado = true;
+            }
         }
 
         if (usuario.getTallaUniforme() != null) existente.setTallaUniforme(usuario.getTallaUniforme());
@@ -322,13 +333,21 @@ public class UsuariosController {
         if (usuario.getSucursal() != null) existente.setSucursal(usuario.getSucursal());
 
         serviceUsuarios.guardar(existente);
+
+        if (rolCambiado) {
+            auditoriaService.registrar("ASIGNAR_ROL", "USUARIO", "Se cambió el rol del usuario " + existente.getNombre() + " (" + existente.getCorreo() + ") de " + rolAnterior + " a " + nuevoRolNombre);
+        }
         return ResponseEntity.ok(existente);
     }
 
     @DeleteMapping("/usuarios/{id}")
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('PERSONAL_GESTIONAR')")
     public String eliminar(@PathVariable Long id) {
+        Optional<Usuarios> uOpt = serviceUsuarios.buscarId(id);
         serviceUsuarios.eliminar(id);
+        uOpt.ifPresent(u -> 
+            auditoriaService.registrar("DESACTIVAR_ADMIN", "USUARIO", "Se desactivó la cuenta de " + u.getNombre() + " (" + u.getCorreo() + ")")
+        );
         return "Usuario eliminado";
     }
 }
