@@ -1102,68 +1102,9 @@ async function cargarPedidos() {
   const tbody = document.getElementById('tabla-pedidos');
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Cargando pedidos...</td></tr>';
   try {
-<<<<<<< HEAD
-    const pedidos = await fetchAuth('/pedidos');
-    if (pedidos.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No hay pedidos registrados en tu boutique.</td></tr>';
-      return;
-    }
-    
-    tbody.innerHTML = pedidos.map(p => {
-      const fecha = p.fecha_creacion || 'Desconocida';
-      const total = p.total.toFixed(2);
-      const cliNombre = p.usuario ? p.usuario.nombre : 'Cliente Desconocido';
-      const cliCorreo = p.usuario ? p.usuario.correo : '';
-      const pago = p.pago_confirmado 
-        ? `<span class="pildora estado-ok">Confirmado</span>`
-        : `<span class="pildora estado-fallo">Pendiente</span> <button class="btn btn-secundario btn-mini" onclick="event.stopPropagation(); confirmarPagoManual(${p.id}, ${p.total})" style="margin-top: 4px; display: block;">✓ Confirmar</button>`;
-      
-      const etiquetasEstado = {
-        'PENDIENTE':          'Pendiente',
-        'CONFIRMADO':         'Confirmado',
-        'EN_PREPARACION':     'En preparación',
-        'LISTO_PARA_RECOGER': 'Listo para recoger',
-        'RECOGIDO':           'Recogido',
-        'NO_RECOGIDO':        'No recogido',
-        'CANCELADO':          'Cancelado'
-      };
-      const estados = Object.keys(etiquetasEstado);
-      const selectEstado = p.pago_confirmado
-        ? `<select onchange="cambiarEstadoPedido(${p.id}, this.value)" onclick="event.stopPropagation()" style="padding:4px 8px; font-size:0.8rem; border-radius:8px; border:1px solid var(--borde-trazo); background:var(--crema);">
-            ${estados.map(est => `<option value="${est}" ${p.estado === est ? 'selected' : ''}>${etiquetasEstado[est]}</option>`).join('')}
-          </select>`
-        : `<span class="pildora estado-pendiente" style="font-size:0.75rem;">${etiquetasEstado[p.estado] || p.estado}</span>`;
-
-      return `
-        <tr class="fila-principal" onclick="toggleItemsPedido(${p.id})">
-          <td>${p.id}</td>
-          <td>
-            <strong>${cliNombre}</strong><br>
-            <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${cliCorreo}</span>
-          </td>
-          <td>${fecha}</td>
-          <td>${pago}</td>
-          <td style="font-weight:600;">S/. ${total}</td>
-          <td>${selectEstado}</td>
-          <td>
-            <button class="btn btn-secundario btn-mini" onclick="event.stopPropagation(); toggleItemsPedido(${p.id})">Ver Detalle</button>
-          </td>
-        </tr>
-        <tr id="items-pedido-${p.id}" style="display:none;">
-          <td colspan="7" style="padding:0;">
-            <div class="variantes-lista-expandida" style="padding: 15px 25px;">
-              <h4 style="margin:0 0 10px; font-size:0.9rem; color:var(--cafe-oscuro)">Detalle de Ítems del Pedido #${p.id}</h4>
-              <div id="items-pedido-loader-${p.id}">Cargando ítems...</div>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
-=======
     todosLosPedidos = await fetchAuth('/pedidos');
     actualizarStatsPedidos();
     renderizarPedidos();
->>>>>>> 9d0d0216c8aa7b054624a2b9f3fc2aed7ddcc174
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="7" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
   }
