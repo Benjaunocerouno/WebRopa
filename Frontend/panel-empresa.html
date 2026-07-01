@@ -1,725 +1,873 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel de Empresa · Super Admin / Admin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/panel-empresa.css">
-<style>
-/* Estilos adicionales específicos para el panel de empresa */
-.form-variantes {
-  background: var(--crema);
-  border: 1px dashed var(--borde-trazo);
-  border-radius: var(--radio-b);
-  padding: 15px;
-  margin-top: 10px;
-}
-.variante-item {
-  display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
-  padding: 10px 0; border-bottom: 1px solid var(--borde-trazo);
-}
-.variante-item:last-child { border-bottom: none; }
-.variante-item input { flex: 1; min-width: 80px; }
-.btn-quitar-variante { background: var(--alerta-suave); color: var(--alerta); border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
-.variantes-lista-expandida {
-  background: rgba(92,74,61,0.03);
-  border-bottom: 1.5px solid var(--borde-trazo);
-}
-.variantes-lista-expandida table { background: transparent; margin: 10px 20px; width: calc(100% - 40px); }
-.variantes-lista-expandida th { padding-top: 5px; padding-bottom: 5px; border-bottom: 1px solid var(--borde-trazo); }
-.fila-principal { transition: background 0.2s; }
-.fila-principal:hover { background: rgba(92,74,61,0.05); }
-.btn-outline { background: transparent; border: 1.5px solid var(--borde-trazo); color: var(--cafe); }
-.btn-outline:hover { border-color: var(--sage-oscuro); color: var(--sage-oscuro); }
-.img-min { width: 40px; height: 50px; object-fit: cover; border-radius: 4px; background: var(--borde-trazo); }
-.permisos-resumen {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 15px;
-}
-.permiso-resumen {
-  background: linear-gradient(180deg, rgba(248,244,237,0.95), rgba(243,236,226,0.85));
-  border: 1px solid var(--borde-trazo);
-  border-radius: var(--radio-b);
-  padding: 14px 16px;
-  box-shadow: 0 10px 20px rgba(92,74,61,0.04);
-}
-.permiso-resumen .titulo {
-  font-family: 'Fraunces', serif;
-  font-size: 1.05rem;
-  color: var(--cafe-oscuro);
-  margin-bottom: 6px;
-}
-.permiso-resumen .descripcion {
-  margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-.permiso-lista {
-  list-style: none;
-  padding: 0;
-  margin: 12px 0 0;
-  display: grid;
-  gap: 8px;
-}
-.permiso-lista li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 0.82rem;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(92,74,61,0.08);
-}
-.permiso-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-}
-.permiso-toggle input { accent-color: var(--sage-oscuro); }
-.permiso-panel-grid {
-  display: grid;
-  grid-template-columns: minmax(240px, 360px) minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-}
-.permiso-panel-nota {
-  background: rgba(216,164,143,0.12);
-  border: 1px solid rgba(92,74,61,0.12);
-  border-radius: var(--radio-b);
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  color: var(--cafe-oscuro);
-}
-.permiso-panel-nota strong { display: block; margin-bottom: 4px; }
-.permisos-preferencias {
-  display: grid;
-  gap: 10px;
-}
-.permiso-preferencia {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 140px;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.72);
-  border: 1px solid rgba(92,74,61,0.08);
-}
-.permiso-preferencia strong {
-  display: block;
-  font-size: 0.9rem;
-  color: var(--cafe-oscuro);
-}
-.permiso-preferencia .detalle {
-  display: block;
-  margin-top: 3px;
-  font-size: 0.75rem;
-  line-height: 1.4;
-  color: var(--cafe);
-}
-.permiso-nivel-select {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--borde-trazo);
-  background: #fff;
-  color: var(--cafe-oscuro);
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.82rem;
-}
-.permiso-matriz {
-  width: 100%;
-  border-collapse: collapse;
-}
-.permiso-matriz th,
-.permiso-matriz td {
-  padding: 12px 10px;
-  border-bottom: 1px solid var(--borde-trazo);
-  vertical-align: top;
-}
-.permiso-matriz thead th {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--cafe);
-}
-.permiso-estado {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.78rem;
-}
-.permiso-estado::before {
-  content: '';
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--sage-oscuro);
-  box-shadow: 0 0 0 4px rgba(122,140,110,0.12);
-}
-@media (max-width: 900px) {
-  .permiso-panel-grid,
-  .permisos-resumen { grid-template-columns: 1fr; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Empresa · Super Admin / Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/panel-empresa.css">
+  <style>
+    /* Estilos adicionales específicos para el panel de empresa */
+    .form-variantes {
+      background: var(--crema);
+      border: 1px dashed var(--borde-trazo);
+      border-radius: var(--radio-b);
+      padding: 15px;
+      margin-top: 10px;
+    }
+
+    .variante-item {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--borde-trazo);
+    }
+
+    .variante-item:last-child {
+      border-bottom: none;
+    }
+
+    .variante-item input {
+      flex: 1;
+      min-width: 80px;
+    }
+
+    .btn-quitar-variante {
+      background: var(--alerta-suave);
+      color: var(--alerta);
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .variantes-lista-expandida {
+      background: rgba(92, 74, 61, 0.03);
+      border-bottom: 1.5px solid var(--borde-trazo);
+    }
+
+    .variantes-lista-expandida table {
+      background: transparent;
+      margin: 10px 20px;
+      width: calc(100% - 40px);
+    }
+
+    .variantes-lista-expandida th {
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--borde-trazo);
+    }
+
+    .fila-principal {
+      transition: background 0.2s;
+    }
+
+    .fila-principal:hover {
+      background: rgba(92, 74, 61, 0.05);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--borde-trazo);
+      color: var(--cafe);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--sage-oscuro);
+      color: var(--sage-oscuro);
+    }
+
+    .img-min {
+      width: 40px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+      background: var(--borde-trazo);
+    }
+
+    .permisos-resumen {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .permiso-resumen {
+      background: linear-gradient(180deg, rgba(248, 244, 237, 0.95), rgba(243, 236, 226, 0.85));
+      border: 1px solid var(--borde-trazo);
+      border-radius: var(--radio-b);
+      padding: 14px 16px;
+      box-shadow: 0 10px 20px rgba(92, 74, 61, 0.04);
+    }
+
+    .permiso-resumen .titulo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem;
+      color: var(--cafe-oscuro);
+      margin-bottom: 6px;
+    }
+
+    .permiso-resumen .descripcion {
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .permiso-lista {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .permiso-lista li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.82rem;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(92, 74, 61, 0.08);
+    }
+
+    .permiso-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .permiso-toggle input {
+      accent-color: var(--sage-oscuro);
+    }
+
+    .permiso-panel-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 360px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .permiso-panel-nota {
+      background: rgba(216, 164, 143, 0.12);
+      border: 1px solid rgba(92, 74, 61, 0.12);
+      border-radius: var(--radio-b);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      color: var(--cafe-oscuro);
+    }
+
+    .permiso-panel-nota strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .permisos-preferencias {
+      display: grid;
+      gap: 10px;
+    }
+
+    .permiso-preferencia {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 140px;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(92, 74, 61, 0.08);
+    }
+
+    .permiso-preferencia strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--cafe-oscuro);
+    }
+
+    .permiso-preferencia .detalle {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: var(--cafe);
+    }
+
+    .permiso-nivel-select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--borde-trazo);
+      background: #fff;
+      color: var(--cafe-oscuro);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+    }
+
+    .permiso-matriz {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .permiso-matriz th,
+    .permiso-matriz td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--borde-trazo);
+      vertical-align: top;
+    }
+
+    .permiso-matriz thead th {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cafe);
+    }
+
+    .permiso-estado {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+    }
+
+    .permiso-estado::before {
+      content: '';
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--sage-oscuro);
+      box-shadow: 0 0 0 4px rgba(122, 140, 110, 0.12);
+    }
+
+    @media (max-width: 900px) {
+
+      .permiso-panel-grid,
+      .permisos-resumen {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Login overlay -->
-<div class="login-overlay" id="login-overlay">
-  <div class="login-caja">
-    <div class="marca">
-      <svg class="marca-icono" viewBox="0 0 40 40" fill="none">
-        <path d="M20 4C12 4 6 10 6 18c0 9 8 14 14 18 6-4 14-9 14-18 0-8-6-14-14-14Z" stroke="#5C4A3D" stroke-width="2" fill="#D8A48F" opacity="0.6"/>
-        <path d="M14 19l4 4 9-9" stroke="#5C4A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </svg>
-      <h1>Administración</h1>
-    </div>
-    <p class="marca-sub">Acceso para Administradores de la Empresa</p>
-    <div class="login-error" id="login-error"></div>
-    <div class="login-form">
-      <div class="campo">
-        <label class="etiqueta-campo">Correo electrónico</label>
-        <input type="email" id="login-correo" placeholder="trabajador@boutique.com" autocomplete="email" required maxlength="120">
+  <!-- Login overlay -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-caja">
+      <div class="marca">
+        <svg class="marca-icono" viewBox="0 0 40 40" fill="none">
+          <path d="M20 4C12 4 6 10 6 18c0 9 8 14 14 18 6-4 14-9 14-18 0-8-6-14-14-14Z" stroke="#5C4A3D" stroke-width="2"
+            fill="#D8A48F" opacity="0.6" />
+          <path d="M14 19l4 4 9-9" stroke="#5C4A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+            fill="none" />
+        </svg>
+        <h1>Administración</h1>
       </div>
-      <div class="campo">
-        <label class="etiqueta-campo">Contraseña</label>
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required minlength="6" maxlength="80">
+      <p class="marca-sub">Acceso para Administradores de la Empresa</p>
+      <div class="login-error" id="login-error"></div>
+      <div class="login-form">
+        <div class="campo">
+          <label class="etiqueta-campo">Correo electrónico</label>
+          <input type="email" id="login-correo" placeholder="trabajador@boutique.com" autocomplete="email" required
+            maxlength="120">
+        </div>
+        <div class="campo">
+          <label class="etiqueta-campo">Contraseña</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required
+            minlength="6" maxlength="80">
+        </div>
+        <button class="btn-login" id="btn-ingresar">Ingresar</button>
       </div>
-      <button class="btn-login" id="btn-ingresar">Ingresar</button>
     </div>
   </div>
-</div>
 
-<div class="app">
+  <div class="app">
 
-  <aside class="sidebar">
-    <div class="marca">
-      <svg class="marca-icono" viewBox="0 0 40 40" fill="none">
-        <path d="M20 4C12 4 6 10 6 18c0 9 8 14 14 18 6-4 14-9 14-18 0-8-6-14-14-14Z" stroke="#5C4A3D" stroke-width="2" fill="#D8A48F" opacity="0.6"/>
-        <path d="M14 19l4 4 9-9" stroke="#5C4A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </svg>
-      <h1 id="sidebar-empresa-nombre">Boutique</h1>
-    </div>
-    <p class="marca-sub" style="margin-bottom: 18px;"><span class="pildora rol-admin" style="font-size:0.65rem; padding: 3px 10px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Panel Administrador</span></p>
-
-    <div class="usuario-activo">
-      <div class="avatar-mini" id="avatar-iniciales">–</div>
-      <div>
-        <div class="nombre" id="usuario-nombre">Cargando…</div>
-        <div class="rol" id="usuario-rol">Usuario</div>
+    <aside class="sidebar">
+      <div class="marca">
+        <svg class="marca-icono" viewBox="0 0 40 40" fill="none">
+          <path d="M20 4C12 4 6 10 6 18c0 9 8 14 14 18 6-4 14-9 14-18 0-8-6-14-14-14Z" stroke="#5C4A3D" stroke-width="2"
+            fill="#D8A48F" opacity="0.6" />
+          <path d="M14 19l4 4 9-9" stroke="#5C4A3D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+            fill="none" />
+        </svg>
+        <h1 id="sidebar-empresa-nombre">Boutique</h1>
       </div>
-    </div>
+      <p class="marca-sub" style="margin-bottom: 18px;"><span class="pildora rol-admin"
+          style="font-size:0.65rem; padding: 3px 10px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Panel
+          Administrador</span></p>
 
-    <nav class="menu" id="menu-navegacion">
-      <button class="menu-item activo" data-panel="dashboard-admin">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-        Dashboard Admin
-      </button>
-      <button class="menu-item" data-panel="empleados">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-        Empleados
-      </button>
-      <button class="menu-item" data-panel="roles">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-        Roles y Permisos
-      </button>
-      <button class="menu-item" data-panel="configuracion">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-        Configuración
-      </button>
-    </nav>
-
-    <div class="menu-pie">
-      Empresa ID: <strong id="sidebar-empresa-id">--</strong><br>
-      <span id="footer-usuario"></span>
-    </div>
-    <button class="btn-cerrar-sesion" id="btn-cerrar-sesion">
-      <svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Cerrar sesión
-    </button>
-  </aside>
-
-  <main>
-    <!-- DASHBOARD ADMIN -->
-    <section class="panel activo" id="panel-dashboard-admin">
-      <div class="topbar">
+      <div class="usuario-activo">
+        <div class="avatar-mini" id="avatar-iniciales">–</div>
         <div>
-          <h2>Panel del Administrador de <span id="dash-empresa-nombre" style="color:var(--sage-oscuro);">tu Boutique</span></h2>
-          <p class="descripcion">Aquí puedes gestionar empleados, roles y configuraciones generales de la empresa.</p>
+          <div class="nombre" id="usuario-nombre">Cargando…</div>
+          <div class="rol" id="usuario-rol">Usuario</div>
         </div>
       </div>
-      <div class="grid-metricas">
-        <div class="metrica">
-          <div class="metrica-header"><span class="nombre">Empleados Activos</span><span class="valor">12</span></div>
-          <div class="barra-fondo"><div class="barra-relleno" style="width: 80%;"></div></div>
-        </div>
-        <div class="metrica">
-          <div class="metrica-header"><span class="nombre">Roles Definidos</span><span class="valor">4</span></div>
-          <div class="barra-fondo"><div class="barra-relleno" style="width: 40%;"></div></div>
-        </div>
-        <div class="metrica">
-          <div class="metrica-header"><span class="nombre">Módulos Activos</span><span class="valor">3</span></div>
-          <div class="barra-fondo"><div class="barra-relleno" style="width: 100%;"></div></div>
-        </div>
-      </div>
-    </section>
 
-    <!-- EMPLEADOS -->
-    <section class="panel" id="panel-empleados">
-      <div class="topbar">
-        <div>
-          <h2>Gestión de Empleados</h2>
-          <p class="descripcion">Registra y administra los accesos para el personal de tu empresa.</p>
-        </div>
-      </div>
-      <div class="tarjeta">
-        <div class="tarjeta-titulo">
-          <h3>Registrar / Editar Empleado</h3>
-        </div>
-        <div class="grid-doble" style="margin-bottom: 15px;">
-          <input type="hidden" id="emp-id">
-          <div class="campo"><label class="etiqueta-campo">Nombres Completos</label><input type="text" id="emp-nombre" placeholder="Ej. Juan Pérez" required minlength="3" maxlength="120"></div>
-          <div class="campo"><label class="etiqueta-campo">Correo</label><input type="email" id="emp-correo" placeholder="juan@boutique.com" required maxlength="120"></div>
-          <div class="campo"><label class="etiqueta-campo">Teléfono</label><input type="text" id="emp-telefono" placeholder="Ej. 987654321" inputmode="numeric" pattern="\\d{9}" maxlength="9" title="Debe contener exactamente 9 dígitos"></div>
-          <div class="campo"><label class="etiqueta-campo">Rol Asignado</label><select id="emp-rol" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--borde-trazo); background: var(--crema); font-family: 'Outfit', sans-serif;"><option value="">-- Automático --</option></select></div>
-          <div class="campo"><label class="etiqueta-campo">Contraseña</label><input type="password" id="emp-password" placeholder="Solo para nuevos o cambiar" minlength="6" maxlength="80"></div>
-        </div>
-        <div style="display:flex; gap:10px;">
-          <button class="btn btn-primario" id="btn-guardar-empleado">Guardar Empleado</button>
-          <button class="btn btn-secundario oculto" id="btn-cancelar-empleado">Cancelar Edición</button>
-        </div>
-      </div>
-      
-      <div class="tarjeta">
-        <div class="tarjeta-titulo">
-          <h3>Lista de Empleados Activos</h3>
-          <button class="btn btn-secundario btn-mini" onclick="cargarEmpleados()">↻ Refrescar</button>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Rol</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-empleados">
-            <tr><td colspan="4" style="text-align:center;">Cargando empleados...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+      <nav class="menu" id="menu-navegacion">
+        <button class="menu-item activo" data-panel="dashboard-admin">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="1.8"
+              stroke-linejoin="round" />
+          </svg>
+          Dashboard Admin
+        </button>
+        <button class="menu-item" data-panel="empleados">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+              stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+          Empleados
+        </button>
+        <button class="menu-item" data-panel="roles">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.8"
+              stroke-linejoin="round" />
+          </svg>
+          Roles y Permisos
+        </button>
+        <button class="menu-item" data-panel="configuracion">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"
+              stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+          Configuración
+        </button>
+      </nav>
 
-    <!-- ROLES Y PERMISOS -->
-    <section class="panel" id="panel-roles">
-      <div class="topbar">
-        <div>
-          <h2>Roles y Permisos</h2>
-          <p class="descripcion">Define qué puede ver y hacer cada usuario dentro del panel.</p>
-        </div>
+      <div class="menu-pie">
+        Empresa ID: <strong id="sidebar-empresa-id">--</strong><br>
+        <span id="footer-usuario"></span>
       </div>
-      <div class="tarjeta">
-        <div class="permisos-resumen">
-          <div class="permiso-resumen">
-            <div class="titulo">Administrador</div>
-            <ul class="permiso-lista">
-              <li><span>Gestionar usuarios</span><span class="permiso-estado">Total</span></li>
-              <li><span>Editar catálogo</span><span class="permiso-estado">Total</span></li>
-              <li><span>Ver reportes</span><span class="permiso-estado">Total</span></li>
-            </ul>
-          </div>
-          <div class="permiso-resumen">
-            <div class="titulo">Mantenimiento</div>
-            <ul class="permiso-lista">
-              <li><span>Inventario y stock</span><span class="permiso-estado">Activo</span></li>
-              <li><span>Productos</span><span class="permiso-estado">Activo</span></li>
-              <li><span>Usuarios</span><span class="permiso-estado">Restringido</span></li>
-            </ul>
-          </div>
-          <div class="permiso-resumen">
-            <div class="titulo">Despacho</div>
-            <ul class="permiso-lista">
-              <li><span>Ver pedidos</span><span class="permiso-estado">Activo</span></li>
-              <li><span>Cambiar estados</span><span class="permiso-estado">Activo</span></li>
-              <li><span>Configurar sistema</span><span class="permiso-estado">Restringido</span></li>
-            </ul>
-          </div>
-        </div>
+      <button class="btn-cerrar-sesion" id="btn-cerrar-sesion">
+        <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Cerrar sesión
+      </button>
+    </aside>
 
-        <div class="permiso-panel-grid">
+    <main>
+      <!-- DASHBOARD ADMIN -->
+      <section class="panel activo" id="panel-dashboard-admin">
+        <div class="topbar">
           <div>
-            <div class="tarjeta-titulo" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
-              <h3 style="margin:0;">Permisos por usuario</h3>
-              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <input type="text" class="buscador-generico" data-target="tabla-permisos-empresa" list="sugerencias-permisos-usuarios" placeholder="Buscar rol o empleado..." autocomplete="off" style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif; min-width: 240px;">
-                <button class="btn btn-secundario btn-mini" type="button" id="btn-refrescar-permisos">↻ Refrescar</button>
-              </div>
-            </div>
-            <datalist id="sugerencias-permisos-usuarios"></datalist>
-            <table class="permiso-matriz">
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Rol</th>
-                  <th>Acceso</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-permisos-empresa">
-                <tr class="no-filtrable">
-                  <td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">Cargando usuarios...</td>
-                </tr>
-              </tbody>
-            </table>
+            <h2>Panel del Administrador de <span id="dash-empresa-nombre" style="color:var(--sage-oscuro);">tu
+                Boutique</span></h2>
+            <p class="descripcion">Aquí puedes gestionar empleados, roles y configuraciones generales de la empresa.</p>
           </div>
+        </div>
+        <div class="grid-metricas">
+          <div class="metrica">
+            <div class="metrica-header"><span class="nombre">Empleados Activos</span><span class="valor">12</span></div>
+            <div class="barra-fondo">
+              <div class="barra-relleno" style="width: 80%;"></div>
+            </div>
+          </div>
+          <div class="metrica">
+            <div class="metrica-header"><span class="nombre">Roles Definidos</span><span class="valor">4</span></div>
+            <div class="barra-fondo">
+              <div class="barra-relleno" style="width: 40%;"></div>
+            </div>
+          </div>
+          <div class="metrica">
+            <div class="metrica-header"><span class="nombre">Módulos Activos</span><span class="valor">3</span></div>
+            <div class="barra-fondo">
+              <div class="barra-relleno" style="width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
 
+      <!-- EMPLEADOS -->
+      <section class="panel" id="panel-empleados">
+        <div class="topbar">
           <div>
-            <div class="tarjeta-titulo" style="margin-bottom:12px;">
-              <h3 style="margin:0;">Permisos rápidos</h3>
+            <h2>Gestión de Empleados</h2>
+            <p class="descripcion">Registra y administra los accesos para el personal de tu empresa.</p>
+          </div>
+        </div>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">
+            <h3>Registrar / Editar Empleado</h3>
+          </div>
+          <div class="grid-doble" style="margin-bottom: 15px;">
+            <input type="hidden" id="emp-id">
+            <div class="campo"><label class="etiqueta-campo">Nombres Completos</label><input type="text" id="emp-nombre"
+                placeholder="Ej. Juan Pérez" required minlength="3" maxlength="120"></div>
+            <div class="campo"><label class="etiqueta-campo">Correo</label><input type="email" id="emp-correo"
+                placeholder="juan@boutique.com" required maxlength="120"></div>
+            <div class="campo"><label class="etiqueta-campo">Teléfono</label><input type="text" id="emp-telefono"
+                placeholder="Ej. 987654321" inputmode="numeric" pattern="\\d{9}" maxlength="9"
+                title="Debe contener exactamente 9 dígitos"></div>
+            <div class="campo"><label class="etiqueta-campo">Rol Asignado</label><select id="emp-rol"
+                style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--borde-trazo); background: var(--crema); font-family: 'Outfit', sans-serif;">
+                <option value="">-- Automático --</option>
+              </select></div>
+            <div class="campo"><label class="etiqueta-campo">Contraseña</label><input type="password" id="emp-password"
+                placeholder="Solo para nuevos o cambiar" minlength="6" maxlength="80"></div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primario" id="btn-guardar-empleado">Guardar Empleado</button>
+            <button class="btn btn-secundario oculto" id="btn-cancelar-empleado">Cancelar Edición</button>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">
+            <h3>Lista de Empleados Activos</h3>
+            <button class="btn btn-secundario btn-mini" onclick="cargarEmpleados()">↻ Refrescar</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-empleados">
+              <tr>
+                <td colspan="4" style="text-align:center;">Cargando empleados...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ROLES Y PERMISOS -->
+      <section class="panel" id="panel-roles">
+        <div class="topbar">
+          <div>
+            <h2>Roles y Permisos</h2>
+            <p class="descripcion">Define qué puede ver y hacer cada usuario dentro del panel.</p>
+          </div>
+        </div>
+        <div class="tarjeta">
+          <div class="permisos-resumen">
+            <div class="permiso-resumen">
+              <div class="titulo">Administrador</div>
+              <ul class="permiso-lista">
+                <li><span>Gestionar usuarios</span><span class="permiso-estado">Total</span></li>
+                <li><span>Editar catálogo</span><span class="permiso-estado">Total</span></li>
+                <li><span>Ver reportes</span><span class="permiso-estado">Total</span></li>
+              </ul>
             </div>
-            <div class="tarjeta" style="margin:0; background:rgba(255,255,255,0.6);">
-              <div class="permiso-panel-nota">
-                <strong>Permisos por preferencia</strong>
-                Ajusta el nivel de acceso de cada módulo y guarda la configuración en este navegador.
+            <div class="permiso-resumen">
+              <div class="titulo">Mantenimiento</div>
+              <ul class="permiso-lista">
+                <li><span>Inventario y stock</span><span class="permiso-estado">Activo</span></li>
+                <li><span>Productos</span><span class="permiso-estado">Activo</span></li>
+                <li><span>Usuarios</span><span class="permiso-estado">Restringido</span></li>
+              </ul>
+            </div>
+            <div class="permiso-resumen">
+              <div class="titulo">Despacho</div>
+              <ul class="permiso-lista">
+                <li><span>Ver pedidos</span><span class="permiso-estado">Activo</span></li>
+                <li><span>Cambiar estados</span><span class="permiso-estado">Activo</span></li>
+                <li><span>Configurar sistema</span><span class="permiso-estado">Restringido</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="permiso-panel-grid">
+            <div>
+              <div class="tarjeta-titulo"
+                style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
+                <h3 style="margin:0;">Permisos por usuario</h3>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                  <input type="text" class="buscador-generico" data-target="tabla-permisos-empresa"
+                    list="sugerencias-permisos-usuarios" placeholder="Buscar rol o empleado..." autocomplete="off"
+                    style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif; min-width: 240px;">
+                  <button class="btn btn-secundario btn-mini" type="button" id="btn-refrescar-permisos">↻
+                    Refrescar</button>
+                </div>
               </div>
-              <div class="permisos-preferencias" id="lista-permisos-rapidos"></div>
-              <div style="display:flex; justify-content:flex-start; gap:10px; margin-top:14px; flex-wrap:wrap;">
-                <button class="btn btn-primario" type="button" id="btn-guardar-permisos-rapidos">Guardar cambios de permisos</button>
-                <button class="btn btn-secundario btn-mini" type="button" id="btn-restaurar-permisos-rapidos">Restaurar valores base</button>
+              <datalist id="sugerencias-permisos-usuarios"></datalist>
+              <table class="permiso-matriz">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Acceso</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-permisos-empresa">
+                  <tr class="no-filtrable">
+                    <td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">Cargando usuarios...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div>
+              <div class="tarjeta-titulo" style="margin-bottom:12px;">
+                <h3 style="margin:0;">Permisos rápidos</h3>
+              </div>
+              <div class="tarjeta" style="margin:0; background:rgba(255,255,255,0.6);">
+                <div class="permisos-preferencias" id="lista-permisos-rapidos"></div>
+                <div style="display:flex; justify-content:flex-start; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                  <button class="btn btn-primario" type="button" id="btn-guardar-permisos-rapidos">Guardar cambios de
+                    permisos</button>
+                  <button class="btn btn-secundario btn-mini" type="button"
+                    id="btn-restaurar-permisos-rapidos">Restaurar valores base</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- CONFIGURACION -->
-    <section class="panel" id="panel-configuracion">
-      <div class="topbar">
-        <div>
-          <h2>Configuración de Empresa</h2>
-          <p class="descripcion">Modifica los detalles generales de tu boutique.</p>
+      <!-- CONFIGURACION -->
+      <section class="panel" id="panel-configuracion">
+        <div class="topbar">
+          <div>
+            <h2>Configuración de Empresa</h2>
+            <p class="descripcion">Modifica los detalles generales de tu boutique.</p>
+          </div>
         </div>
-      </div>
-      <div class="tarjeta">
-        <div class="tarjeta-titulo">
-          <h3>Detalles Comerciales (Prototipo)</h3>
+        <div class="tarjeta">
+          <div class="tarjeta-titulo">
+            <h3>Detalles Comerciales (Prototipo)</h3>
+          </div>
+          <div class="grid-doble" style="margin-bottom: 15px;">
+            <div class="campo"><label class="etiqueta-campo">Nombre Comercial</label><input type="text"
+                value="Mi Boutique" minlength="3" maxlength="120"></div>
+            <div class="campo"><label class="etiqueta-campo">RUC</label><input type="text" value="20123456789"
+                inputmode="numeric" pattern="\\d{11}" maxlength="11" title="Debe contener exactamente 11 dígitos"></div>
+            <div class="campo"><label class="etiqueta-campo">Dirección Principal</label><input type="text"
+                value="Av. Principal 123" minlength="5" maxlength="180"></div>
+            <div class="campo"><label class="etiqueta-campo">Teléfono de Contacto</label><input type="text"
+                value="987654321" inputmode="numeric" pattern="\\d{9}" maxlength="9"
+                title="Debe contener exactamente 9 dígitos"></div>
+          </div>
+          <button class="btn btn-primario">Actualizar Datos</button>
         </div>
-        <div class="grid-doble" style="margin-bottom: 15px;">
-          <div class="campo"><label class="etiqueta-campo">Nombre Comercial</label><input type="text" value="Mi Boutique" minlength="3" maxlength="120"></div>
-          <div class="campo"><label class="etiqueta-campo">RUC</label><input type="text" value="20123456789" inputmode="numeric" pattern="\\d{11}" maxlength="11" title="Debe contener exactamente 11 dígitos"></div>
-          <div class="campo"><label class="etiqueta-campo">Dirección Principal</label><input type="text" value="Av. Principal 123" minlength="5" maxlength="180"></div>
-          <div class="campo"><label class="etiqueta-campo">Teléfono de Contacto</label><input type="text" value="987654321" inputmode="numeric" pattern="\\d{9}" maxlength="9" title="Debe contener exactamente 9 dígitos"></div>
-        </div>
-        <button class="btn btn-primario">Actualizar Datos</button>
-      </div>
-    </section>
-  </main>
-</div>
+      </section>
+    </main>
+  </div>
 
-<div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-<!-- Modal para añadir 1 variante a producto existente -->
-<div class="login-overlay oculto" id="modal-add-variante" style="z-index: 200;">
-  <div class="login-caja" style="max-width: 600px;">
-    <h2 style="margin-bottom:15px; font-size:1.4rem;">Añadir Variante</h2>
-    <p class="nota" style="margin-bottom:20px; color:var(--cafe); opacity:0.8;">Añadiendo variante al producto <strong id="modal-var-prod-nombre"></strong></p>
-    
-    <input type="hidden" id="modal-var-prod-id">
-    
-    <div class="grid-doble" style="margin-bottom:10px;">
-      <div class="campo"><label class="etiqueta-campo">Color</label><input type="text" id="modal-var-color" placeholder="Negro" required minlength="2" maxlength="40"></div>
-      <div class="campo"><label class="etiqueta-campo">Talla</label><input type="text" id="modal-var-talla" placeholder="M" required minlength="1" maxlength="10"></div>
-      <div class="campo"><label class="etiqueta-campo">Stock</label><input type="number" id="modal-var-stock" value="10" min="0" step="1" required></div>
-      <div class="campo"><label class="etiqueta-campo">Stock Crítico</label><input type="number" id="modal-var-critico" value="2" min="0" step="1" required></div>
-      <div class="campo"><label class="etiqueta-campo">Hex (Color)</label><input type="color" id="modal-var-hex" value="#5c4a3d" style="width: 100%; height: 38px; padding: 2px; cursor: pointer; border-radius: 12px; border: 1.5px solid var(--borde-trazo); background: var(--crema);"></div>
-      <div class="campo"><label class="etiqueta-campo">URL Imagen</label><input type="url" id="modal-var-img" placeholder="https://..." maxlength="300"></div>
-      <div class="campo"><label class="etiqueta-campo">SKU Autogenerado</label><input type="text" id="modal-var-sku" disabled style="background:#eee;"></div>
-    </div>
-    
-    <div style="margin-top:20px; display:flex; gap:10px;">
-      <button class="btn btn-primario" id="btn-save-single-variant">Guardar Variante</button>
-      <button class="btn btn-secundario" onclick="document.getElementById('modal-add-variante').classList.add('oculto')">Cancelar</button>
+  <!-- Modal para añadir 1 variante a producto existente -->
+  <div class="login-overlay oculto" id="modal-add-variante" style="z-index: 200;">
+    <div class="login-caja" style="max-width: 600px;">
+      <h2 style="margin-bottom:15px; font-size:1.4rem;">Añadir Variante</h2>
+      <p class="nota" style="margin-bottom:20px; color:var(--cafe); opacity:0.8;">Añadiendo variante al producto <strong
+          id="modal-var-prod-nombre"></strong></p>
+
+      <input type="hidden" id="modal-var-prod-id">
+
+      <div class="grid-doble" style="margin-bottom:10px;">
+        <div class="campo"><label class="etiqueta-campo">Color</label><input type="text" id="modal-var-color"
+            placeholder="Negro" required minlength="2" maxlength="40"></div>
+        <div class="campo"><label class="etiqueta-campo">Talla</label><input type="text" id="modal-var-talla"
+            placeholder="M" required minlength="1" maxlength="10"></div>
+        <div class="campo"><label class="etiqueta-campo">Stock</label><input type="number" id="modal-var-stock"
+            value="10" min="0" step="1" required></div>
+        <div class="campo"><label class="etiqueta-campo">Stock Crítico</label><input type="number"
+            id="modal-var-critico" value="2" min="0" step="1" required></div>
+        <div class="campo"><label class="etiqueta-campo">Hex (Color)</label><input type="color" id="modal-var-hex"
+            value="#5c4a3d"
+            style="width: 100%; height: 38px; padding: 2px; cursor: pointer; border-radius: 12px; border: 1.5px solid var(--borde-trazo); background: var(--crema);">
+        </div>
+        <div class="campo"><label class="etiqueta-campo">URL Imagen</label><input type="url" id="modal-var-img"
+            placeholder="https://..." maxlength="300"></div>
+        <div class="campo"><label class="etiqueta-campo">SKU Autogenerado</label><input type="text" id="modal-var-sku"
+            disabled style="background:#eee;"></div>
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button class="btn btn-primario" id="btn-save-single-variant">Guardar Variante</button>
+        <button class="btn btn-secundario"
+          onclick="document.getElementById('modal-add-variante').classList.add('oculto')">Cancelar</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="config/config.js"></script>
-<script>
-/* ==========================================================
-   CONFIGURACIÓN Y UTILIDADES
-   ========================================================== */
-const API_URL = CONFIG.API_URL;
-const SESSION_KEY = 'tenant_session';
+  <script src="config/config.js"></script>
+  <script>
+    /* ==========================================================
+       CONFIGURACIÓN Y UTILIDADES
+       ========================================================== */
+    const API_URL = CONFIG.API_URL;
+    const SESSION_KEY = 'tenant_session';
 
-const COLOR_MAP = {
-  'negro': '#000000',
-  'black': '#000000',
-  'blanco': '#ffffff',
-  'white': '#ffffff',
-  'rojo': '#ff0000',
-  'red': '#ff0000',
-  'verde': '#00ff00',
-  'green': '#00ff00',
-  'azul': '#0000ff',
-  'blue': '#0000ff',
-  'amarillo': '#ffff00',
-  'yellow': '#ffff00',
-  'gris': '#808080',
-  'gray': '#808080',
-  'grey': '#808080',
-  'rosa': '#ffc0cb',
-  'pink': '#ffc0cb',
-  'marrón': '#8b4513',
-  'marron': '#8b4513',
-  'brown': '#8b4513',
-  'naranja': '#ffa500',
-  'orange': '#ffa500',
-  'morado': '#800080',
-  'purple': '#800080',
-  'violeta': '#ee82ee',
-  'violet': '#ee82ee',
-  'celeste': '#87ceeb',
-  'sky blue': '#87ceeb',
-  'beige': '#f5f5dc',
-  'crema': '#fffdd0',
-  'cream': '#fffdd0',
-  'dorado': '#ffd700',
-  'gold': '#ffd700',
-  'plateado': '#c0c0c0',
-  'silver': '#c0c0c0',
-  'turquesa': '#40e0d0',
-  'turquoise': '#40e0d0',
-  'burdeos': '#800020',
-  'burgundy': '#800020',
-  'mostaza': '#e1ad01',
-  'mustard': '#e1ad01',
-  'marfil': '#fffff0',
-  'ivory': '#fffff0',
-  'azul marino': '#000080',
-  'navy': '#000080',
-  'coral': '#ff7f50',
-  'fucsia': '#ff00ff',
-  'fuchsia': '#ff00ff',
-  'lila': '#c8a2c8',
-  'lilac': '#c8a2c8',
-  'salmon': '#fa8072',
-  'salmón': '#fa8072',
-  'caqui': '#f0e68c',
-  'khaki': '#f0e68c',
-  'oliva': '#808000',
-  'olive': '#808000'
-};
+    const COLOR_MAP = {
+      'negro': '#000000',
+      'black': '#000000',
+      'blanco': '#ffffff',
+      'white': '#ffffff',
+      'rojo': '#ff0000',
+      'red': '#ff0000',
+      'verde': '#00ff00',
+      'green': '#00ff00',
+      'azul': '#0000ff',
+      'blue': '#0000ff',
+      'amarillo': '#ffff00',
+      'yellow': '#ffff00',
+      'gris': '#808080',
+      'gray': '#808080',
+      'grey': '#808080',
+      'rosa': '#ffc0cb',
+      'pink': '#ffc0cb',
+      'marrón': '#8b4513',
+      'marron': '#8b4513',
+      'brown': '#8b4513',
+      'naranja': '#ffa500',
+      'orange': '#ffa500',
+      'morado': '#800080',
+      'purple': '#800080',
+      'violeta': '#ee82ee',
+      'violet': '#ee82ee',
+      'celeste': '#87ceeb',
+      'sky blue': '#87ceeb',
+      'beige': '#f5f5dc',
+      'crema': '#fffdd0',
+      'cream': '#fffdd0',
+      'dorado': '#ffd700',
+      'gold': '#ffd700',
+      'plateado': '#c0c0c0',
+      'silver': '#c0c0c0',
+      'turquesa': '#40e0d0',
+      'turquoise': '#40e0d0',
+      'burdeos': '#800020',
+      'burgundy': '#800020',
+      'mostaza': '#e1ad01',
+      'mustard': '#e1ad01',
+      'marfil': '#fffff0',
+      'ivory': '#fffff0',
+      'azul marino': '#000080',
+      'navy': '#000080',
+      'coral': '#ff7f50',
+      'fucsia': '#ff00ff',
+      'fuchsia': '#ff00ff',
+      'lila': '#c8a2c8',
+      'lilac': '#c8a2c8',
+      'salmon': '#fa8072',
+      'salmón': '#fa8072',
+      'caqui': '#f0e68c',
+      'khaki': '#f0e68c',
+      'oliva': '#808000',
+      'olive': '#808000'
+    };
 
-let toastTimeout;
-function showToast(msg, error = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; 
-  t.style.backgroundColor = error ? 'var(--alerta)' : 'var(--cafe-oscuro)';
-  t.classList.add('visible');
-  clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => t.classList.remove('visible'), 3000);
-}
+    let toastTimeout;
+    function showToast(msg, error = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.backgroundColor = error ? 'var(--alerta)' : 'var(--cafe-oscuro)';
+      t.classList.add('visible');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => t.classList.remove('visible'), 3000);
+    }
 
-function setFieldValidity(field, message = '') {
-  if (!field) return false;
-  field.setCustomValidity(message);
-  if (message) field.reportValidity();
-  return !message;
-}
+    function setFieldValidity(field, message = '') {
+      if (!field) return false;
+      field.setCustomValidity(message);
+      if (message) field.reportValidity();
+      return !message;
+    }
 
-function clearValidationOnInput(id) {
-  const field = document.getElementById(id);
-  if (!field) return;
-  field.addEventListener('input', () => field.setCustomValidity(''));
-}
+    function clearValidationOnInput(id) {
+      const field = document.getElementById(id);
+      if (!field) return;
+      field.addEventListener('input', () => field.setCustomValidity(''));
+    }
 
-function getTrimmedValue(id) {
-  const field = document.getElementById(id);
-  return field ? field.value.trim() : '';
-}
+    function getTrimmedValue(id) {
+      const field = document.getElementById(id);
+      return field ? field.value.trim() : '';
+    }
 
-function validateTextField(id, label, minLength = 1) {
-  const field = document.getElementById(id);
-  const value = field ? field.value.trim() : '';
-  if (!value) return setFieldValidity(field, `${label} es obligatorio`);
-  if (value.length < minLength) return setFieldValidity(field, `${label} debe tener al menos ${minLength} caracteres`);
-  return setFieldValidity(field, '');
-}
+    function validateTextField(id, label, minLength = 1) {
+      const field = document.getElementById(id);
+      const value = field ? field.value.trim() : '';
+      if (!value) return setFieldValidity(field, `${label} es obligatorio`);
+      if (value.length < minLength) return setFieldValidity(field, `${label} debe tener al menos ${minLength} caracteres`);
+      return setFieldValidity(field, '');
+    }
 
-function validateEmailField(id, label) {
-  const field = document.getElementById(id);
-  const value = field ? field.value.trim() : '';
-  if (!value) return setFieldValidity(field, `${label} es obligatorio`);
-  if (!/^\S+@\S+\.\S+$/.test(value)) return setFieldValidity(field, `${label} no tiene un formato válido`);
-  return setFieldValidity(field, '');
-}
+    function validateEmailField(id, label) {
+      const field = document.getElementById(id);
+      const value = field ? field.value.trim() : '';
+      if (!value) return setFieldValidity(field, `${label} es obligatorio`);
+      if (!/^\S+@\S+\.\S+$/.test(value)) return setFieldValidity(field, `${label} no tiene un formato válido`);
+      return setFieldValidity(field, '');
+    }
 
-function validatePhoneField(id, label, required = true) {
-  const field = document.getElementById(id);
-  const value = field ? field.value.trim() : '';
-  if (!value) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
-  if (!/^\d{9}$/.test(value) || /^(\d)\1{8}$/.test(value)) return setFieldValidity(field, `${label} debe tener 9 dígitos válidos`);
-  return setFieldValidity(field, '');
-}
+    function validatePhoneField(id, label, required = true) {
+      const field = document.getElementById(id);
+      const value = field ? field.value.trim() : '';
+      if (!value) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
+      if (!/^\d{9}$/.test(value) || /^(\d)\1{8}$/.test(value)) return setFieldValidity(field, `${label} debe tener 9 dígitos válidos`);
+      return setFieldValidity(field, '');
+    }
 
-function validatePasswordField(id, label, minLength = 6, required = false) {
-  const field = document.getElementById(id);
-  const value = field ? field.value : '';
-  if (!value) return required ? setFieldValidity(field, `${label} es obligatoria`) : setFieldValidity(field, '');
-  if (value.length < minLength) return setFieldValidity(field, `${label} debe tener al menos ${minLength} caracteres`);
-  return setFieldValidity(field, '');
-}
+    function validatePasswordField(id, label, minLength = 6, required = false) {
+      const field = document.getElementById(id);
+      const value = field ? field.value : '';
+      if (!value) return required ? setFieldValidity(field, `${label} es obligatoria`) : setFieldValidity(field, '');
+      if (value.length < minLength) return setFieldValidity(field, `${label} debe tener al menos ${minLength} caracteres`);
+      return setFieldValidity(field, '');
+    }
 
-function validateNumberField(id, label, { min = 0, max = null, integer = true, required = true } = {}) {
-  const field = document.getElementById(id);
-  const raw = field ? field.value : '';
-  if (raw === '' || raw === null) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
-  const value = Number(raw);
-  if (!Number.isFinite(value)) return setFieldValidity(field, `${label} debe ser numérico`);
-  if (integer && !Number.isInteger(value)) return setFieldValidity(field, `${label} debe ser un número entero`);
-  if (value < min) return setFieldValidity(field, `${label} no puede ser menor que ${min}`);
-  if (max !== null && value > max) return setFieldValidity(field, `${label} no puede ser mayor que ${max}`);
-  return setFieldValidity(field, '');
-}
+    function validateNumberField(id, label, { min = 0, max = null, integer = true, required = true } = {}) {
+      const field = document.getElementById(id);
+      const raw = field ? field.value : '';
+      if (raw === '' || raw === null) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
+      const value = Number(raw);
+      if (!Number.isFinite(value)) return setFieldValidity(field, `${label} debe ser numérico`);
+      if (integer && !Number.isInteger(value)) return setFieldValidity(field, `${label} debe ser un número entero`);
+      if (value < min) return setFieldValidity(field, `${label} no puede ser menor que ${min}`);
+      if (max !== null && value > max) return setFieldValidity(field, `${label} no puede ser mayor que ${max}`);
+      return setFieldValidity(field, '');
+    }
 
-function validateUrlField(id, label, required = false) {
-  const field = document.getElementById(id);
-  const value = field ? field.value.trim() : '';
-  if (!value) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
-  try {
-    new URL(value);
-    return setFieldValidity(field, '');
-  } catch {
-    return setFieldValidity(field, `${label} no tiene una URL válida`);
-  }
-}
+    function validateUrlField(id, label, required = false) {
+      const field = document.getElementById(id);
+      const value = field ? field.value.trim() : '';
+      if (!value) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
+      try {
+        new URL(value);
+        return setFieldValidity(field, '');
+      } catch {
+        return setFieldValidity(field, `${label} no tiene una URL válida`);
+      }
+    }
 
-function getToken() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY)).token; } catch { return null; }
-}
-function getSessionData() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
-}
+    function getToken() {
+      try { return JSON.parse(localStorage.getItem(SESSION_KEY)).token; } catch { return null; }
+    }
+    function getSessionData() {
+      try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
+    }
 
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
 
-function genSKU() {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const num = Math.floor(Math.random() * 900) + 100;
-  const l1 = letters.charAt(Math.floor(Math.random() * 26));
-  const l2 = letters.charAt(Math.floor(Math.random() * 26));
-  return `VAR-${num}-${l1}${l2}`;
-}
+    function genSKU() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const num = Math.floor(Math.random() * 900) + 100;
+      const l1 = letters.charAt(Math.floor(Math.random() * 26));
+      const l2 = letters.charAt(Math.floor(Math.random() * 26));
+      return `VAR-${num}-${l1}${l2}`;
+    }
 
-async function fetchAuth(endpoint, method='GET', body=null) {
-  const t = getToken();
-  if(!t) { 
-    document.getElementById('login-overlay').classList.remove('oculto');
-    throw new Error("No autenticado"); 
-  }
-  const opts = { method, headers: { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' }, cache: 'no-store' };
-  if(body) opts.body = JSON.stringify(body);
-  
-  const res = await fetch(API_URL + endpoint, opts);
-  if(!res.ok) {
-    let errText = "Error en petición";
-    try {
-      const rawText = await res.text();
-      try { const eJson = JSON.parse(rawText); errText = eJson.message || eJson.error || rawText || errText; }
-      catch { errText = rawText || errText; }
-    } catch {}
-    throw new Error(errText);
-  }
-  if(method === 'GET' || res.headers.get('content-type')?.includes('json')) return await res.json();
-  return await res.text();
-}
+    async function fetchAuth(endpoint, method = 'GET', body = null) {
+      const t = getToken();
+      if (!t) {
+        document.getElementById('login-overlay').classList.remove('oculto');
+        throw new Error("No autenticado");
+      }
+      const opts = { method, headers: { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' }, cache: 'no-store' };
+      if (body) opts.body = JSON.stringify(body);
 
-['login-correo', 'login-password', 'emp-nombre', 'emp-correo', 'emp-telefono', 'emp-password', 'modal-var-color', 'modal-var-talla', 'modal-var-stock', 'modal-var-critico', 'modal-var-img'].forEach(clearValidationOnInput);
+      const res = await fetch(API_URL + endpoint, opts);
+      if (!res.ok) {
+        let errText = "Error en petición";
+        try {
+          const rawText = await res.text();
+          try { const eJson = JSON.parse(rawText); errText = eJson.message || eJson.error || rawText || errText; }
+          catch { errText = rawText || errText; }
+        } catch { }
+        throw new Error(errText);
+      }
+      if (method === 'GET' || res.headers.get('content-type')?.includes('json')) return await res.json();
+      return await res.text();
+    }
 
-function obtenerEtiquetaRol(rolNombre) {
-  const normalizado = (rolNombre || '').trim().toUpperCase();
-  if (normalizado === 'ADMIN') return { clase: 'rol-admin', texto: 'Admin', acceso: 'Completo' };
-  if (normalizado === 'DESPACHO') return { clase: 'rol-vendedor', texto: 'Despacho', acceso: 'Pedidos' };
-  if (normalizado === 'MANTENIMIENTO' || normalizado === 'ALMACEN' || normalizado === 'ALMACENERO') return { clase: 'rol-almacenero', texto: 'Mantenimiento', acceso: 'Operativo' };
-  if (normalizado === 'VENDEDOR') return { clase: 'rol-catalogo', texto: 'Vendedor', acceso: 'Catálogo' };
-  return { clase: 'rol-catalogo', texto: rolNombre || 'Sin rol', acceso: 'Limitado' };
-}
+    ['login-correo', 'login-password', 'emp-nombre', 'emp-correo', 'emp-telefono', 'emp-password', 'modal-var-color', 'modal-var-talla', 'modal-var-stock', 'modal-var-critico', 'modal-var-img'].forEach(clearValidationOnInput);
 
-function filtrarUsuariosPorEmpresa(usuarios) {
-  const sesion = getSessionData();
-  const miEmpresaId = sesion?.empresa_id ? String(sesion.empresa_id) : '';
-  if (!miEmpresaId) return Array.isArray(usuarios) ? usuarios : [];
+    function obtenerEtiquetaRol(rolNombre) {
+      const normalizado = (rolNombre || '').trim().toUpperCase();
+      if (normalizado === 'ADMIN') return { clase: 'rol-admin', texto: 'Admin', acceso: 'Completo' };
+      if (normalizado === 'DESPACHO') return { clase: 'rol-vendedor', texto: 'Despacho', acceso: 'Pedidos' };
+      if (normalizado === 'MANTENIMIENTO' || normalizado === 'ALMACEN' || normalizado === 'ALMACENERO') return { clase: 'rol-almacenero', texto: 'Mantenimiento', acceso: 'Operativo' };
+      if (normalizado === 'VENDEDOR') return { clase: 'rol-catalogo', texto: 'Vendedor', acceso: 'Catálogo' };
+      return { clase: 'rol-catalogo', texto: rolNombre || 'Sin rol', acceso: 'Limitado' };
+    }
 
-  return (usuarios || []).filter(usuario => {
-    const usuarioEmpresaId = usuario?.empresa?.id ?? usuario?.empresa_id ?? usuario?.empresaId ?? '';
-    return String(usuarioEmpresaId) === miEmpresaId;
-  });
-}
+    function filtrarUsuariosPorEmpresa(usuarios) {
+      const sesion = getSessionData();
+      const miEmpresaId = sesion?.empresa_id ? String(sesion.empresa_id) : '';
+      if (!miEmpresaId) return Array.isArray(usuarios) ? usuarios : [];
 
-function cargarSugerenciasPermisosUsuarios(usuarios) {
-  const datalist = document.getElementById('sugerencias-permisos-usuarios');
-  if (!datalist) return;
+      return (usuarios || []).filter(usuario => {
+        const usuarioEmpresaId = usuario?.empresa?.id ?? usuario?.empresa_id ?? usuario?.empresaId ?? '';
+        return String(usuarioEmpresaId) === miEmpresaId;
+      });
+    }
 
-  const nombresUnicos = [...new Set((usuarios || [])
-    .map(usuario => (usuario.nombre || '').trim())
-    .filter(Boolean))];
+    function cargarSugerenciasPermisosUsuarios(usuarios) {
+      const datalist = document.getElementById('sugerencias-permisos-usuarios');
+      if (!datalist) return;
 
-  datalist.innerHTML = nombresUnicos.map(nombre => `<option value="${escapeHtml(nombre)}"></option>`).join('');
-}
+      const nombresUnicos = [...new Set((usuarios || [])
+        .map(usuario => (usuario.nombre || '').trim())
+        .filter(Boolean))];
 
-const PERMISOS_RAPIDOS_BASE = [
-  { key: 'ver_panel_admin', titulo: 'Ver panel admin', detalle: 'Permite entrar al panel principal de administración.', nivel: 'Total' },
-  { key: 'gestionar_usuarios', titulo: 'Gestionar usuarios', detalle: 'Crear, editar o desactivar empleados.', nivel: 'Restringido' },
-  { key: 'editar_catalogo', titulo: 'Editar catálogo', detalle: 'Cambiar información de categorías y productos.', nivel: 'Activo' },
-  { key: 'gestionar_variantes', titulo: 'Gestionar variantes', detalle: 'Editar tallas, colores y stock por variante.', nivel: 'Activo' },
-  { key: 'ver_pedidos', titulo: 'Ver pedidos', detalle: 'Consultar pedidos y su estado actual.', nivel: 'Activo' },
-  { key: 'cambiar_estados', titulo: 'Cambiar estados', detalle: 'Actualizar estados de pedidos y despachos.', nivel: 'Activo' },
-  { key: 'gestionar_devoluciones', titulo: 'Gestionar devoluciones', detalle: 'Aprobar o rechazar devoluciones del cliente.', nivel: 'Restringido' },
-  { key: 'ver_reportes', titulo: 'Ver reportes', detalle: 'Consultar métricas y resúmenes operativos.', nivel: 'Restringido' },
-  { key: 'ajustar_configuracion', titulo: 'Ajustar configuración', detalle: 'Modificar parámetros generales del panel.', nivel: 'Restringido' },
-  { key: 'gestionar_promociones', titulo: 'Gestionar promociones', detalle: 'Crear cupones, descuentos y campañas.', nivel: 'Restringido' }
-];
+      datalist.innerHTML = nombresUnicos.map(nombre => `<option value="${escapeHtml(nombre)}"></option>`).join('');
+    }
 
-const NIVEL_PERMISO_OPCIONES = ['Total', 'Activo', 'Restringido'];
-const CONFIG_PERMISOS_RAPIDOS_KEY = 'webropa_permiso_preferencias_panel';
+    const PERMISOS_RAPIDOS_BASE = [
+      { key: 'ver_panel_admin', titulo: 'Ver panel admin', detalle: 'Permite entrar al panel principal de administración.', nivel: 'Total' },
+      { key: 'gestionar_usuarios', titulo: 'Gestionar usuarios', detalle: 'Crear, editar o desactivar empleados.', nivel: 'Restringido' },
+      { key: 'editar_catalogo', titulo: 'Editar catálogo', detalle: 'Cambiar información de categorías y productos.', nivel: 'Activo' },
+      { key: 'gestionar_variantes', titulo: 'Gestionar variantes', detalle: 'Editar tallas, colores y stock por variante.', nivel: 'Activo' },
+      { key: 'ver_pedidos', titulo: 'Ver pedidos', detalle: 'Consultar pedidos y su estado actual.', nivel: 'Activo' },
+      { key: 'cambiar_estados', titulo: 'Cambiar estados', detalle: 'Actualizar estados de pedidos y despachos.', nivel: 'Activo' },
+      { key: 'gestionar_devoluciones', titulo: 'Gestionar devoluciones', detalle: 'Aprobar o rechazar devoluciones del cliente.', nivel: 'Restringido' },
+      { key: 'ver_reportes', titulo: 'Ver reportes', detalle: 'Consultar métricas y resúmenes operativos.', nivel: 'Restringido' },
+      { key: 'ajustar_configuracion', titulo: 'Ajustar configuración', detalle: 'Modificar parámetros generales del panel.', nivel: 'Restringido' },
+      { key: 'gestionar_promociones', titulo: 'Gestionar promociones', detalle: 'Crear cupones, descuentos y campañas.', nivel: 'Restringido' }
+    ];
 
-function leerPermisosRapidosGuardados() {
-  const base = Object.fromEntries(PERMISOS_RAPIDOS_BASE.map(item => [item.key, item.nivel]));
-  try {
-    const guardados = JSON.parse(localStorage.getItem(CONFIG_PERMISOS_RAPIDOS_KEY) || '{}');
-    return { ...base, ...guardados };
-  } catch {
-    return base;
-  }
-}
+    const NIVEL_PERMISO_OPCIONES = ['Total', 'Activo', 'Restringido'];
+    const CONFIG_PERMISOS_RAPIDOS_KEY = 'webropa_permiso_preferencias_panel';
 
-function renderPermisosRapidos() {
-  const contenedor = document.getElementById('lista-permisos-rapidos');
-  if (!contenedor) return;
+    function leerPermisosRapidosGuardados() {
+      const base = Object.fromEntries(PERMISOS_RAPIDOS_BASE.map(item => [item.key, item.nivel]));
+      try {
+        const guardados = JSON.parse(localStorage.getItem(CONFIG_PERMISOS_RAPIDOS_KEY) || '{}');
+        return { ...base, ...guardados };
+      } catch {
+        return base;
+      }
+    }
 
-  const niveles = leerPermisosRapidosGuardados();
+    function renderPermisosRapidos() {
+      const contenedor = document.getElementById('lista-permisos-rapidos');
+      if (!contenedor) return;
 
-  contenedor.innerHTML = PERMISOS_RAPIDOS_BASE.map(item => {
-    const nivelActual = niveles[item.key] || item.nivel;
-    return `
+      const niveles = leerPermisosRapidosGuardados();
+
+      contenedor.innerHTML = PERMISOS_RAPIDOS_BASE.map(item => {
+        const nivelActual = niveles[item.key] || item.nivel;
+        return `
       <label class="permiso-preferencia" data-permiso-item="${escapeHtml(item.key)}">
         <div>
           <strong>${escapeHtml(item.titulo)}</strong>
@@ -730,46 +878,46 @@ function renderPermisosRapidos() {
         </select>
       </label>
     `;
-  }).join('');
-}
-
-function guardarPermisosRapidos() {
-  const seleccion = {};
-  document.querySelectorAll('[data-permiso-key]').forEach(select => {
-    seleccion[select.dataset.permisoKey] = select.value;
-  });
-  localStorage.setItem(CONFIG_PERMISOS_RAPIDOS_KEY, JSON.stringify(seleccion));
-  showToast('Permisos guardados en este navegador');
-}
-
-function restaurarPermisosRapidos() {
-  localStorage.removeItem(CONFIG_PERMISOS_RAPIDOS_KEY);
-  renderPermisosRapidos();
-  showToast('Valores base restaurados');
-}
-
-async function cargarPermisosUsuarios() {
-  const tbody = document.getElementById('tabla-permisos-empresa');
-  if (!tbody) return;
-
-  tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">Cargando usuarios...</td></tr>';
-
-  try {
-    const todosLosUsuarios = await fetchAuth('/usuarios');
-    const usuarios = filtrarUsuariosPorEmpresa(todosLosUsuarios);
-    cargarSugerenciasPermisosUsuarios(usuarios);
-
-    if (!Array.isArray(usuarios) || usuarios.length === 0) {
-      tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">No hay usuarios registrados para esta empresa.</td></tr>';
-      return;
+      }).join('');
     }
 
-    tbody.innerHTML = usuarios.map(usuario => {
-      const rolInfo = obtenerEtiquetaRol(usuario.rol?.nombre);
-      const estado = usuario.estado || 'ACTIVO';
-      const accesoActivo = rolInfo.acceso;
+    function guardarPermisosRapidos() {
+      const seleccion = {};
+      document.querySelectorAll('[data-permiso-key]').forEach(select => {
+        seleccion[select.dataset.permisoKey] = select.value;
+      });
+      localStorage.setItem(CONFIG_PERMISOS_RAPIDOS_KEY, JSON.stringify(seleccion));
+      showToast('Permisos guardados en este navegador');
+    }
 
-      return `
+    function restaurarPermisosRapidos() {
+      localStorage.removeItem(CONFIG_PERMISOS_RAPIDOS_KEY);
+      renderPermisosRapidos();
+      showToast('Valores base restaurados');
+    }
+
+    async function cargarPermisosUsuarios() {
+      const tbody = document.getElementById('tabla-permisos-empresa');
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">Cargando usuarios...</td></tr>';
+
+      try {
+        const todosLosUsuarios = await fetchAuth('/usuarios');
+        const usuarios = filtrarUsuariosPorEmpresa(todosLosUsuarios);
+        cargarSugerenciasPermisosUsuarios(usuarios);
+
+        if (!Array.isArray(usuarios) || usuarios.length === 0) {
+          tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">No hay usuarios registrados para esta empresa.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = usuarios.map(usuario => {
+          const rolInfo = obtenerEtiquetaRol(usuario.rol?.nombre);
+          const estado = usuario.estado || 'ACTIVO';
+          const accesoActivo = rolInfo.acceso;
+
+          return `
         <tr>
           <td>
             <strong>${escapeHtml(usuario.nombre || 'Sin nombre')}</strong><br>
@@ -784,143 +932,143 @@ async function cargarPermisosUsuarios() {
           </td>
         </tr>
       `;
-    }).join('');
-  } catch (e) {
-    tbody.innerHTML = `<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--alerta);">Error cargando usuarios: ${escapeHtml(e.message)}</td></tr>`;
-  }
-}
-
-document.getElementById('btn-guardar-permisos-rapidos')?.addEventListener('click', guardarPermisosRapidos);
-document.getElementById('btn-restaurar-permisos-rapidos')?.addEventListener('click', restaurarPermisosRapidos);
-
-renderPermisosRapidos();
-
-/* ==========================================================
-   NAVEGACIÓN Y AUTH
-   ========================================================== */
-document.getElementById('menu-navegacion').addEventListener('click', (e) => {
-  const btn = e.target.closest('.menu-item');
-  if (!btn) return;
-  document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('activo'));
-  btn.classList.add('activo');
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
-  document.getElementById('panel-' + btn.dataset.panel).classList.add('activo');
-  
-  if(btn.dataset.panel === 'productos') cargarProductos();
-  if(btn.dataset.panel === 'categorias') cargarCategorias();
-  if(btn.dataset.panel === 'pedidos') cargarPedidos();
-  if(btn.dataset.panel === 'cupones') cargarCupones();
-  if(btn.dataset.panel === 'empleados') cargarEmpleados();
-  if(btn.dataset.panel === 'roles') cargarPermisosUsuarios();
-});
-
-async function aplicarUsuario(datos) {
-  const nombre = datos.nombre || 'Usuario';
-  document.getElementById('usuario-nombre').textContent = nombre;
-  document.getElementById('usuario-rol').textContent = datos.rol || '--';
-  document.getElementById('avatar-iniciales').textContent = nombre.substring(0,2).toUpperCase();
-  document.getElementById('sidebar-empresa-id').textContent = datos.empresa_id || 'Global';
-  document.getElementById('footer-usuario').textContent = datos.correo || '';
-
-  if (datos.empresa_id) {
-    try {
-      const emp = await fetchAuth(`/empresas/${datos.empresa_id}`);
-      const empNombre = emp.nombre_comercial || emp.razon_social || `Empresa #${datos.empresa_id}`;
-      document.getElementById('sidebar-empresa-nombre').textContent = empNombre;
-      const dashName = document.getElementById('dash-empresa-nombre');
-      if (dashName) dashName.textContent = empNombre;
-    } catch (e) {
-      console.error("Error al obtener la empresa:", e);
-      document.getElementById('sidebar-empresa-nombre').textContent = "Administración";
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--alerta);">Error cargando usuarios: ${escapeHtml(e.message)}</td></tr>`;
+      }
     }
-  } else {
-    document.getElementById('sidebar-empresa-nombre').textContent = "Global (SuperAdmin)";
-    const dashName = document.getElementById('dash-empresa-nombre');
-    if (dashName) dashName.textContent = "Catálogo Global";
-  }
-}
 
-document.getElementById('btn-ingresar').addEventListener('click', async () => {
-  if (!validateEmailField('login-correo', 'El correo')) return;
-  if (!validatePasswordField('login-password', 'La contraseña', 6, true)) return;
+    document.getElementById('btn-guardar-permisos-rapidos')?.addEventListener('click', guardarPermisosRapidos);
+    document.getElementById('btn-restaurar-permisos-rapidos')?.addEventListener('click', restaurarPermisosRapidos);
 
-  const correo = getTrimmedValue('login-correo');
-  const password = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-error');
-  
-  try {
-    const res = await fetch(API_URL + '/usuarios/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correo, password })
+    renderPermisosRapidos();
+
+    /* ==========================================================
+       NAVEGACIÓN Y AUTH
+       ========================================================== */
+    document.getElementById('menu-navegacion').addEventListener('click', (e) => {
+      const btn = e.target.closest('.menu-item');
+      if (!btn) return;
+      document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('activo'));
+      btn.classList.add('activo');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
+      document.getElementById('panel-' + btn.dataset.panel).classList.add('activo');
+
+      if (btn.dataset.panel === 'productos') cargarProductos();
+      if (btn.dataset.panel === 'categorias') cargarCategorias();
+      if (btn.dataset.panel === 'pedidos') cargarPedidos();
+      if (btn.dataset.panel === 'cupones') cargarCupones();
+      if (btn.dataset.panel === 'empleados') cargarEmpleados();
+      if (btn.dataset.panel === 'roles') cargarPermisosUsuarios();
     });
-    if(!res.ok) throw new Error('Credenciales inválidas o sin acceso al panel');
-    const data = await res.json();
-    
-    if (data.rol !== 'ADMIN') {
-      throw new Error('Acceso denegado: Solo usuarios con el rol ADMIN pueden ingresar a este panel.');
+
+    async function aplicarUsuario(datos) {
+      const nombre = datos.nombre || 'Usuario';
+      document.getElementById('usuario-nombre').textContent = nombre;
+      document.getElementById('usuario-rol').textContent = datos.rol || '--';
+      document.getElementById('avatar-iniciales').textContent = nombre.substring(0, 2).toUpperCase();
+      document.getElementById('sidebar-empresa-id').textContent = datos.empresa_id || 'Global';
+      document.getElementById('footer-usuario').textContent = datos.correo || '';
+
+      if (datos.empresa_id) {
+        try {
+          const emp = await fetchAuth(`/empresas/${datos.empresa_id}`);
+          const empNombre = emp.nombre_comercial || emp.razon_social || `Empresa #${datos.empresa_id}`;
+          document.getElementById('sidebar-empresa-nombre').textContent = empNombre;
+          const dashName = document.getElementById('dash-empresa-nombre');
+          if (dashName) dashName.textContent = empNombre;
+        } catch (e) {
+          console.error("Error al obtener la empresa:", e);
+          document.getElementById('sidebar-empresa-nombre').textContent = "Administración";
+        }
+      } else {
+        document.getElementById('sidebar-empresa-nombre').textContent = "Global (SuperAdmin)";
+        const dashName = document.getElementById('dash-empresa-nombre');
+        if (dashName) dashName.textContent = "Catálogo Global";
+      }
     }
 
-    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-    document.getElementById('login-overlay').classList.add('oculto');
-    await aplicarUsuario(data);
-    showToast(`Bienvenido ${data.nombre}`);
-    // Cargar dashboard defaults
-    cargarCategoriasParaSelect();
-    cargarPermisosUsuarios();
-    cargarRolesParaFormulario();
-  } catch (e) {
-    errEl.textContent = e.message;
-    errEl.classList.add('visible');
-  }
-});
+    document.getElementById('btn-ingresar').addEventListener('click', async () => {
+      if (!validateEmailField('login-correo', 'El correo')) return;
+      if (!validatePasswordField('login-password', 'La contraseña', 6, true)) return;
 
-document.getElementById('btn-cerrar-sesion').addEventListener('click', async () => {
-  const s = getSessionData();
-  if (s && s.token) {
-    try {
-      await fetch(CONFIG.API_URL + '/usuarios/logout', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + s.token }
-      });
-    } catch (e) { console.error("Error logging out", e); }
-  }
-  localStorage.removeItem(SESSION_KEY);
-  document.getElementById('login-overlay').classList.remove('oculto');
-  
-  // Limpiar campos del login
-  document.getElementById('login-correo').value = '';
-  document.getElementById('login-password').value = '';
-  document.getElementById('login-error').classList.remove('visible');
-});
+      const correo = getTrimmedValue('login-correo');
+      const password = document.getElementById('login-password').value;
+      const errEl = document.getElementById('login-error');
 
-// Check inicial
-(async () => {
-  const s = getSessionData();
-  if(s && s.token) {
-    if (s.rol !== 'ADMIN') {
+      try {
+        const res = await fetch(API_URL + '/usuarios/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo, password })
+        });
+        if (!res.ok) throw new Error('Credenciales inválidas o sin acceso al panel');
+        const data = await res.json();
+
+        if (data.rol !== 'ADMIN') {
+          throw new Error('Acceso denegado: Solo usuarios con el rol ADMIN pueden ingresar a este panel.');
+        }
+
+        localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+        document.getElementById('login-overlay').classList.add('oculto');
+        await aplicarUsuario(data);
+        showToast(`Bienvenido ${data.nombre}`);
+        // Cargar dashboard defaults
+        cargarCategoriasParaSelect();
+        cargarPermisosUsuarios();
+        cargarRolesParaFormulario();
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.add('visible');
+      }
+    });
+
+    document.getElementById('btn-cerrar-sesion').addEventListener('click', async () => {
+      const s = getSessionData();
+      if (s && s.token) {
+        try {
+          await fetch(CONFIG.API_URL + '/usuarios/logout', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + s.token }
+          });
+        } catch (e) { console.error("Error logging out", e); }
+      }
       localStorage.removeItem(SESSION_KEY);
       document.getElementById('login-overlay').classList.remove('oculto');
-      const errEl = document.getElementById('login-error');
-      errEl.textContent = 'Acceso denegado: Tu rol no es ADMIN.';
-      errEl.classList.add('visible');
-    } else {
-      document.getElementById('login-overlay').classList.add('oculto');
-      await aplicarUsuario(s);
-      cargarCategoriasParaSelect();
-      cargarPermisosUsuarios();
-      cargarRolesParaFormulario();
-    }
-  }
-})();
 
-/* ==========================================================
-   CATEGORÍAS
-   ========================================================== */
-async function cargarCategorias() {
-  const tbody = document.getElementById('tabla-categorias');
-  try {
-    const cats = await fetchAuth('/categorias');
-    tbody.innerHTML = cats.map(c => `
+      // Limpiar campos del login
+      document.getElementById('login-correo').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-error').classList.remove('visible');
+    });
+
+    // Check inicial
+    (async () => {
+      const s = getSessionData();
+      if (s && s.token) {
+        if (s.rol !== 'ADMIN') {
+          localStorage.removeItem(SESSION_KEY);
+          document.getElementById('login-overlay').classList.remove('oculto');
+          const errEl = document.getElementById('login-error');
+          errEl.textContent = 'Acceso denegado: Tu rol no es ADMIN.';
+          errEl.classList.add('visible');
+        } else {
+          document.getElementById('login-overlay').classList.add('oculto');
+          await aplicarUsuario(s);
+          cargarCategoriasParaSelect();
+          cargarPermisosUsuarios();
+          cargarRolesParaFormulario();
+        }
+      }
+    })();
+
+    /* ==========================================================
+       CATEGORÍAS
+       ========================================================== */
+    async function cargarCategorias() {
+      const tbody = document.getElementById('tabla-categorias');
+      try {
+        const cats = await fetchAuth('/categorias');
+        tbody.innerHTML = cats.map(c => `
       <tr>
         <td>${c.id}</td>
         <td><strong>${c.nombre}</strong></td>
@@ -930,73 +1078,73 @@ async function cargarCategorias() {
         </td>
       </tr>
     `).join('');
-    if(cats.length === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">No hay categorías creadas.</td></tr>';
-  } catch (e) { tbody.innerHTML = `<tr><td colspan="3" style="color:var(--alerta)">Error: ${e.message}</td></tr>`; }
-}
-
-async function cargarCategoriasParaSelect() {
-  const sel = document.getElementById('prod-cat');
-  try {
-    const cats = await fetchAuth('/categorias');
-    sel.innerHTML = '<option value="">-- Selecciona Categoría --</option>' + cats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
-  } catch (e) {
-    sel.innerHTML = '<option value="">Error al cargar categorías</option>';
-  }
-}
-
-document.getElementById('btn-guardar-cat')?.addEventListener('click', async () => {
-  const nombre = document.getElementById('cat-nombre').value.trim();
-  if(!nombre) return showToast('El nombre no puede estar vacío', true);
-  
-  const sesion = getSessionData();
-  const miEmpresaId = sesion?.empresa_id;
-  
-  try {
-    const payload = { nombre };
-    if (miEmpresaId) {
-      payload.empresa = { id: parseInt(miEmpresaId) };
+        if (cats.length === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">No hay categorías creadas.</td></tr>';
+      } catch (e) { tbody.innerHTML = `<tr><td colspan="3" style="color:var(--alerta)">Error: ${e.message}</td></tr>`; }
     }
-    await fetchAuth('/categorias', 'POST', payload);
-    showToast('Categoría creada con éxito');
-    document.getElementById('cat-nombre').value = '';
-    cargarCategorias();
-    cargarCategoriasParaSelect(); // Actualizar select de productos
-  } catch (e) { showToast(e.message, true); }
-});
 
-async function eliminarCategoria(id, nombre) {
-  if(!confirm(`¿Estás seguro de eliminar la categoría "${nombre}"? ESTO ELIMINARÁ TODOS SUS PRODUCTOS EN CASCADA.`)) return;
-  try {
-    const msg = await fetchAuth(`/categorias/${id}`, 'DELETE');
-    showToast(msg || 'Categoría eliminada');
-    cargarCategorias();
-    cargarCategoriasParaSelect();
-  } catch (e) { showToast(e.message, true); }
-}
+    async function cargarCategoriasParaSelect() {
+      const sel = document.getElementById('prod-cat');
+      try {
+        const cats = await fetchAuth('/categorias');
+        sel.innerHTML = '<option value="">-- Selecciona Categoría --</option>' + cats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+      } catch (e) {
+        sel.innerHTML = '<option value="">Error al cargar categorías</option>';
+      }
+    }
 
-/* ==========================================================
-   PRODUCTOS
-   ========================================================== */
-document.getElementById('btn-toggle-nuevo-prod')?.addEventListener('click', () => {
-  const form = document.getElementById('form-producto-card');
-  form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  if (form.style.display === 'block' && document.getElementById('contenedor-variantes-temp').children.length === 0) {
-    addVarianteRow(); // Añadir una fila por defecto
-  }
-});
-document.getElementById('btn-cancelar-prod')?.addEventListener('click', () => {
-  document.getElementById('form-producto-card').style.display = 'none';
-});
+    document.getElementById('btn-guardar-cat')?.addEventListener('click', async () => {
+      const nombre = document.getElementById('cat-nombre').value.trim();
+      if (!nombre) return showToast('El nombre no puede estar vacío', true);
 
-// Filas dinámicas de variantes para la creación del producto
-let varianteRowIndex = 0;
-function addVarianteRow() {
-  const container = document.getElementById('contenedor-variantes-temp');
-  const div = document.createElement('div');
-  div.className = 'variante-item';
-  div.id = `var-row-${varianteRowIndex}`;
-  const autoSku = genSKU();
-  div.innerHTML = `
+      const sesion = getSessionData();
+      const miEmpresaId = sesion?.empresa_id;
+
+      try {
+        const payload = { nombre };
+        if (miEmpresaId) {
+          payload.empresa = { id: parseInt(miEmpresaId) };
+        }
+        await fetchAuth('/categorias', 'POST', payload);
+        showToast('Categoría creada con éxito');
+        document.getElementById('cat-nombre').value = '';
+        cargarCategorias();
+        cargarCategoriasParaSelect(); // Actualizar select de productos
+      } catch (e) { showToast(e.message, true); }
+    });
+
+    async function eliminarCategoria(id, nombre) {
+      if (!confirm(`¿Estás seguro de eliminar la categoría "${nombre}"? ESTO ELIMINARÁ TODOS SUS PRODUCTOS EN CASCADA.`)) return;
+      try {
+        const msg = await fetchAuth(`/categorias/${id}`, 'DELETE');
+        showToast(msg || 'Categoría eliminada');
+        cargarCategorias();
+        cargarCategoriasParaSelect();
+      } catch (e) { showToast(e.message, true); }
+    }
+
+    /* ==========================================================
+       PRODUCTOS
+       ========================================================== */
+    document.getElementById('btn-toggle-nuevo-prod')?.addEventListener('click', () => {
+      const form = document.getElementById('form-producto-card');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      if (form.style.display === 'block' && document.getElementById('contenedor-variantes-temp').children.length === 0) {
+        addVarianteRow(); // Añadir una fila por defecto
+      }
+    });
+    document.getElementById('btn-cancelar-prod')?.addEventListener('click', () => {
+      document.getElementById('form-producto-card').style.display = 'none';
+    });
+
+    // Filas dinámicas de variantes para la creación del producto
+    let varianteRowIndex = 0;
+    function addVarianteRow() {
+      const container = document.getElementById('contenedor-variantes-temp');
+      const div = document.createElement('div');
+      div.className = 'variante-item';
+      div.id = `var-row-${varianteRowIndex}`;
+      const autoSku = genSKU();
+      div.innerHTML = `
     <div class="campo" style="flex:1"><label class="etiqueta-campo">SKU</label><input type="text" class="v-sku" value="${autoSku}" disabled style="background:#eee"></div>
     <div class="campo" style="flex:1"><label class="etiqueta-campo">Color</label><input type="text" class="v-color" placeholder="Ej. Negro"></div>
     <div class="campo" style="flex:0.8"><label class="etiqueta-campo">Hex Color</label><input type="color" class="v-hex" value="#5c4a3d" style="width: 100%; height: 38px; padding: 2px; cursor: pointer; border-radius: 12px; border: 1.5px solid var(--borde-trazo); background: var(--crema);"></div>
@@ -1005,102 +1153,102 @@ function addVarianteRow() {
     <div class="campo" style="flex:1.5"><label class="etiqueta-campo">Imagen URL</label><input type="text" class="v-img" placeholder="https://..."></div>
     <button class="btn-quitar-variante" style="margin-bottom: 2px;" onclick="document.getElementById('var-row-${varianteRowIndex}').remove()">✕</button>
   `;
-  container.appendChild(div);
+      container.appendChild(div);
 
-  // Auto-sync color
-  const colorInput = div.querySelector('.v-color');
-  const hexInput   = div.querySelector('.v-hex');
-  colorInput.addEventListener('input', () => {
-    const key = colorInput.value.trim().toLowerCase();
-    if (typeof COLOR_MAP !== 'undefined' && COLOR_MAP[key]) hexInput.value = COLOR_MAP[key];
-  });
+      // Auto-sync color
+      const colorInput = div.querySelector('.v-color');
+      const hexInput = div.querySelector('.v-hex');
+      colorInput.addEventListener('input', () => {
+        const key = colorInput.value.trim().toLowerCase();
+        if (typeof COLOR_MAP !== 'undefined' && COLOR_MAP[key]) hexInput.value = COLOR_MAP[key];
+      });
 
-  varianteRowIndex++;
-}
-document.getElementById('btn-add-variante-row')?.addEventListener('click', addVarianteRow);
-
-// Guardar Producto + Variantes
-document.getElementById('btn-guardar-prod')?.addEventListener('click', async () => {
-  const nombre = document.getElementById('prod-nombre').value.trim();
-  const catId = document.getElementById('prod-cat').value;
-  const precio = document.getElementById('prod-precio').value;
-  const desc = document.getElementById('prod-desc').value;
-  const img = document.getElementById('prod-img').value;
-
-  if(!nombre || !catId || !precio) return showToast('Nombre, categoría y precio son obligatorios', true);
-
-  const btn = document.getElementById('btn-guardar-prod');
-  btn.disabled = true;
-  btn.textContent = 'Guardando...';
-
-  const sesion = getSessionData();
-  const miEmpresaId = sesion?.empresa_id;
-
-  try {
-    // 1. Guardar producto
-    const payloadProd = {
-      nombre,
-      precio: parseFloat(precio),
-      descripcion: desc,
-      imagen_url: img,
-      categoria: { id: parseInt(catId) }
-    };
-    if (miEmpresaId) {
-      payloadProd.empresa = { id: parseInt(miEmpresaId) };
+      varianteRowIndex++;
     }
-    const prodCreado = await fetchAuth('/productos', 'POST', payloadProd);
-    
-    // 2. Guardar variantes
-    const rows = document.querySelectorAll('.variante-item');
-    for (const row of rows) {
-      const vSku = row.querySelector('.v-sku').value;
-      const vColor = row.querySelector('.v-color').value || 'Default';
-      const vHex = row.querySelector('.v-hex').value || '#000000';
-      const vTalla = row.querySelector('.v-talla').value || 'U';
-      const vStock = parseInt(row.querySelector('.v-stock').value) || 0;
-      const vImg = row.querySelector('.v-img').value || '';
-      
-      const payloadVar = {
-        sku: vSku, color: vColor, talla: vTalla, stock: vStock, stock_critico: 2, imagen: vImg, hex: vHex,
-        producto: { id: prodCreado.id }
-      };
-      if (miEmpresaId) {
-        payloadVar.empresa = { id: parseInt(miEmpresaId) };
+    document.getElementById('btn-add-variante-row')?.addEventListener('click', addVarianteRow);
+
+    // Guardar Producto + Variantes
+    document.getElementById('btn-guardar-prod')?.addEventListener('click', async () => {
+      const nombre = document.getElementById('prod-nombre').value.trim();
+      const catId = document.getElementById('prod-cat').value;
+      const precio = document.getElementById('prod-precio').value;
+      const desc = document.getElementById('prod-desc').value;
+      const img = document.getElementById('prod-img').value;
+
+      if (!nombre || !catId || !precio) return showToast('Nombre, categoría y precio son obligatorios', true);
+
+      const btn = document.getElementById('btn-guardar-prod');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      const sesion = getSessionData();
+      const miEmpresaId = sesion?.empresa_id;
+
+      try {
+        // 1. Guardar producto
+        const payloadProd = {
+          nombre,
+          precio: parseFloat(precio),
+          descripcion: desc,
+          imagen_url: img,
+          categoria: { id: parseInt(catId) }
+        };
+        if (miEmpresaId) {
+          payloadProd.empresa = { id: parseInt(miEmpresaId) };
+        }
+        const prodCreado = await fetchAuth('/productos', 'POST', payloadProd);
+
+        // 2. Guardar variantes
+        const rows = document.querySelectorAll('.variante-item');
+        for (const row of rows) {
+          const vSku = row.querySelector('.v-sku').value;
+          const vColor = row.querySelector('.v-color').value || 'Default';
+          const vHex = row.querySelector('.v-hex').value || '#000000';
+          const vTalla = row.querySelector('.v-talla').value || 'U';
+          const vStock = parseInt(row.querySelector('.v-stock').value) || 0;
+          const vImg = row.querySelector('.v-img').value || '';
+
+          const payloadVar = {
+            sku: vSku, color: vColor, talla: vTalla, stock: vStock, stock_critico: 2, imagen: vImg, hex: vHex,
+            producto: { id: prodCreado.id }
+          };
+          if (miEmpresaId) {
+            payloadVar.empresa = { id: parseInt(miEmpresaId) };
+          }
+          await fetchAuth('/variantes', 'POST', payloadVar);
+        }
+
+        showToast(`Producto ${prodCreado.nombre} y sus variantes creados exitosamente`);
+
+        // Resetear form
+        document.getElementById('prod-nombre').value = '';
+        document.getElementById('prod-precio').value = '';
+        document.getElementById('prod-desc').value = '';
+        document.getElementById('prod-img').value = '';
+        document.getElementById('contenedor-variantes-temp').innerHTML = '';
+        document.getElementById('form-producto-card').style.display = 'none';
+
+        cargarProductos();
+      } catch (e) {
+        showToast(e.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar Producto y Variantes';
       }
-      await fetchAuth('/variantes', 'POST', payloadVar);
-    }
+    });
 
-    showToast(`Producto ${prodCreado.nombre} y sus variantes creados exitosamente`);
-    
-    // Resetear form
-    document.getElementById('prod-nombre').value = '';
-    document.getElementById('prod-precio').value = '';
-    document.getElementById('prod-desc').value = '';
-    document.getElementById('prod-img').value = '';
-    document.getElementById('contenedor-variantes-temp').innerHTML = '';
-    document.getElementById('form-producto-card').style.display = 'none';
-    
-    cargarProductos();
-  } catch (e) {
-    showToast(e.message, true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Guardar Producto y Variantes';
-  }
-});
+    // Listar Productos y Variantes (Acordeón)
+    let lastProducts = [];
+    async function cargarProductos() {
+      const tbody = document.getElementById('tabla-productos');
+      try {
+        const prods = await fetchAuth('/productos');
+        lastProducts = prods;
 
-// Listar Productos y Variantes (Acordeón)
-let lastProducts = [];
-async function cargarProductos() {
-  const tbody = document.getElementById('tabla-productos');
-  try {
-    const prods = await fetchAuth('/productos');
-    lastProducts = prods;
-    
-    tbody.innerHTML = prods.map(p => {
-      const vars = p.variantes || [];
-      const varCount = vars.length;
-      return `
+        tbody.innerHTML = prods.map(p => {
+          const vars = p.variantes || [];
+          const varCount = vars.length;
+          return `
         <tr class="fila-principal" onclick="toggleVariantes(${p.id})">
           <td>${p.id}</td>
           <td><img src="${p.imagen_url || 'https://via.placeholder.com/40x50'}" class="img-min"></td>
@@ -1144,123 +1292,123 @@ async function cargarProductos() {
           </td>
         </tr>
       `;
-    }).join('');
-    
-    if(prods.length === 0) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No hay productos registrados.</td></tr>';
-  } catch (e) { tbody.innerHTML = `<tr><td colspan="7" style="color:var(--alerta)">Error: ${e.message}</td></tr>`; }
-}
+        }).join('');
 
-function toggleVariantes(prodId) {
-  const tr = document.getElementById(`vars-prod-${prodId}`);
-  if(tr) tr.style.display = tr.style.display === 'none' ? 'table-row' : 'none';
-}
-
-async function eliminarProducto(id, nombre) {
-  if(!confirm(`¿Eliminar producto "${nombre}" y todas sus variantes?`)) return;
-  try {
-    const msg = await fetchAuth(`/productos/${id}`, 'DELETE');
-    showToast(msg || 'Producto eliminado');
-    cargarProductos();
-  } catch (e) { showToast(e.message, true); }
-}
-
-async function eliminarVariante(id, sku) {
-  if(!confirm(`¿Eliminar variante SKU: ${sku}?`)) return;
-  try {
-    const msg = await fetchAuth(`/variantes/${id}`, 'DELETE');
-    showToast(msg || 'Variante eliminada');
-    cargarProductos();
-  } catch (e) { showToast(e.message, true); }
-}
-
-// Modal añadir una variante
-function openAddVariantModal(prodId, prodNombre) {
-  document.getElementById('modal-var-prod-id').value = prodId;
-  document.getElementById('modal-var-prod-nombre').textContent = prodNombre;
-  document.getElementById('modal-var-sku').value = genSKU();
-  document.getElementById('modal-var-color').value = '';
-  document.getElementById('modal-var-talla').value = '';
-  document.getElementById('modal-var-img').value = '';
-  document.getElementById('modal-add-variante').classList.remove('oculto');
-}
-
-// Auto-sync: color nombre → hex en el modal
-document.getElementById('modal-var-color')?.addEventListener('input', () => {
-  const key = document.getElementById('modal-var-color').value.trim().toLowerCase();
-  if (COLOR_MAP[key]) document.getElementById('modal-var-hex').value = COLOR_MAP[key];
-});
-
-document.getElementById('btn-save-single-variant')?.addEventListener('click', async () => {
-  const prodId = document.getElementById('modal-var-prod-id').value;
-  const sesion = getSessionData();
-  const miEmpresaId = sesion?.empresa_id;
-
-  if (!validateTextField('modal-var-color', 'El color', 2)) return;
-  if (!validateTextField('modal-var-talla', 'La talla', 1)) return;
-  if (!validateNumberField('modal-var-stock', 'El stock', { min: 0, integer: true })) return;
-  if (!validateNumberField('modal-var-critico', 'El stock crítico', { min: 0, integer: true })) return;
-  if (!validateUrlField('modal-var-img', 'La URL de imagen', false)) return;
-
-  const payload = {
-    sku: document.getElementById('modal-var-sku').value,
-    color: document.getElementById('modal-var-color').value || 'Default',
-    talla: document.getElementById('modal-var-talla').value || 'U',
-    stock: parseInt(document.getElementById('modal-var-stock').value) || 0,
-    stock_critico: parseInt(document.getElementById('modal-var-critico').value) || 0,
-    hex: document.getElementById('modal-var-hex').value || '#000',
-    imagen: document.getElementById('modal-var-img').value || '',
-    producto: { id: parseInt(prodId) }
-  };
-  
-  if (miEmpresaId) {
-    payload.empresa = { id: parseInt(miEmpresaId) };
-  }
-  
-  try {
-    await fetchAuth('/variantes', 'POST', payload);
-    showToast('Variante añadida');
-    document.getElementById('modal-add-variante').classList.add('oculto');
-    await cargarProductos(); // refescar tabla para ver la variante
-    
-    // Dejar la vista expandida abierta para este producto
-    setTimeout(() => {
-      const tr = document.getElementById(`vars-prod-${prodId}`);
-      if(tr) tr.style.display = 'table-row';
-    }, 200);
-
-  } catch (e) { showToast(e.message, true); }
-});
-
-/* ==========================================================
-   PEDIDOS (REAL)
-   ========================================================== */
-async function cargarPedidos() {
-  const tbody = document.getElementById('tabla-pedidos');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Cargando pedidos...</td></tr>';
-  try {
-    const pedidos = await fetchAuth('/pedidos');
-    if (pedidos.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No hay pedidos registrados en tu boutique.</td></tr>';
-      return;
+        if (prods.length === 0) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No hay productos registrados.</td></tr>';
+      } catch (e) { tbody.innerHTML = `<tr><td colspan="7" style="color:var(--alerta)">Error: ${e.message}</td></tr>`; }
     }
-    
-    tbody.innerHTML = pedidos.map(p => {
-      const fecha = p.fecha_creacion || 'Desconocida';
-      const total = p.total.toFixed(2);
-      const cliNombre = p.usuario ? p.usuario.nombre : 'Cliente Desconocido';
-      const cliCorreo = p.usuario ? p.usuario.correo : '';
-      const pago = p.pago_confirmado 
-        ? `<span class="pildora estado-ok">Confirmado</span>`
-        : `<span class="pildora estado-fallo">Pendiente</span>`;
-      
-      const estados = ['PENDIENTE', 'CONFIRMADO', 'EN_PREPARACION', 'LISTO_PARA_RECOGER', 'RECOGIDO', 'CANCELADO'];
-      const selectEstado = `
+
+    function toggleVariantes(prodId) {
+      const tr = document.getElementById(`vars-prod-${prodId}`);
+      if (tr) tr.style.display = tr.style.display === 'none' ? 'table-row' : 'none';
+    }
+
+    async function eliminarProducto(id, nombre) {
+      if (!confirm(`¿Eliminar producto "${nombre}" y todas sus variantes?`)) return;
+      try {
+        const msg = await fetchAuth(`/productos/${id}`, 'DELETE');
+        showToast(msg || 'Producto eliminado');
+        cargarProductos();
+      } catch (e) { showToast(e.message, true); }
+    }
+
+    async function eliminarVariante(id, sku) {
+      if (!confirm(`¿Eliminar variante SKU: ${sku}?`)) return;
+      try {
+        const msg = await fetchAuth(`/variantes/${id}`, 'DELETE');
+        showToast(msg || 'Variante eliminada');
+        cargarProductos();
+      } catch (e) { showToast(e.message, true); }
+    }
+
+    // Modal añadir una variante
+    function openAddVariantModal(prodId, prodNombre) {
+      document.getElementById('modal-var-prod-id').value = prodId;
+      document.getElementById('modal-var-prod-nombre').textContent = prodNombre;
+      document.getElementById('modal-var-sku').value = genSKU();
+      document.getElementById('modal-var-color').value = '';
+      document.getElementById('modal-var-talla').value = '';
+      document.getElementById('modal-var-img').value = '';
+      document.getElementById('modal-add-variante').classList.remove('oculto');
+    }
+
+    // Auto-sync: color nombre → hex en el modal
+    document.getElementById('modal-var-color')?.addEventListener('input', () => {
+      const key = document.getElementById('modal-var-color').value.trim().toLowerCase();
+      if (COLOR_MAP[key]) document.getElementById('modal-var-hex').value = COLOR_MAP[key];
+    });
+
+    document.getElementById('btn-save-single-variant')?.addEventListener('click', async () => {
+      const prodId = document.getElementById('modal-var-prod-id').value;
+      const sesion = getSessionData();
+      const miEmpresaId = sesion?.empresa_id;
+
+      if (!validateTextField('modal-var-color', 'El color', 2)) return;
+      if (!validateTextField('modal-var-talla', 'La talla', 1)) return;
+      if (!validateNumberField('modal-var-stock', 'El stock', { min: 0, integer: true })) return;
+      if (!validateNumberField('modal-var-critico', 'El stock crítico', { min: 0, integer: true })) return;
+      if (!validateUrlField('modal-var-img', 'La URL de imagen', false)) return;
+
+      const payload = {
+        sku: document.getElementById('modal-var-sku').value,
+        color: document.getElementById('modal-var-color').value || 'Default',
+        talla: document.getElementById('modal-var-talla').value || 'U',
+        stock: parseInt(document.getElementById('modal-var-stock').value) || 0,
+        stock_critico: parseInt(document.getElementById('modal-var-critico').value) || 0,
+        hex: document.getElementById('modal-var-hex').value || '#000',
+        imagen: document.getElementById('modal-var-img').value || '',
+        producto: { id: parseInt(prodId) }
+      };
+
+      if (miEmpresaId) {
+        payload.empresa = { id: parseInt(miEmpresaId) };
+      }
+
+      try {
+        await fetchAuth('/variantes', 'POST', payload);
+        showToast('Variante añadida');
+        document.getElementById('modal-add-variante').classList.add('oculto');
+        await cargarProductos(); // refescar tabla para ver la variante
+
+        // Dejar la vista expandida abierta para este producto
+        setTimeout(() => {
+          const tr = document.getElementById(`vars-prod-${prodId}`);
+          if (tr) tr.style.display = 'table-row';
+        }, 200);
+
+      } catch (e) { showToast(e.message, true); }
+    });
+
+    /* ==========================================================
+       PEDIDOS (REAL)
+       ========================================================== */
+    async function cargarPedidos() {
+      const tbody = document.getElementById('tabla-pedidos');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Cargando pedidos...</td></tr>';
+      try {
+        const pedidos = await fetchAuth('/pedidos');
+        if (pedidos.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">No hay pedidos registrados en tu boutique.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = pedidos.map(p => {
+          const fecha = p.fecha_creacion || 'Desconocida';
+          const total = p.total.toFixed(2);
+          const cliNombre = p.usuario ? p.usuario.nombre : 'Cliente Desconocido';
+          const cliCorreo = p.usuario ? p.usuario.correo : '';
+          const pago = p.pago_confirmado
+            ? `<span class="pildora estado-ok">Confirmado</span>`
+            : `<span class="pildora estado-fallo">Pendiente</span>`;
+
+          const estados = ['PENDIENTE', 'CONFIRMADO', 'EN_PREPARACION', 'LISTO_PARA_RECOGER', 'RECOGIDO', 'CANCELADO'];
+          const selectEstado = `
         <select onchange="cambiarEstadoPedido(${p.id}, this.value)" style="padding:4px 8px; font-size:0.8rem; border-radius:8px; border:1px solid var(--borde-trazo); background:var(--crema);">
           ${estados.map(est => `<option value="${est}" ${p.estado === est ? 'selected' : ''}>${est}</option>`).join('')}
         </select>
       `;
 
-      return `
+          return `
         <tr class="fila-principal" onclick="toggleItemsPedido(${p.id})">
           <td>${p.id}</td>
           <td>
@@ -1284,30 +1432,30 @@ async function cargarPedidos() {
           </td>
         </tr>
       `;
-    }).join('');
-  } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
-  }
-}
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
+      }
+    }
 
-async function toggleItemsPedido(pedidoId) {
-  const tr = document.getElementById(`items-pedido-${pedidoId}`);
-  if (!tr) return;
-  
-  const isHidden = tr.style.display === 'none';
-  tr.style.display = isHidden ? 'table-row' : 'none';
-  
-  if (isHidden) {
-    const loader = document.getElementById(`items-pedido-loader-${pedidoId}`);
-    if (loader && loader.textContent === 'Cargando ítems...') {
-      try {
-        const items = await fetchAuth(`/pedidoitems/pedido/${pedidoId}`);
-        if (!items || items.length === 0) {
-          loader.innerHTML = '<span style="color:var(--cafe); font-size:0.85rem;">No hay ítems registrados para este pedido.</span>';
-          return;
-        }
-        
-        loader.innerHTML = `
+    async function toggleItemsPedido(pedidoId) {
+      const tr = document.getElementById(`items-pedido-${pedidoId}`);
+      if (!tr) return;
+
+      const isHidden = tr.style.display === 'none';
+      tr.style.display = isHidden ? 'table-row' : 'none';
+
+      if (isHidden) {
+        const loader = document.getElementById(`items-pedido-loader-${pedidoId}`);
+        if (loader && loader.textContent === 'Cargando ítems...') {
+          try {
+            const items = await fetchAuth(`/pedidoitems/pedido/${pedidoId}`);
+            if (!items || items.length === 0) {
+              loader.innerHTML = '<span style="color:var(--cafe); font-size:0.85rem;">No hay ítems registrados para este pedido.</span>';
+              return;
+            }
+
+            loader.innerHTML = `
           <table style="width: 100%; font-size: 0.8rem; background: rgba(92,74,61,0.02); border-radius: 8px; border: 1px solid var(--borde-trazo);">
             <thead>
               <tr style="background: rgba(92,74,61,0.05);">
@@ -1322,14 +1470,14 @@ async function toggleItemsPedido(pedidoId) {
             </thead>
             <tbody>
               ${items.map(item => {
-                const prodNombre = item.variante?.producto?.nombre || 'Producto';
-                const sku = item.variante?.sku || '-';
-                const color = item.variante?.color || '-';
-                const talla = item.variante?.talla || '-';
-                const precio = item.precio_unitario.toFixed(2);
-                const cant = item.cantidad;
-                const total = (item.precio_unitario * item.cantidad).toFixed(2);
-                return `
+              const prodNombre = item.variante?.producto?.nombre || 'Producto';
+              const sku = item.variante?.sku || '-';
+              const color = item.variante?.color || '-';
+              const talla = item.variante?.talla || '-';
+              const precio = item.precio_unitario.toFixed(2);
+              const cant = item.cantidad;
+              const total = (item.precio_unitario * item.cantidad).toFixed(2);
+              return `
                   <tr>
                     <td style="padding: 6px;"><strong>${prodNombre}</strong></td>
                     <td style="padding: 6px;" class="mono">${sku}</td>
@@ -1340,62 +1488,62 @@ async function toggleItemsPedido(pedidoId) {
                     <td style="padding: 6px; text-align: right;">S/. ${total}</td>
                   </tr>
                 `;
-              }).join('')}
+            }).join('')}
             </tbody>
           </table>
         `;
-      } catch (err) {
-        loader.innerHTML = `<span style="color:var(--alerta)">Error cargando detalles: ${err.message}</span>`;
+          } catch (err) {
+            loader.innerHTML = `<span style="color:var(--alerta)">Error cargando detalles: ${err.message}</span>`;
+          }
+        }
       }
     }
-  }
-}
 
-async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
-  try {
-    const pedido = await fetchAuth(`/pedidos/${pedidoId}`);
-    pedido.estado = nuevoEstado;
-    await fetchAuth('/pedidos', 'PUT', pedido);
-    showToast(`Pedido #${pedidoId} actualizado a ${nuevoEstado}`);
-    cargarPedidos();
-  } catch (err) {
-    showToast(`Error: ${err.message}`, true);
-    cargarPedidos();
-  }
-}
-
-/* ==========================================================
-   CUPONES (REAL)
-   ========================================================== */
-const btnToggleCupon = document.getElementById('btn-toggle-nuevo-cupon');
-const cardCupon = document.getElementById('form-cupon-card');
-const btnCancelCupon = document.getElementById('btn-cancelar-cupon');
-
-if (btnToggleCupon) {
-  btnToggleCupon.addEventListener('click', () => {
-    cardCupon.style.display = cardCupon.style.display === 'none' ? 'block' : 'none';
-  });
-}
-if (btnCancelCupon) {
-  btnCancelCupon.addEventListener('click', () => {
-    cardCupon.style.display = 'none';
-  });
-}
-
-async function cargarCupones() {
-  const tbody = document.getElementById('tabla-cupones');
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">Cargando cupones...</td></tr>';
-  try {
-    const cupones = await fetchAuth('/cupones');
-    if (cupones.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">No hay cupones activos en tu boutique.</td></tr>';
-      return;
+    async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
+      try {
+        const pedido = await fetchAuth(`/pedidos/${pedidoId}`);
+        pedido.estado = nuevoEstado;
+        await fetchAuth('/pedidos', 'PUT', pedido);
+        showToast(`Pedido #${pedidoId} actualizado a ${nuevoEstado}`);
+        cargarPedidos();
+      } catch (err) {
+        showToast(`Error: ${err.message}`, true);
+        cargarPedidos();
+      }
     }
 
-    tbody.innerHTML = cupones.map(c => {
-      const tipoVal = c.tipo === 'PORCENTAJE' ? `${c.valor}%` : `S/. ${c.valor.toFixed(2)}`;
-      const minCompra = c.minimo_compra ? `S/. ${c.minimo_compra.toFixed(2)}` : 'S/. 0.00';
-      return `
+    /* ==========================================================
+       CUPONES (REAL)
+       ========================================================== */
+    const btnToggleCupon = document.getElementById('btn-toggle-nuevo-cupon');
+    const cardCupon = document.getElementById('form-cupon-card');
+    const btnCancelCupon = document.getElementById('btn-cancelar-cupon');
+
+    if (btnToggleCupon) {
+      btnToggleCupon.addEventListener('click', () => {
+        cardCupon.style.display = cardCupon.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+    if (btnCancelCupon) {
+      btnCancelCupon.addEventListener('click', () => {
+        cardCupon.style.display = 'none';
+      });
+    }
+
+    async function cargarCupones() {
+      const tbody = document.getElementById('tabla-cupones');
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">Cargando cupones...</td></tr>';
+      try {
+        const cupones = await fetchAuth('/cupones');
+        if (cupones.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">No hay cupones activos en tu boutique.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = cupones.map(c => {
+          const tipoVal = c.tipo === 'PORCENTAJE' ? `${c.valor}%` : `S/. ${c.valor.toFixed(2)}`;
+          const minCompra = c.minimo_compra ? `S/. ${c.minimo_compra.toFixed(2)}` : 'S/. 0.00';
+          return `
         <tr>
           <td>${c.id}</td>
           <td><strong class="mono" style="font-size:0.95rem; color:var(--cafe-oscuro)">${c.codigo}</strong></td>
@@ -1409,126 +1557,126 @@ async function cargarCupones() {
           </td>
         </tr>
       `;
-    }).join('');
-  } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="8" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
-  }
-}
-
-document.getElementById('btn-guardar-cupon')?.addEventListener('click', async () => {
-  const codigo = document.getElementById('cup-codigo').value.trim();
-  const tipo = document.getElementById('cup-tipo').value;
-  const valor = document.getElementById('cup-valor').value;
-  const minimo = document.getElementById('cup-minimo').value;
-  const usos = document.getElementById('cup-usos-max').value;
-
-  if (!codigo || !valor || !usos) {
-    return showToast('Código, valor y límite de usos son obligatorios', true);
-  }
-
-  const sesion = getSessionData();
-  const miEmpresaId = sesion?.empresa_id;
-
-  try {
-    const payload = {
-      codigo: codigo.toUpperCase(),
-      tipo: tipo,
-      valor: parseFloat(valor),
-      minimo_compra: minimo ? parseFloat(minimo) : 0.0,
-      usos_maximos: parseInt(usos),
-      usos_actuales: 0,
-      estado: 'ACTIVO'
-    };
-    
-    if (miEmpresaId) {
-      payload.empresa = { id: parseInt(miEmpresaId) };
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
+      }
     }
 
-    await fetchAuth('/cupones', 'POST', payload);
-    showToast('Cupón creado con éxito');
-    
-    // Resetear form
-    document.getElementById('cup-codigo').value = '';
-    document.getElementById('cup-valor').value = '';
-    document.getElementById('cup-minimo').value = '0.00';
-    document.getElementById('cup-usos-max').value = '100';
-    cardCupon.style.display = 'none';
-    
-    cargarCupones();
-  } catch (e) {
-    showToast(e.message, true);
-  }
-});
+    document.getElementById('btn-guardar-cupon')?.addEventListener('click', async () => {
+      const codigo = document.getElementById('cup-codigo').value.trim();
+      const tipo = document.getElementById('cup-tipo').value;
+      const valor = document.getElementById('cup-valor').value;
+      const minimo = document.getElementById('cup-minimo').value;
+      const usos = document.getElementById('cup-usos-max').value;
 
-async function eliminarCupon(id, codigo) {
-  if (!confirm(`¿Estás seguro de eliminar el cupón "${codigo}"?`)) return;
-  try {
-    const msg = await fetchAuth(`/cupones/${id}`, 'DELETE');
-    showToast(msg || 'Cupón eliminado');
-    cargarCupones();
-  } catch (e) {
-    showToast(e.message, true);
-  }
-}
+      if (!codigo || !valor || !usos) {
+        return showToast('Código, valor y límite de usos son obligatorios', true);
+      }
 
-document.getElementById('btn-refrescar-permisos')?.addEventListener('click', cargarPermisosUsuarios);
+      const sesion = getSessionData();
+      const miEmpresaId = sesion?.empresa_id;
 
-/* ==========================================================
-   EMPLEADOS (Usuarios)
-   ========================================================== */
-let rolEmpleadoPorDefectoId = null;
+      try {
+        const payload = {
+          codigo: codigo.toUpperCase(),
+          tipo: tipo,
+          valor: parseFloat(valor),
+          minimo_compra: minimo ? parseFloat(minimo) : 0.0,
+          usos_maximos: parseInt(usos),
+          usos_actuales: 0,
+          estado: 'ACTIVO'
+        };
 
-async function obtenerRolEmpleadoPorDefecto() {
-  if (rolEmpleadoPorDefectoId) return rolEmpleadoPorDefectoId;
+        if (miEmpresaId) {
+          payload.empresa = { id: parseInt(miEmpresaId) };
+        }
 
-  const roles = await fetchAuth('/roles');
-  if (!Array.isArray(roles) || roles.length === 0) {
-    throw new Error('No hay roles disponibles para asignar empleados');
-  }
+        await fetchAuth('/cupones', 'POST', payload);
+        showToast('Cupón creado con éxito');
 
-  const normalizar = valor => (valor || '').trim().toUpperCase();
-  const candidatos = ['VENDEDOR', 'EMPLEADO', 'PERSONAL', 'CAJERO'];
-  let rol = null;
+        // Resetear form
+        document.getElementById('cup-codigo').value = '';
+        document.getElementById('cup-valor').value = '';
+        document.getElementById('cup-minimo').value = '0.00';
+        document.getElementById('cup-usos-max').value = '100';
+        cardCupon.style.display = 'none';
 
-  for (const nombre of candidatos) {
-    rol = roles.find(r => normalizar(r.nombre) === nombre);
-    if (rol) break;
-  }
+        cargarCupones();
+      } catch (e) {
+        showToast(e.message, true);
+      }
+    });
 
-  if (!rol) {
-    rol = roles.find(r => normalizar(r.nombre) !== 'ADMIN') || roles[0];
-  }
-
-  rolEmpleadoPorDefectoId = rol.id;
-  return rolEmpleadoPorDefectoId;
-}
-
-async function cargarRolesParaFormulario() {
-  const sel = document.getElementById('emp-rol');
-  if(!sel) return;
-  try {
-    const roles = await fetchAuth('/roles');
-    const rolesFiltrados = roles.filter(r => r.nombre.toUpperCase() !== 'ADMIN');
-    sel.innerHTML = '<option value="">-- Automático --</option>' + rolesFiltrados.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
-  } catch (e) {
-    sel.innerHTML = '<option value="">Error al cargar roles</option>';
-  }
-}
-
-async function cargarEmpleados() {
-  const tbody = document.getElementById('tabla-empleados');
-  if(!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Cargando empleados...</td></tr>';
-  try {
-    const empleados = await fetchAuth('/usuarios');
-    if (empleados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">No hay empleados registrados.</td></tr>';
-      return;
+    async function eliminarCupon(id, codigo) {
+      if (!confirm(`¿Estás seguro de eliminar el cupón "${codigo}"?`)) return;
+      try {
+        const msg = await fetchAuth(`/cupones/${id}`, 'DELETE');
+        showToast(msg || 'Cupón eliminado');
+        cargarCupones();
+      } catch (e) {
+        showToast(e.message, true);
+      }
     }
-    tbody.innerHTML = empleados.map(emp => {
-      const rolName = emp.rol ? emp.rol.nombre : 'Sin Rol';
-      
-      return `
+
+    document.getElementById('btn-refrescar-permisos')?.addEventListener('click', cargarPermisosUsuarios);
+
+    /* ==========================================================
+       EMPLEADOS (Usuarios)
+       ========================================================== */
+    let rolEmpleadoPorDefectoId = null;
+
+    async function obtenerRolEmpleadoPorDefecto() {
+      if (rolEmpleadoPorDefectoId) return rolEmpleadoPorDefectoId;
+
+      const roles = await fetchAuth('/roles');
+      if (!Array.isArray(roles) || roles.length === 0) {
+        throw new Error('No hay roles disponibles para asignar empleados');
+      }
+
+      const normalizar = valor => (valor || '').trim().toUpperCase();
+      const candidatos = ['VENDEDOR', 'EMPLEADO', 'PERSONAL', 'CAJERO'];
+      let rol = null;
+
+      for (const nombre of candidatos) {
+        rol = roles.find(r => normalizar(r.nombre) === nombre);
+        if (rol) break;
+      }
+
+      if (!rol) {
+        rol = roles.find(r => normalizar(r.nombre) !== 'ADMIN') || roles[0];
+      }
+
+      rolEmpleadoPorDefectoId = rol.id;
+      return rolEmpleadoPorDefectoId;
+    }
+
+    async function cargarRolesParaFormulario() {
+      const sel = document.getElementById('emp-rol');
+      if (!sel) return;
+      try {
+        const roles = await fetchAuth('/roles');
+        const rolesFiltrados = roles.filter(r => r.nombre.toUpperCase() !== 'ADMIN');
+        sel.innerHTML = '<option value="">-- Automático --</option>' + rolesFiltrados.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
+      } catch (e) {
+        sel.innerHTML = '<option value="">Error al cargar roles</option>';
+      }
+    }
+
+    async function cargarEmpleados() {
+      const tbody = document.getElementById('tabla-empleados');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Cargando empleados...</td></tr>';
+      try {
+        const empleados = await fetchAuth('/usuarios');
+        if (empleados.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">No hay empleados registrados.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = empleados.map(emp => {
+          const rolName = emp.rol ? emp.rol.nombre : 'Sin Rol';
+
+          return `
         <tr>
           <td>${emp.id}</td>
           <td><strong>${emp.nombre}</strong><br><span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${emp.correo}</span></td>
@@ -1539,116 +1687,117 @@ async function cargarEmpleados() {
           </td>
         </tr>
       `;
-    }).join('');
-  } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
-  }
-}
-
-document.getElementById('btn-guardar-empleado')?.addEventListener('click', async () => {
-  const id = document.getElementById('emp-id').value;
-  const nombre = getTrimmedValue('emp-nombre');
-  const correo = getTrimmedValue('emp-correo');
-  const telefono = getTrimmedValue('emp-telefono');
-  const password = document.getElementById('emp-password').value;
-
-  // Validar cada campo y mostrar error claro si algo falla
-  if (!validateTextField('emp-nombre', 'Los nombres completos', 3)) {
-    showToast('Los nombres completos deben tener al menos 3 caracteres', true);
-    return;
-  }
-  if (!validateEmailField('emp-correo', 'El correo')) {
-    showToast('El correo electrónico no tiene un formato válido', true);
-    return;
-  }
-  if (!validatePhoneField('emp-telefono', 'El teléfono', !id)) {
-    showToast('El teléfono debe tener exactamente 9 dígitos válidos', true);
-    return;
-  }
-  if (!validatePasswordField('emp-password', 'La contraseña', 6, false)) {
-    showToast('La contraseña debe tener al menos 6 caracteres', true);
-    return;
-  }
-
-  if (!id && !password) return showToast('Se requiere contraseña para empleado nuevo', true);
-  
-  const payload = { 
-    nombre, correo, telefono
-  };
-  
-  if (password) payload.password = password;
-  
-  const sesion = getSessionData();
-  if (sesion?.empresa_id) payload.empresa = { id: parseInt(sesion.empresa_id) };
-  
-  try {
-    const rolSeleccionado = document.getElementById('emp-rol').value;
-    if (id) {
-      payload.id = parseInt(id);
-      if (rolSeleccionado) {
-        payload.rol = { id: parseInt(rolSeleccionado) };
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
       }
-      await fetchAuth('/usuarios', 'PUT', payload);
-      showToast('Empleado actualizado exitosamente');
-    } else {
-      let rolId = rolSeleccionado;
-      if (!rolId) {
-        rolId = await obtenerRolEmpleadoPorDefecto();
-      }
-      
-      // Paso 1: Crear el usuario. El backend (/usuarios/registro) lo crea y guarda la empresa, 
-      // pero le asigna forzosamente el rol CLIENTE.
-      const userCreado = await fetchAuth('/usuarios/registro', 'POST', payload);
-      
-      // Paso 2: Actualizar el rol del usuario creado al rol correcto de empleado
-      await fetchAuth('/usuarios', 'PUT', { 
-        id: userCreado.id, 
-        rol: { id: parseInt(rolId) }
-      });
-      
-      showToast('Empleado creado exitosamente');
     }
-    cancelarEdicionEmpleado();
-    cargarEmpleados();
-  } catch(e) { showToast(e.message, true); }
-});
 
-function editarEmpleado(id, nombre, correo, telefono, rolId) {
-  document.getElementById('emp-id').value = id;
-  document.getElementById('emp-nombre').value = nombre;
-  document.getElementById('emp-correo').value = correo;
-  document.getElementById('emp-telefono').value = telefono;
-  document.getElementById('emp-password').value = '';
-  if (rolId) document.getElementById('emp-rol').value = rolId;
-  else document.getElementById('emp-rol').value = '';
-  
-  document.getElementById('btn-guardar-empleado').textContent = 'Actualizar Empleado';
-  document.getElementById('btn-cancelar-empleado').classList.remove('oculto');
-  document.getElementById('emp-nombre').focus();
-}
+    document.getElementById('btn-guardar-empleado')?.addEventListener('click', async () => {
+      const id = document.getElementById('emp-id').value;
+      const nombre = getTrimmedValue('emp-nombre');
+      const correo = getTrimmedValue('emp-correo');
+      const telefono = getTrimmedValue('emp-telefono');
+      const password = document.getElementById('emp-password').value;
 
-function cancelarEdicionEmpleado() {
-  document.getElementById('emp-id').value = '';
-  document.getElementById('emp-nombre').value = '';
-  document.getElementById('emp-correo').value = '';
-  document.getElementById('emp-telefono').value = '';
-  document.getElementById('emp-password').value = '';
-  document.getElementById('emp-rol').value = '';
-  
-  document.getElementById('btn-guardar-empleado').textContent = 'Guardar Empleado';
-  document.getElementById('btn-cancelar-empleado').classList.add('oculto');
-}
-document.getElementById('btn-cancelar-empleado')?.addEventListener('click', cancelarEdicionEmpleado);
+      // Validar cada campo y mostrar error claro si algo falla
+      if (!validateTextField('emp-nombre', 'Los nombres completos', 3)) {
+        showToast('Los nombres completos deben tener al menos 3 caracteres', true);
+        return;
+      }
+      if (!validateEmailField('emp-correo', 'El correo')) {
+        showToast('El correo electrónico no tiene un formato válido', true);
+        return;
+      }
+      if (!validatePhoneField('emp-telefono', 'El teléfono', !id)) {
+        showToast('El teléfono debe tener exactamente 9 dígitos válidos', true);
+        return;
+      }
+      if (!validatePasswordField('emp-password', 'La contraseña', 6, false)) {
+        showToast('La contraseña debe tener al menos 6 caracteres', true);
+        return;
+      }
 
-async function eliminarEmpleado(id, nombre) {
-  if(!confirm(`¿Eliminar permanentemente al empleado "${nombre}"?`)) return;
-  try {
-    await fetchAuth(`/usuarios/${id}`, 'DELETE');
-    showToast('Empleado eliminado');
-    cargarEmpleados();
-  } catch (e) { showToast(e.message, true); }
-}
+      if (!id && !password) return showToast('Se requiere contraseña para empleado nuevo', true);
 
-</script>
+      const payload = {
+        nombre, correo, telefono
+      };
+
+      if (password) payload.password = password;
+
+      const sesion = getSessionData();
+      if (sesion?.empresa_id) payload.empresa = { id: parseInt(sesion.empresa_id) };
+
+      try {
+        const rolSeleccionado = document.getElementById('emp-rol').value;
+        if (id) {
+          payload.id = parseInt(id);
+          if (rolSeleccionado) {
+            payload.rol = { id: parseInt(rolSeleccionado) };
+          }
+          await fetchAuth('/usuarios', 'PUT', payload);
+          showToast('Empleado actualizado exitosamente');
+        } else {
+          let rolId = rolSeleccionado;
+          if (!rolId) {
+            rolId = await obtenerRolEmpleadoPorDefecto();
+          }
+
+          // Paso 1: Crear el usuario. El backend (/usuarios/registro) lo crea y guarda la empresa, 
+          // pero le asigna forzosamente el rol CLIENTE.
+          const userCreado = await fetchAuth('/usuarios/registro', 'POST', payload);
+
+          // Paso 2: Actualizar el rol del usuario creado al rol correcto de empleado
+          await fetchAuth('/usuarios', 'PUT', {
+            id: userCreado.id,
+            rol: { id: parseInt(rolId) }
+          });
+
+          showToast('Empleado creado exitosamente');
+        }
+        cancelarEdicionEmpleado();
+        cargarEmpleados();
+      } catch (e) { showToast(e.message, true); }
+    });
+
+    function editarEmpleado(id, nombre, correo, telefono, rolId) {
+      document.getElementById('emp-id').value = id;
+      document.getElementById('emp-nombre').value = nombre;
+      document.getElementById('emp-correo').value = correo;
+      document.getElementById('emp-telefono').value = telefono;
+      document.getElementById('emp-password').value = '';
+      if (rolId) document.getElementById('emp-rol').value = rolId;
+      else document.getElementById('emp-rol').value = '';
+
+      document.getElementById('btn-guardar-empleado').textContent = 'Actualizar Empleado';
+      document.getElementById('btn-cancelar-empleado').classList.remove('oculto');
+      document.getElementById('emp-nombre').focus();
+    }
+
+    function cancelarEdicionEmpleado() {
+      document.getElementById('emp-id').value = '';
+      document.getElementById('emp-nombre').value = '';
+      document.getElementById('emp-correo').value = '';
+      document.getElementById('emp-telefono').value = '';
+      document.getElementById('emp-password').value = '';
+      document.getElementById('emp-rol').value = '';
+
+      document.getElementById('btn-guardar-empleado').textContent = 'Guardar Empleado';
+      document.getElementById('btn-cancelar-empleado').classList.add('oculto');
+    }
+    document.getElementById('btn-cancelar-empleado')?.addEventListener('click', cancelarEdicionEmpleado);
+
+    async function eliminarEmpleado(id, nombre) {
+      if (!confirm(`¿Eliminar permanentemente al empleado "${nombre}"?`)) return;
+      try {
+        await fetchAuth(`/usuarios/${id}`, 'DELETE');
+        showToast('Empleado eliminado');
+        cargarEmpleados();
+      } catch (e) { showToast(e.message, true); }
+    }
+
+  </script>
 </body>
+
 </html>
