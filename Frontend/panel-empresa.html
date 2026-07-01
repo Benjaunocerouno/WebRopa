@@ -291,6 +291,7 @@
           <div class="campo"><label class="etiqueta-campo">Nombres Completos</label><input type="text" id="emp-nombre" placeholder="Ej. Juan Pérez" required minlength="3" maxlength="120"></div>
           <div class="campo"><label class="etiqueta-campo">Correo</label><input type="email" id="emp-correo" placeholder="juan@boutique.com" required maxlength="120"></div>
           <div class="campo"><label class="etiqueta-campo">Teléfono</label><input type="text" id="emp-telefono" placeholder="Ej. 987654321" inputmode="numeric" pattern="\\d{9}" maxlength="9" title="Debe contener exactamente 9 dígitos"></div>
+          <div class="campo"><label class="etiqueta-campo">Rol Asignado</label><select id="emp-rol" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--borde-trazo); background: var(--crema); font-family: 'Outfit', sans-serif;"><option value="">-- Automático --</option></select></div>
           <div class="campo"><label class="etiqueta-campo">Contraseña</label><input type="password" id="emp-password" placeholder="Solo para nuevos o cambiar" minlength="6" maxlength="80"></div>
         </div>
         <div style="display:flex; gap:10px;">
@@ -866,6 +867,7 @@ document.getElementById('btn-ingresar').addEventListener('click', async () => {
     // Cargar dashboard defaults
     cargarCategoriasParaSelect();
     cargarPermisosUsuarios();
+    cargarRolesParaFormulario();
   } catch (e) {
     errEl.textContent = e.message;
     errEl.classList.add('visible');
@@ -906,6 +908,7 @@ document.getElementById('btn-cerrar-sesion').addEventListener('click', async () 
       await aplicarUsuario(s);
       cargarCategoriasParaSelect();
       cargarPermisosUsuarios();
+      cargarRolesParaFormulario();
     }
   }
 })();
@@ -1500,6 +1503,18 @@ async function obtenerRolEmpleadoPorDefecto() {
   return rolEmpleadoPorDefectoId;
 }
 
+async function cargarRolesParaFormulario() {
+  const sel = document.getElementById('emp-rol');
+  if(!sel) return;
+  try {
+    const roles = await fetchAuth('/roles');
+    const rolesFiltrados = roles.filter(r => r.nombre.toUpperCase() !== 'ADMIN');
+    sel.innerHTML = '<option value="">-- Automático --</option>' + rolesFiltrados.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
+  } catch (e) {
+    sel.innerHTML = '<option value="">Error al cargar roles</option>';
+  }
+}
+
 async function cargarEmpleados() {
   const tbody = document.getElementById('tabla-empleados');
   if(!tbody) return;
@@ -1519,7 +1534,7 @@ async function cargarEmpleados() {
           <td><strong>${emp.nombre}</strong><br><span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${emp.correo}</span></td>
           <td><span class="pildora rol-catalogo">${rolName}</span></td>
           <td>
-            <button class="btn btn-secundario btn-mini" onclick="editarEmpleado(${emp.id}, '${emp.nombre}', '${emp.correo}', '${emp.telefono || ''}')">Editar</button>
+            <button class="btn btn-secundario btn-mini" onclick="editarEmpleado(${emp.id}, '${emp.nombre}', '${emp.correo}', '${emp.telefono || ''}', '${emp.rol ? emp.rol.id : ''}')">Editar</button>
             <button class="btn btn-peligro btn-mini" onclick="eliminarEmpleado(${emp.id}, '${emp.nombre}')">Eliminar</button>
           </td>
         </tr>
@@ -1567,14 +1582,30 @@ document.getElementById('btn-guardar-empleado')?.addEventListener('click', async
   if (sesion?.empresa_id) payload.empresa = { id: parseInt(sesion.empresa_id) };
   
   try {
+    const rolSeleccionado = document.getElementById('emp-rol').value;
     if (id) {
       payload.id = parseInt(id);
+      if (rolSeleccionado) {
+        payload.rol = { id: parseInt(rolSeleccionado) };
+      }
       await fetchAuth('/usuarios', 'PUT', payload);
       showToast('Empleado actualizado exitosamente');
     } else {
-      const rolId = await obtenerRolEmpleadoPorDefecto();
-      payload.rol = { id: parseInt(rolId) };
-      await fetchAuth('/usuarios/admin', 'POST', payload);
+      let rolId = rolSeleccionado;
+      if (!rolId) {
+        rolId = await obtenerRolEmpleadoPorDefecto();
+      }
+      
+      // Paso 1: Crear el usuario. El backend (/usuarios/registro) lo crea y guarda la empresa, 
+      // pero le asigna forzosamente el rol CLIENTE.
+      const userCreado = await fetchAuth('/usuarios/registro', 'POST', payload);
+      
+      // Paso 2: Actualizar el rol del usuario creado al rol correcto de empleado
+      await fetchAuth('/usuarios', 'PUT', { 
+        id: userCreado.id, 
+        rol: { id: parseInt(rolId) }
+      });
+      
       showToast('Empleado creado exitosamente');
     }
     cancelarEdicionEmpleado();
@@ -1582,12 +1613,14 @@ document.getElementById('btn-guardar-empleado')?.addEventListener('click', async
   } catch(e) { showToast(e.message, true); }
 });
 
-function editarEmpleado(id, nombre, correo, telefono) {
+function editarEmpleado(id, nombre, correo, telefono, rolId) {
   document.getElementById('emp-id').value = id;
   document.getElementById('emp-nombre').value = nombre;
   document.getElementById('emp-correo').value = correo;
   document.getElementById('emp-telefono').value = telefono;
   document.getElementById('emp-password').value = '';
+  if (rolId) document.getElementById('emp-rol').value = rolId;
+  else document.getElementById('emp-rol').value = '';
   
   document.getElementById('btn-guardar-empleado').textContent = 'Actualizar Empleado';
   document.getElementById('btn-cancelar-empleado').classList.remove('oculto');
@@ -1600,6 +1633,7 @@ function cancelarEdicionEmpleado() {
   document.getElementById('emp-correo').value = '';
   document.getElementById('emp-telefono').value = '';
   document.getElementById('emp-password').value = '';
+  document.getElementById('emp-rol').value = '';
   
   document.getElementById('btn-guardar-empleado').textContent = 'Guardar Empleado';
   document.getElementById('btn-cancelar-empleado').classList.add('oculto');
