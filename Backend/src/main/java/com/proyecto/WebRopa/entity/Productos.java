@@ -22,7 +22,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "productos")
 @SQLDelete(sql = "UPDATE productos SET estado = 'INACTIVO' WHERE id = ?")
-@SQLRestriction("estado != 'INACTIVO'")
 public class Productos {
 
     @Id
@@ -61,6 +60,10 @@ public class Productos {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "empresa_id")
     private Empresas empresa;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "proveedor_id")
+    private Proveedores proveedor;
 
     // ── Getters y Setters ────────────────────────────
 
@@ -142,5 +145,13 @@ public class Productos {
 
     public void setEmpresa(Empresas empresa) {
         this.empresa = empresa;
+    }
+
+    public Proveedores getProveedor() {
+        return proveedor;
+    }
+
+    public void setProveedor(Proveedores proveedor) {
+        this.proveedor = proveedor;
     }
 }

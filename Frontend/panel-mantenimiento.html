@@ -199,6 +199,11 @@
                 id="prod-precio" placeholder="0.00"></div>
             <div class="campo"><label class="etiqueta-campo">URL Imagen Principal</label><input type="text"
                 id="prod-img" placeholder="https://ejemplo.com/imagen.jpg"></div>
+            <div class="campo"><label class="etiqueta-campo">Proveedor</label>
+              <select id="prod-prov">
+                <option value="">-- Selecciona Proveedor --</option>
+              </select>
+            </div>
           </div>
           <div class="campo" style="margin-bottom: 15px;"><label class="etiqueta-campo">Descripción detallada</label>
             <input type="text" id="prod-desc" placeholder="Añade una descripción llamativa del producto...">
@@ -222,7 +227,11 @@
         <div class="tarjeta">
           <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
             <h3>Productos registrados</h3>
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <label style="font-size:0.8rem; display:flex; align-items:center; gap:6px; color:var(--cafe-oscuro); cursor:pointer; user-select:none;">
+                <input type="checkbox" id="chk-ver-inactivos" onchange="cargarProductos()" style="cursor:pointer; width:14px; height:14px;">
+                Mostrar deshabilitados
+              </label>
               <input type="text" class="buscador-generico" data-target="tabla-productos" placeholder="Buscar producto..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
               <button class="btn btn-secundario btn-mini" onclick="cargarProductos()">↻ Refrescar</button>
             </div>
