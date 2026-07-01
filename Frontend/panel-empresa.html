@@ -153,11 +153,11 @@
     <div class="login-form">
       <div class="campo">
         <label class="etiqueta-campo">Correo electrónico</label>
-        <input type="email" id="login-correo" placeholder="trabajador@boutique.com" autocomplete="email">
+        <input type="email" id="login-correo" placeholder="trabajador@boutique.com" autocomplete="email" required maxlength="120">
       </div>
       <div class="campo">
         <label class="etiqueta-campo">Contraseña</label>
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required minlength="6" maxlength="80">
       </div>
       <button class="btn-login" id="btn-ingresar">Ingresar</button>
     </div>
@@ -252,10 +252,10 @@
         </div>
         <div class="grid-doble" style="margin-bottom: 15px;">
           <input type="hidden" id="emp-id">
-          <div class="campo"><label class="etiqueta-campo">Nombres Completos</label><input type="text" id="emp-nombre" placeholder="Ej. Juan Pérez"></div>
-          <div class="campo"><label class="etiqueta-campo">Correo</label><input type="email" id="emp-correo" placeholder="juan@boutique.com"></div>
-          <div class="campo"><label class="etiqueta-campo">Teléfono</label><input type="text" id="emp-telefono" placeholder="Ej. 987654321"></div>
-          <div class="campo"><label class="etiqueta-campo">Contraseña</label><input type="password" id="emp-password" placeholder="Solo para nuevos o cambiar"></div>
+          <div class="campo"><label class="etiqueta-campo">Nombres Completos</label><input type="text" id="emp-nombre" placeholder="Ej. Juan Pérez" required minlength="3" maxlength="120"></div>
+          <div class="campo"><label class="etiqueta-campo">Correo</label><input type="email" id="emp-correo" placeholder="juan@boutique.com" required maxlength="120"></div>
+          <div class="campo"><label class="etiqueta-campo">Teléfono</label><input type="text" id="emp-telefono" placeholder="Ej. 987654321" inputmode="numeric" pattern="\\d{9}" maxlength="9" title="Debe contener exactamente 9 dígitos"></div>
+          <div class="campo"><label class="etiqueta-campo">Contraseña</label><input type="password" id="emp-password" placeholder="Solo para nuevos o cambiar" minlength="6" maxlength="80"></div>
         </div>
         <div style="display:flex; gap:10px;">
           <button class="btn btn-primario" id="btn-guardar-empleado">Guardar Empleado</button>
@@ -293,15 +293,9 @@
         </div>
       </div>
       <div class="tarjeta">
-        <div class="permiso-panel-nota">
-          <strong>Editor visual de permisos</strong>
-          Usa esta vista para definir qué módulos y acciones tiene disponibles cada rol. El usuario final solo verá lo que su rol permita.
-        </div>
-
         <div class="permisos-resumen">
           <div class="permiso-resumen">
             <div class="titulo">Administrador</div>
-            <p class="descripcion">Acceso completo al panel, incluyendo usuarios, catálogo, pedidos y configuración.</p>
             <ul class="permiso-lista">
               <li><span>Gestionar usuarios</span><span class="permiso-estado">Total</span></li>
               <li><span>Editar catálogo</span><span class="permiso-estado">Total</span></li>
@@ -310,7 +304,6 @@
           </div>
           <div class="permiso-resumen">
             <div class="titulo">Mantenimiento</div>
-            <p class="descripcion">Acceso a inventario, productos y movimientos internos, sin administración de usuarios.</p>
             <ul class="permiso-lista">
               <li><span>Inventario y stock</span><span class="permiso-estado">Activo</span></li>
               <li><span>Productos</span><span class="permiso-estado">Activo</span></li>
@@ -319,7 +312,6 @@
           </div>
           <div class="permiso-resumen">
             <div class="titulo">Despacho</div>
-            <p class="descripcion">Acceso centrado en pedidos, estados, seguimiento y atención operativa.</p>
             <ul class="permiso-lista">
               <li><span>Ver pedidos</span><span class="permiso-estado">Activo</span></li>
               <li><span>Cambiar estados</span><span class="permiso-estado">Activo</span></li>
@@ -332,7 +324,10 @@
           <div>
             <div class="tarjeta-titulo" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
               <h3 style="margin:0;">Permisos por usuario</h3>
-              <input type="text" class="buscador-generico" data-target="tabla-permisos-empresa" placeholder="Buscar rol o empleado..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="text" class="buscador-generico" data-target="tabla-permisos-empresa" placeholder="Buscar rol o empleado..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif; min-width: 240px;">
+                <button class="btn btn-secundario btn-mini" type="button" id="btn-refrescar-permisos">↻ Refrescar</button>
+              </div>
             </div>
             <table class="permiso-matriz">
               <thead>
@@ -343,20 +338,8 @@
                 </tr>
               </thead>
               <tbody id="tabla-permisos-empresa">
-                <tr>
-                  <td><strong>Carlos Admin</strong></td>
-                  <td><span class="pildora rol-admin">Admin</span></td>
-                  <td><label class="permiso-toggle"><input type="checkbox" checked disabled><span>Completo</span></label></td>
-                </tr>
-                <tr>
-                  <td><strong>Ana Inventario</strong></td>
-                  <td><span class="pildora rol-almacenero">Mantenimiento</span></td>
-                  <td><label class="permiso-toggle"><input type="checkbox" checked><span>Operativo</span></label></td>
-                </tr>
-                <tr>
-                  <td><strong>Luis Repartidor</strong></td>
-                  <td><span class="pildora rol-vendedor">Despacho</span></td>
-                  <td><label class="permiso-toggle"><input type="checkbox" checked><span>Pedidos</span></label></td>
+                <tr class="no-filtrable">
+                  <td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">Cargando usuarios...</td>
                 </tr>
               </tbody>
             </table>
@@ -395,10 +378,10 @@
           <h3>Detalles Comerciales (Prototipo)</h3>
         </div>
         <div class="grid-doble" style="margin-bottom: 15px;">
-          <div class="campo"><label class="etiqueta-campo">Nombre Comercial</label><input type="text" value="Mi Boutique"></div>
-          <div class="campo"><label class="etiqueta-campo">RUC</label><input type="text" value="20123456789"></div>
-          <div class="campo"><label class="etiqueta-campo">Dirección Principal</label><input type="text" value="Av. Principal 123"></div>
-          <div class="campo"><label class="etiqueta-campo">Teléfono de Contacto</label><input type="text" value="987654321"></div>
+          <div class="campo"><label class="etiqueta-campo">Nombre Comercial</label><input type="text" value="Mi Boutique" minlength="3" maxlength="120"></div>
+          <div class="campo"><label class="etiqueta-campo">RUC</label><input type="text" value="20123456789" inputmode="numeric" pattern="\\d{11}" maxlength="11" title="Debe contener exactamente 11 dígitos"></div>
+          <div class="campo"><label class="etiqueta-campo">Dirección Principal</label><input type="text" value="Av. Principal 123" minlength="5" maxlength="180"></div>
+          <div class="campo"><label class="etiqueta-campo">Teléfono de Contacto</label><input type="text" value="987654321" inputmode="numeric" pattern="\\d{9}" maxlength="9" title="Debe contener exactamente 9 dígitos"></div>
         </div>
         <button class="btn btn-primario">Actualizar Datos</button>
       </div>
@@ -417,12 +400,12 @@
     <input type="hidden" id="modal-var-prod-id">
     
     <div class="grid-doble" style="margin-bottom:10px;">
-      <div class="campo"><label class="etiqueta-campo">Color</label><input type="text" id="modal-var-color" placeholder="Negro"></div>
-      <div class="campo"><label class="etiqueta-campo">Talla</label><input type="text" id="modal-var-talla" placeholder="M"></div>
-      <div class="campo"><label class="etiqueta-campo">Stock</label><input type="number" id="modal-var-stock" value="10"></div>
-      <div class="campo"><label class="etiqueta-campo">Stock Crítico</label><input type="number" id="modal-var-critico" value="2"></div>
+      <div class="campo"><label class="etiqueta-campo">Color</label><input type="text" id="modal-var-color" placeholder="Negro" required minlength="2" maxlength="40"></div>
+      <div class="campo"><label class="etiqueta-campo">Talla</label><input type="text" id="modal-var-talla" placeholder="M" required minlength="1" maxlength="10"></div>
+      <div class="campo"><label class="etiqueta-campo">Stock</label><input type="number" id="modal-var-stock" value="10" min="0" step="1" required></div>
+      <div class="campo"><label class="etiqueta-campo">Stock Crítico</label><input type="number" id="modal-var-critico" value="2" min="0" step="1" required></div>
       <div class="campo"><label class="etiqueta-campo">Hex (Color)</label><input type="color" id="modal-var-hex" value="#5c4a3d" style="width: 100%; height: 38px; padding: 2px; cursor: pointer; border-radius: 12px; border: 1.5px solid var(--borde-trazo); background: var(--crema);"></div>
-      <div class="campo"><label class="etiqueta-campo">URL Imagen</label><input type="text" id="modal-var-img" placeholder="https://..."></div>
+      <div class="campo"><label class="etiqueta-campo">URL Imagen</label><input type="url" id="modal-var-img" placeholder="https://..." maxlength="300"></div>
       <div class="campo"><label class="etiqueta-campo">SKU Autogenerado</label><input type="text" id="modal-var-sku" disabled style="background:#eee;"></div>
     </div>
     
@@ -510,11 +493,94 @@ function showToast(msg, error = false) {
   toastTimeout = setTimeout(() => t.classList.remove('visible'), 3000);
 }
 
+function setFieldValidity(field, message = '') {
+  if (!field) return false;
+  field.setCustomValidity(message);
+  if (message) field.reportValidity();
+  return !message;
+}
+
+function clearValidationOnInput(id) {
+  const field = document.getElementById(id);
+  if (!field) return;
+  field.addEventListener('input', () => field.setCustomValidity(''));
+}
+
+function getTrimmedValue(id) {
+  const field = document.getElementById(id);
+  return field ? field.value.trim() : '';
+}
+
+function validateTextField(id, label, minLength = 1) {
+  const field = document.getElementById(id);
+  const value = field ? field.value.trim() : '';
+  if (!value) return setFieldValidity(field, `${label} es obligatorio`);
+  if (value.length < minLength) return setFieldValidity(field, `${label} debe tener al menos ${minLength} caracteres`);
+  return setFieldValidity(field, '');
+}
+
+function validateEmailField(id, label) {
+  const field = document.getElementById(id);
+  const value = field ? field.value.trim() : '';
+  if (!value) return setFieldValidity(field, `${label} es obligatorio`);
+  if (!/^\S+@\S+\.\S+$/.test(value)) return setFieldValidity(field, `${label} no tiene un formato válido`);
+  return setFieldValidity(field, '');
+}
+
+function validatePhoneField(id, label, required = true) {
+  const field = document.getElementById(id);
+  const value = field ? field.value.trim() : '';
+  if (!value) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
+  if (!/^\d{9}$/.test(value) || /^(\d)\1{8}$/.test(value)) return setFieldValidity(field, `${label} debe tener 9 dígitos válidos`);
+  return setFieldValidity(field, '');
+}
+
+function validatePasswordField(id, label, minLength = 6, required = false) {
+  const field = document.getElementById(id);
+  const value = field ? field.value : '';
+  if (!value) return required ? setFieldValidity(field, `${label} es obligatoria`) : setFieldValidity(field, '');
+  if (value.length < minLength) return setFieldValidity(field, `${label} debe tener al menos ${minLength} caracteres`);
+  return setFieldValidity(field, '');
+}
+
+function validateNumberField(id, label, { min = 0, max = null, integer = true, required = true } = {}) {
+  const field = document.getElementById(id);
+  const raw = field ? field.value : '';
+  if (raw === '' || raw === null) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return setFieldValidity(field, `${label} debe ser numérico`);
+  if (integer && !Number.isInteger(value)) return setFieldValidity(field, `${label} debe ser un número entero`);
+  if (value < min) return setFieldValidity(field, `${label} no puede ser menor que ${min}`);
+  if (max !== null && value > max) return setFieldValidity(field, `${label} no puede ser mayor que ${max}`);
+  return setFieldValidity(field, '');
+}
+
+function validateUrlField(id, label, required = false) {
+  const field = document.getElementById(id);
+  const value = field ? field.value.trim() : '';
+  if (!value) return required ? setFieldValidity(field, `${label} es obligatorio`) : setFieldValidity(field, '');
+  try {
+    new URL(value);
+    return setFieldValidity(field, '');
+  } catch {
+    return setFieldValidity(field, `${label} no tiene una URL válida`);
+  }
+}
+
 function getToken() {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY)).token; } catch { return null; }
 }
 function getSessionData() {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function genSKU() {
@@ -548,6 +614,56 @@ async function fetchAuth(endpoint, method='GET', body=null) {
   return await res.text();
 }
 
+['login-correo', 'login-password', 'emp-nombre', 'emp-correo', 'emp-telefono', 'emp-password', 'modal-var-color', 'modal-var-talla', 'modal-var-stock', 'modal-var-critico', 'modal-var-img'].forEach(clearValidationOnInput);
+
+function obtenerEtiquetaRol(rolNombre) {
+  const normalizado = (rolNombre || '').trim().toUpperCase();
+  if (normalizado === 'ADMIN') return { clase: 'rol-admin', texto: 'Admin', acceso: 'Completo' };
+  if (normalizado === 'DESPACHO') return { clase: 'rol-vendedor', texto: 'Despacho', acceso: 'Pedidos' };
+  if (normalizado === 'MANTENIMIENTO' || normalizado === 'ALMACEN' || normalizado === 'ALMACENERO') return { clase: 'rol-almacenero', texto: 'Mantenimiento', acceso: 'Operativo' };
+  if (normalizado === 'VENDEDOR') return { clase: 'rol-catalogo', texto: 'Vendedor', acceso: 'Catálogo' };
+  return { clase: 'rol-catalogo', texto: rolNombre || 'Sin rol', acceso: 'Limitado' };
+}
+
+async function cargarPermisosUsuarios() {
+  const tbody = document.getElementById('tabla-permisos-empresa');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">Cargando usuarios...</td></tr>';
+
+  try {
+    const usuarios = await fetchAuth('/usuarios');
+    if (!Array.isArray(usuarios) || usuarios.length === 0) {
+      tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">No hay usuarios registrados.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = usuarios.map(usuario => {
+      const rolInfo = obtenerEtiquetaRol(usuario.rol?.nombre);
+      const estado = usuario.estado || 'ACTIVO';
+      const accesoActivo = rolInfo.acceso;
+
+      return `
+        <tr>
+          <td>
+            <strong>${escapeHtml(usuario.nombre || 'Sin nombre')}</strong><br>
+            <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${escapeHtml(usuario.correo || '')}</span>
+          </td>
+          <td><span class="pildora ${rolInfo.clase}">${escapeHtml(rolInfo.texto)}</span></td>
+          <td>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <label class="permiso-toggle"><input type="checkbox" ${estado === 'ACTIVO' ? 'checked' : ''}><span>${escapeHtml(accesoActivo)}</span></label>
+              <span style="font-size:0.72rem; color:var(--cafe); opacity:0.75;">Estado: ${escapeHtml(estado)}</span>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--alerta);">Error cargando usuarios: ${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
 /* ==========================================================
    NAVEGACIÓN Y AUTH
    ========================================================== */
@@ -564,6 +680,7 @@ document.getElementById('menu-navegacion').addEventListener('click', (e) => {
   if(btn.dataset.panel === 'pedidos') cargarPedidos();
   if(btn.dataset.panel === 'cupones') cargarCupones();
   if(btn.dataset.panel === 'empleados') cargarEmpleados();
+  if(btn.dataset.panel === 'roles') cargarPermisosUsuarios();
 });
 
 async function aplicarUsuario(datos) {
@@ -593,7 +710,10 @@ async function aplicarUsuario(datos) {
 }
 
 document.getElementById('btn-ingresar').addEventListener('click', async () => {
-  const correo = document.getElementById('login-correo').value;
+  if (!validateEmailField('login-correo', 'El correo')) return;
+  if (!validatePasswordField('login-password', 'La contraseña', 6, true)) return;
+
+  const correo = getTrimmedValue('login-correo');
   const password = document.getElementById('login-password').value;
   const errEl = document.getElementById('login-error');
   
@@ -615,6 +735,7 @@ document.getElementById('btn-ingresar').addEventListener('click', async () => {
     showToast(`Bienvenido ${data.nombre}`);
     // Cargar dashboard defaults
     cargarCategoriasParaSelect();
+    cargarPermisosUsuarios();
   } catch (e) {
     errEl.textContent = e.message;
     errEl.classList.add('visible');
@@ -654,6 +775,7 @@ document.getElementById('btn-cerrar-sesion').addEventListener('click', async () 
       document.getElementById('login-overlay').classList.add('oculto');
       await aplicarUsuario(s);
       cargarCategoriasParaSelect();
+      cargarPermisosUsuarios();
     }
   }
 })();
@@ -940,6 +1062,12 @@ document.getElementById('btn-save-single-variant').addEventListener('click', asy
   const sesion = getSessionData();
   const miEmpresaId = sesion?.empresa_id;
 
+  if (!validateTextField('modal-var-color', 'El color', 2)) return;
+  if (!validateTextField('modal-var-talla', 'La talla', 1)) return;
+  if (!validateNumberField('modal-var-stock', 'El stock', { min: 0, integer: true })) return;
+  if (!validateNumberField('modal-var-critico', 'El stock crítico', { min: 0, integer: true })) return;
+  if (!validateUrlField('modal-var-img', 'La URL de imagen', false)) return;
+
   const payload = {
     sku: document.getElementById('modal-var-sku').value,
     color: document.getElementById('modal-var-color').value || 'Default',
@@ -1210,6 +1338,8 @@ async function eliminarCupon(id, codigo) {
   }
 }
 
+document.getElementById('btn-refrescar-permisos')?.addEventListener('click', cargarPermisosUsuarios);
+
 /* ==========================================================
    EMPLEADOS (Usuarios)
    ========================================================== */
@@ -1272,12 +1402,17 @@ async function cargarEmpleados() {
 
 document.getElementById('btn-guardar-empleado')?.addEventListener('click', async () => {
   const id = document.getElementById('emp-id').value;
-  const nombre = document.getElementById('emp-nombre').value.trim();
-  const correo = document.getElementById('emp-correo').value.trim();
-  const telefono = document.getElementById('emp-telefono').value.trim();
+  const nombre = getTrimmedValue('emp-nombre');
+  const correo = getTrimmedValue('emp-correo');
+  const telefono = getTrimmedValue('emp-telefono');
   const password = document.getElementById('emp-password').value;
-  
-  if(!nombre || !correo) return showToast('Nombre y correo son obligatorios', true);
+
+  if (!validateTextField('emp-nombre', 'Los nombres completos', 3)) return;
+  if (!validateEmailField('emp-correo', 'El correo')) return;
+  if (!validatePhoneField('emp-telefono', 'El teléfono', !id)) return;
+  if (!validatePasswordField('emp-password', 'La contraseña', 6, false)) return;
+
+  if (!id && !password) return showToast('Se requiere contraseña para empleado nuevo', true);
   
   const payload = { 
     nombre, correo, telefono
@@ -1294,7 +1429,6 @@ document.getElementById('btn-guardar-empleado')?.addEventListener('click', async
       await fetchAuth('/usuarios', 'PUT', payload);
       showToast('Empleado actualizado exitosamente');
     } else {
-      if(!password) return showToast('Se requiere contraseña para empleado nuevo', true);
       const rolId = await obtenerRolEmpleadoPorDefecto();
       payload.rol = { id: parseInt(rolId) };
       await fetchAuth('/usuarios/admin', 'POST', payload);
