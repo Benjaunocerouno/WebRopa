@@ -941,7 +941,7 @@ async function cargarCategoriasParaSelect() {
   }
 }
 
-document.getElementById('btn-guardar-cat').addEventListener('click', async () => {
+document.getElementById('btn-guardar-cat')?.addEventListener('click', async () => {
   const nombre = document.getElementById('cat-nombre').value.trim();
   if(!nombre) return showToast('El nombre no puede estar vacío', true);
   
@@ -974,14 +974,14 @@ async function eliminarCategoria(id, nombre) {
 /* ==========================================================
    PRODUCTOS
    ========================================================== */
-document.getElementById('btn-toggle-nuevo-prod').addEventListener('click', () => {
+document.getElementById('btn-toggle-nuevo-prod')?.addEventListener('click', () => {
   const form = document.getElementById('form-producto-card');
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
   if (form.style.display === 'block' && document.getElementById('contenedor-variantes-temp').children.length === 0) {
     addVarianteRow(); // Añadir una fila por defecto
   }
 });
-document.getElementById('btn-cancelar-prod').addEventListener('click', () => {
+document.getElementById('btn-cancelar-prod')?.addEventListener('click', () => {
   document.getElementById('form-producto-card').style.display = 'none';
 });
 
@@ -1014,10 +1014,10 @@ function addVarianteRow() {
 
   varianteRowIndex++;
 }
-document.getElementById('btn-add-variante-row').addEventListener('click', addVarianteRow);
+document.getElementById('btn-add-variante-row')?.addEventListener('click', addVarianteRow);
 
 // Guardar Producto + Variantes
-document.getElementById('btn-guardar-prod').addEventListener('click', async () => {
+document.getElementById('btn-guardar-prod')?.addEventListener('click', async () => {
   const nombre = document.getElementById('prod-nombre').value.trim();
   const catId = document.getElementById('prod-cat').value;
   const precio = document.getElementById('prod-precio').value;
@@ -1182,12 +1182,12 @@ function openAddVariantModal(prodId, prodNombre) {
 }
 
 // Auto-sync: color nombre → hex en el modal
-document.getElementById('modal-var-color').addEventListener('input', () => {
+document.getElementById('modal-var-color')?.addEventListener('input', () => {
   const key = document.getElementById('modal-var-color').value.trim().toLowerCase();
   if (COLOR_MAP[key]) document.getElementById('modal-var-hex').value = COLOR_MAP[key];
 });
 
-document.getElementById('btn-save-single-variant').addEventListener('click', async () => {
+document.getElementById('btn-save-single-variant')?.addEventListener('click', async () => {
   const prodId = document.getElementById('modal-var-prod-id').value;
   const sesion = getSessionData();
   const miEmpresaId = sesion?.empresa_id;
