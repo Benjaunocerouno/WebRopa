@@ -866,7 +866,7 @@ async function cargarPedidos() {
       const cliCorreo = p.usuario ? p.usuario.correo : '';
       const pago = p.pago_confirmado 
         ? `<span class="pildora estado-ok">Confirmado</span>`
-        : `<span class="pildora estado-fallo">Pendiente</span>`;
+        : `<span class="pildora estado-fallo">Pendiente</span> <button class="btn btn-secundario btn-mini" onclick="event.stopPropagation(); confirmarPagoManual(${p.id}, ${p.total})" style="margin-top: 4px; display: block;">✓ Confirmar</button>`;
       
       const etiquetasEstado = {
         'PENDIENTE':          'Pendiente',
@@ -911,6 +911,38 @@ async function cargarPedidos() {
     }).join('');
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="7" style="color:var(--alerta); text-align:center;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function confirmarPagoManual(pedidoId, total) {
+  if (!confirm("¿Confirmar el pago de este pedido? Esto generará la boleta y habilitará la gestión de su estado.")) return;
+  try {
+    let pagos = [];
+    try {
+      pagos = await fetchAuth(`/pagos/pedido/${pedidoId}`);
+    } catch (e) {
+      // Ignorar error si no hay pagos registrados
+    }
+    
+    let pagoPendiente = (pagos && Array.isArray(pagos)) ? pagos.find(p => p.estado === 'PENDIENTE') : null;
+    if (pagoPendiente) {
+      // Aprobar el pago existente
+      await fetchAuth('/pagos', 'PUT', { id: pagoPendiente.id, estado: 'APROBADO' });
+    } else {
+      // Crear un pago nuevo (inicialmente guardado como PENDIENTE por ser YAPE/TRANSFERENCIA)
+      const nuevoPago = await fetchAuth('/pagos', 'POST', {
+        pedido: { id: pedidoId },
+        metodo: 'TRANSFERENCIA',
+        monto: total
+      });
+      // Y luego aprobarlo
+      await fetchAuth('/pagos', 'PUT', { id: nuevoPago.id, estado: 'APROBADO' });
+    }
+    
+    showToast("Pago confirmado exitosamente.");
+    cargarPedidos(); // Recargar la lista
+  } catch (err) {
+    showToast("Error al confirmar el pago: " + err.message, true);
   }
 }
 

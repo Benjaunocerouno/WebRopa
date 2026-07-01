@@ -93,7 +93,8 @@ public class ReportesService implements IReportesService {
 
     private double getIngresos(LocalDateTime start, LocalDateTime end, Long tenantId) {
         String jpql = "SELECT COALESCE(SUM(b.total), 0.0) FROM Boletas b JOIN b.pedido p " +
-                      "WHERE b.fecha_emision >= :start AND b.fecha_emision <= :end";
+                      "WHERE b.fecha_emision >= :start AND b.fecha_emision <= :end " +
+                      "AND p.estado IN (com.proyecto.WebRopa.entity.Pedidos.Estado.RECOGIDO, com.proyecto.WebRopa.entity.Pedidos.Estado.ENTREGADO)";
         if (tenantId != null) {
             jpql += " AND p.empresa.id = :tenantId";
         }
@@ -108,7 +109,8 @@ public class ReportesService implements IReportesService {
 
     private long getPedidosCompletadosCount(LocalDateTime start, LocalDateTime end, Long tenantId) {
         String jpql = "SELECT COUNT(p) FROM Pedidos p " +
-                      "WHERE p.pago_confirmado = true AND p.fecha_creacion >= :start AND p.fecha_creacion <= :end";
+                      "WHERE p.estado IN (com.proyecto.WebRopa.entity.Pedidos.Estado.RECOGIDO, com.proyecto.WebRopa.entity.Pedidos.Estado.ENTREGADO) " +
+                      "AND p.fecha_creacion >= :start AND p.fecha_creacion <= :end";
         if (tenantId != null) {
             jpql += " AND p.empresa.id = :tenantId";
         }
@@ -151,7 +153,8 @@ public class ReportesService implements IReportesService {
 
     private List<CategoriaTopDTO> getTopCategorias(LocalDateTime start, LocalDateTime end, Long tenantId) {
         String totJpql = "SELECT COALESCE(SUM(pi.cantidad), 0L) FROM PedidosItems pi " +
-                         "WHERE pi.pedido.pago_confirmado = true AND pi.pedido.fecha_creacion >= :start AND pi.pedido.fecha_creacion <= :end";
+                         "WHERE pi.pedido.estado IN (com.proyecto.WebRopa.entity.Pedidos.Estado.RECOGIDO, com.proyecto.WebRopa.entity.Pedidos.Estado.ENTREGADO) " +
+                         "AND pi.pedido.fecha_creacion >= :start AND pi.pedido.fecha_creacion <= :end";
         if (tenantId != null) {
             totJpql += " AND pi.pedido.empresa.id = :tenantId";
         }
@@ -165,7 +168,8 @@ public class ReportesService implements IReportesService {
 
         String jpql = "SELECT pi.variante.producto.categoria.nombre, SUM(pi.cantidad) " +
                       "FROM PedidosItems pi " +
-                      "WHERE pi.pedido.pago_confirmado = true AND pi.pedido.fecha_creacion >= :start AND pi.pedido.fecha_creacion <= :end";
+                      "WHERE pi.pedido.estado IN (com.proyecto.WebRopa.entity.Pedidos.Estado.RECOGIDO, com.proyecto.WebRopa.entity.Pedidos.Estado.ENTREGADO) " +
+                      "AND pi.pedido.fecha_creacion >= :start AND pi.pedido.fecha_creacion <= :end";
         if (tenantId != null) {
             jpql += " AND pi.pedido.empresa.id = :tenantId";
         }
@@ -206,6 +210,8 @@ public class ReportesService implements IReportesService {
         }
         if (estadoPedido != null && !estadoPedido.equalsIgnoreCase("Todos")) {
             jpql += " AND p.estado = :estado";
+        } else {
+            jpql += " AND p.estado IN (com.proyecto.WebRopa.entity.Pedidos.Estado.RECOGIDO, com.proyecto.WebRopa.entity.Pedidos.Estado.ENTREGADO)";
         }
         jpql += " ORDER BY b.fecha_emision DESC";
 
@@ -262,7 +268,7 @@ public class ReportesService implements IReportesService {
         String jpql = "SELECT pi.variante.producto.nombre, pi.variante.talla, pi.variante.color, " +
                       "SUM(pi.cantidad), SUM(pi.cantidad * pi.precio_unitario) " +
                       "FROM PedidosItems pi " +
-                      "WHERE pi.pedido.pago_confirmado = true";
+                      "WHERE pi.pedido.estado IN (com.proyecto.WebRopa.entity.Pedidos.Estado.RECOGIDO, com.proyecto.WebRopa.entity.Pedidos.Estado.ENTREGADO)";
         if (tenantId != null) {
             jpql += " AND pi.pedido.empresa.id = :tenantId";
         }
@@ -388,7 +394,8 @@ public class ReportesService implements IReportesService {
 
         // 2. Ahorro de clientes (descuentos en el mes)
         String ahJpql = "SELECT COALESCE(SUM(p.descuento), 0.0) FROM Pedidos p " +
-                        "WHERE p.pago_confirmado = true AND p.fecha_creacion >= :start AND p.fecha_creacion <= :end";
+                        "WHERE p.estado IN (com.proyecto.WebRopa.entity.Pedidos.Estado.RECOGIDO, com.proyecto.WebRopa.entity.Pedidos.Estado.ENTREGADO) " +
+                        "AND p.fecha_creacion >= :start AND p.fecha_creacion <= :end";
         if (tenantId != null) {
             ahJpql += " AND p.empresa.id = :tenantId";
         }
@@ -402,7 +409,9 @@ public class ReportesService implements IReportesService {
 
         // 3. Efectividad de cupones (todos los tiempos)
         String efJpql = "SELECT p.cupon.codigo, p.cupon.tipo, p.cupon.valor, COUNT(p), SUM(p.descuento), p.cupon.estado " +
-                        "FROM Pedidos p WHERE p.cupon IS NOT NULL AND p.pago_confirmado = true";
+                        "FROM Pedidos p " +
+                        "WHERE p.cupon IS NOT NULL " +
+                        "AND p.estado IN (com.proyecto.WebRopa.entity.Pedidos.Estado.RECOGIDO, com.proyecto.WebRopa.entity.Pedidos.Estado.ENTREGADO)";
         if (tenantId != null) {
             efJpql += " AND p.empresa.id = :tenantId";
         }

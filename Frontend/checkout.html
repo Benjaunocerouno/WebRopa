@@ -240,7 +240,7 @@
     const USUARIO_ID = sesion.clientId;
 
     let subtotalBaseCalculado = 0;
-    let costoEnvioCalculado = 0.00; // Siempre 0 porque es recojo en tienda
+    let costoEnvioCalculado = 0.00; // Siempre 0 por defecto porque es recojo en tienda
     let descuentoCalculado = 0.00;
     let cuponSeleccionadoObjeto = null;
     let itemsEnBolsaGlobal = [];
@@ -260,9 +260,24 @@
           return res.json();
         })
         .then(user => {
-          document.getElementById('contacto-nombre').value = user.nombre || '';
-          document.getElementById('contacto-telefono').value = user.telefono || '';
-          document.getElementById('contacto-email').value = user.correo || '';
+          const nombreInput = document.getElementById('contacto-nombre');
+          const telefonoInput = document.getElementById('contacto-telefono');
+          const emailInput = document.getElementById('contacto-email');
+
+          nombreInput.value = user.nombre || '';
+          if (!user.nombre) {
+            nombreInput.removeAttribute('readonly');
+          }
+
+          telefonoInput.value = user.telefono || '';
+          if (!user.telefono) {
+            telefonoInput.removeAttribute('readonly');
+          }
+
+          emailInput.value = user.correo || '';
+          if (!user.correo) {
+            emailInput.removeAttribute('readonly');
+          }
           
           // Auto-llenar campos de despacho
           if (document.getElementById('envio-destinatario')) {
@@ -313,7 +328,7 @@
         });
         if (!resItems.ok) throw new Error("Error al consultar items del carrito");
         const allItems = await resItems.json();
-        const itemsAEliminar = allItems.filter(item => item.carrito && item.carrito.id === carritoId);
+        const itemsAEliminar = allItems.filter(item => item.carrito && Number(item.carrito.id) === Number(carritoId));
 
         for (const item of itemsAEliminar) {
           await fetch(`${API_URL}/carritoitems/${item.id}`, {
@@ -379,8 +394,8 @@
         })
         .then(res => res.json())
         .then(allItems => {
-          // Filtrar del lado del cliente de forma rápida
-          itemsEnBolsaGlobal = allItems.filter(item => item.carrito && item.carrito.usuario.id === USUARIO_ID);
+          // Filtrar del lado del cliente de forma rápida y robusta
+          itemsEnBolsaGlobal = allItems.filter(item => item.carrito && item.carrito.usuario && Number(item.carrito.usuario.id) === Number(USUARIO_ID));
           renderizarResumenDerecho(itemsEnBolsaGlobal);
         });
     }
@@ -410,7 +425,7 @@
                        <span class="mini-item__meta">Talla: ${item.variante.talla} | Cantidad: ${cant}</span>
                    </div>
                    <div class="mini-item__price">S/. ${filaTotal.toFixed(2)}</div>
-                </div>
+                </div>`;
         wrap.insertAdjacentHTML("beforeend", html);
       });
 
