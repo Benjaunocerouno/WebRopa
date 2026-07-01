@@ -235,6 +235,22 @@
         </div>
       </div>
 
+      <!-- KPI de ventas en el reporte -->
+      <div class="grid-kpi" style="margin-bottom: 20px;">
+        <div class="kpi-card verde">
+          <div class="kpi-label">Total Ingresos</div>
+          <div class="kpi-valor" id="rep-ventas-ingresos">S/ 0.00</div>
+        </div>
+        <div class="kpi-card terracota">
+          <div class="kpi-label">Cantidad Ventas</div>
+          <div class="kpi-valor" id="rep-ventas-cantidad">0</div>
+        </div>
+        <div class="kpi-card mostaza">
+          <div class="kpi-label">Ticket Promedio</div>
+          <div class="kpi-valor" id="rep-ventas-promedio">S/ 0.00</div>
+        </div>
+      </div>
+
       <div class="tarjeta">
         <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px;">
           <h3 style="margin: 0;">Detalle de Registros</h3>
@@ -610,6 +626,19 @@ async function cargarVentasFinancieras() {
 
   const tbody = document.getElementById('tabla-ventas-body');
   tbody.innerHTML = '';
+
+  let totalIngresos = 0;
+  if (data && data.length > 0) {
+    data.forEach(b => {
+      totalIngresos += b.total;
+    });
+  }
+  const cantVentas = data ? data.length : 0;
+  const ticketPromedio = cantVentas > 0 ? totalIngresos / cantVentas : 0.0;
+
+  document.getElementById('rep-ventas-ingresos').textContent = 'S/ ' + totalIngresos.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('rep-ventas-cantidad').textContent = cantVentas;
+  document.getElementById('rep-ventas-promedio').textContent = 'S/ ' + ticketPromedio.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   if (!data || data.length === 0) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--cafe); padding:20px;">No se encontraron boletas en el rango seleccionado.</td></tr>';
