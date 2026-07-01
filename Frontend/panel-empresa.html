@@ -325,10 +325,11 @@
             <div class="tarjeta-titulo" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
               <h3 style="margin:0;">Permisos por usuario</h3>
               <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <input type="text" class="buscador-generico" data-target="tabla-permisos-empresa" placeholder="Buscar rol o empleado..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif; min-width: 240px;">
+                <input type="text" class="buscador-generico" data-target="tabla-permisos-empresa" list="sugerencias-permisos-usuarios" placeholder="Buscar rol o empleado..." autocomplete="off" style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif; min-width: 240px;">
                 <button class="btn btn-secundario btn-mini" type="button" id="btn-refrescar-permisos">↻ Refrescar</button>
               </div>
             </div>
+            <datalist id="sugerencias-permisos-usuarios"></datalist>
             <table class="permiso-matriz">
               <thead>
                 <tr>
@@ -625,6 +626,28 @@ function obtenerEtiquetaRol(rolNombre) {
   return { clase: 'rol-catalogo', texto: rolNombre || 'Sin rol', acceso: 'Limitado' };
 }
 
+function filtrarUsuariosPorEmpresa(usuarios) {
+  const sesion = getSessionData();
+  const miEmpresaId = sesion?.empresa_id ? String(sesion.empresa_id) : '';
+  if (!miEmpresaId) return Array.isArray(usuarios) ? usuarios : [];
+
+  return (usuarios || []).filter(usuario => {
+    const usuarioEmpresaId = usuario?.empresa?.id ?? usuario?.empresa_id ?? usuario?.empresaId ?? '';
+    return String(usuarioEmpresaId) === miEmpresaId;
+  });
+}
+
+function cargarSugerenciasPermisosUsuarios(usuarios) {
+  const datalist = document.getElementById('sugerencias-permisos-usuarios');
+  if (!datalist) return;
+
+  const nombresUnicos = [...new Set((usuarios || [])
+    .map(usuario => (usuario.nombre || '').trim())
+    .filter(Boolean))];
+
+  datalist.innerHTML = nombresUnicos.map(nombre => `<option value="${escapeHtml(nombre)}"></option>`).join('');
+}
+
 async function cargarPermisosUsuarios() {
   const tbody = document.getElementById('tabla-permisos-empresa');
   if (!tbody) return;
@@ -632,9 +655,12 @@ async function cargarPermisosUsuarios() {
   tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">Cargando usuarios...</td></tr>';
 
   try {
-    const usuarios = await fetchAuth('/usuarios');
+    const todosLosUsuarios = await fetchAuth('/usuarios');
+    const usuarios = filtrarUsuariosPorEmpresa(todosLosUsuarios);
+    cargarSugerenciasPermisosUsuarios(usuarios);
+
     if (!Array.isArray(usuarios) || usuarios.length === 0) {
-      tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">No hay usuarios registrados.</td></tr>';
+      tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">No hay usuarios registrados para esta empresa.</td></tr>';
       return;
     }
 
