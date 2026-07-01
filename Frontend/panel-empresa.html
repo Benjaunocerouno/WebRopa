@@ -1537,10 +1537,23 @@ document.getElementById('btn-guardar-empleado')?.addEventListener('click', async
   const telefono = getTrimmedValue('emp-telefono');
   const password = document.getElementById('emp-password').value;
 
-  if (!validateTextField('emp-nombre', 'Los nombres completos', 3)) return;
-  if (!validateEmailField('emp-correo', 'El correo')) return;
-  if (!validatePhoneField('emp-telefono', 'El teléfono', !id)) return;
-  if (!validatePasswordField('emp-password', 'La contraseña', 6, false)) return;
+  // Validar cada campo y mostrar error claro si algo falla
+  if (!validateTextField('emp-nombre', 'Los nombres completos', 3)) {
+    showToast('Los nombres completos deben tener al menos 3 caracteres', true);
+    return;
+  }
+  if (!validateEmailField('emp-correo', 'El correo')) {
+    showToast('El correo electrónico no tiene un formato válido', true);
+    return;
+  }
+  if (!validatePhoneField('emp-telefono', 'El teléfono', !id)) {
+    showToast('El teléfono debe tener exactamente 9 dígitos válidos', true);
+    return;
+  }
+  if (!validatePasswordField('emp-password', 'La contraseña', 6, false)) {
+    showToast('La contraseña debe tener al menos 6 caracteres', true);
+    return;
+  }
 
   if (!id && !password) return showToast('Se requiere contraseña para empleado nuevo', true);
   
