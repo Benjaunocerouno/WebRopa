@@ -1019,7 +1019,6 @@ document.getElementById('buscador-prov')?.addEventListener('input', function(e) 
 });
 
 /* ==========================================================
-<<<<<<< HEAD
    CARGA DE STOCK
    ========================================================== */
 const selCargaProd = document.getElementById('carga-producto');
@@ -1153,7 +1152,8 @@ document.getElementById('btn-limpiar-carga')?.addEventListener('click', () => {
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('carga-fecha').value = now.toISOString().slice(0, 16);
 });
-=======
+
+/* ==========================================================
    ALERTAS DE INVENTARIO (REAL)
    ========================================================== */
 async function cargarAlertas() {
@@ -1248,4 +1248,3 @@ function contactarProveedor(prov, prodNombre, sku, color, talla, stock, critico)
         alert(`No hay teléfono ni correo registrado para ${prov.razonSocial}. \nRUC: ${prov.ruc}\nNombre Comercial: ${prov.nombreComercial || '-'}`);
     }
 }
->>>>>>> 1a9c28f0b620bdd5c654765d797db9aef50745b4
