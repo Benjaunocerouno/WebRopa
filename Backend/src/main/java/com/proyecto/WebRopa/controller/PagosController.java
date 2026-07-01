@@ -78,8 +78,7 @@ public class PagosController {
         pago.setPedido(pedido);
         pago.setMonto(pedido.getTotal());
         
-        boolean isTarjeta = (pago.getMetodo() == Pagos.Metodo.TARJETA);
-        pago.setEstado(isTarjeta ? Pagos.Estado.APROBADO : Pagos.Estado.PENDIENTE);
+        pago.setEstado(Pagos.Estado.APROBADO);
         servicePagos.guardar(pago);
 
         Map<String, Object> response = new HashMap<>();
@@ -89,23 +88,22 @@ public class PagosController {
         pagoData.put("estado", pago.getEstado().toString());
         response.put("pago", pagoData);
 
-        if (isTarjeta) {
-            pedido.setPago_confirmado(true);
-            pedido.setEstado(Pedidos.Estado.CONFIRMADO);
-            servicePedidos.guardar(pedido);
+        // Todos los pagos se confirman automáticamente
+        pedido.setPago_confirmado(true);
+        pedido.setEstado(Pedidos.Estado.CONFIRMADO);
+        servicePedidos.guardar(pedido);
 
-            Boletas boleta = generarBoleta(pedido);
-            Map<String, Object> boletaData = new HashMap<>();
-            boletaData.put("numero_boleta", boleta.getNumero_boleta());
-            boletaData.put("nombre_cliente", boleta.getNombre_cliente());
-            boletaData.put("total", boleta.getTotal());
-            response.put("boleta", boletaData);
+        Boletas boleta = generarBoleta(pedido);
+        Map<String, Object> boletaData = new HashMap<>();
+        boletaData.put("numero_boleta", boleta.getNumero_boleta());
+        boletaData.put("nombre_cliente", boleta.getNombre_cliente());
+        boletaData.put("total", boleta.getTotal());
+        response.put("boleta", boletaData);
 
-            RecojoTienda recojo = generarRecojo(pedido);
-            Map<String, Object> recojoData = new HashMap<>();
-            recojoData.put("codigo_recojo", recojo.getCodigo_recojo());
-            response.put("recojo", recojoData);
-        }
+        RecojoTienda recojo = generarRecojo(pedido);
+        Map<String, Object> recojoData = new HashMap<>();
+        recojoData.put("codigo_recojo", recojo.getCodigo_recojo());
+        response.put("recojo", recojoData);
 
         return ResponseEntity.ok(response);
     }
