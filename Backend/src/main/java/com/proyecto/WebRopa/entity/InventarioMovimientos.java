@@ -36,6 +36,10 @@ public class InventarioMovimientos {
     @JoinColumn(name = "variante_id", nullable = false)
     private Variantes variante;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "proveedor_id")
+    private Proveedores proveedor;
+
     public enum TipoMovimiento { INGRESO_COMPRA, SALIDA_VENTA, INGRESO_DEVOLUCION, AJUSTE_MANUAL }
     public enum Estado { ACTIVO, ANULADO }
 
@@ -54,4 +58,6 @@ public class InventarioMovimientos {
     public void setEstado(Estado estado) { this.estado = estado; }
     public Variantes getVariante() { return variante; }
     public void setVariante(Variantes variante) { this.variante = variante; }
+    public Proveedores getProveedor() { return proveedor; }
+    public void setProveedor(Proveedores proveedor) { this.proveedor = proveedor; }
 }

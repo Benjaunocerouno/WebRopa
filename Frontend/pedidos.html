@@ -99,7 +99,7 @@
             </div>
             <div class="invoice-row">
               <span>Costo de Envío</span>
-              <span id="det-envio">Gratis</span>
+                  <span id="det-envio">No aplica</span>
             </div>
             
             <hr class="invoice-divider" />
@@ -214,40 +214,8 @@
                 // Generar el Stepper visual dinámico (RF-CL-27)
                 construirStepperVisualLogistico(pedido.estado, pedido.tipo_entrega);
 
-                // Consultar el código de recojo o seguimiento si existe
+                // Consultar el código de recojo si existe
                 document.getElementById("det-recojo-container").style.display = "none";
-                if (pedido.tipo_entrega === "DELIVERY") {
-                    fetch(`${API_URL}/enviodomicilio/pedido/${pedidoId}`)
-                        .then(r => r.ok ? r.json() : null)
-                        .then(envioData => {
-                            if (envioData && envioData.codigo_seguimiento) {
-                                document.getElementById("det-recojo-container").style.display = "block";
-                                const codeElem = document.getElementById("det-recojo-codigo");
-                                const avisoElem = document.getElementById("det-recojo-aviso");
-                                document.getElementById("det-recojo-container").querySelector("strong").textContent = "Código de Seguimiento:";
-                                codeElem.textContent = envioData.codigo_seguimiento;
-                                
-                                if (envioData.estado === "ENTREGADO" || pedido.estado === "ENTREGADO" || pedido.estado === "RECOGIDO") {
-                                    codeElem.style.textDecoration = "line-through";
-                                    codeElem.style.color = "#888";
-                                    avisoElem.textContent = "(Pedido Entregado)";
-                                    avisoElem.style.color = "#777";
-                                } else if (pedido.estado === "EN_CAMINO" || envioData.estado === "EN_CAMINO") {
-                                    codeElem.style.textDecoration = "none";
-                                    codeElem.style.color = "var(--color-sage)";
-                                    avisoElem.textContent = "(¡En camino a tu domicilio!)";
-                                    avisoElem.style.color = "var(--color-sage)";
-                                    codeElem.style.fontWeight = "bold";
-                                } else {
-                                    codeElem.style.textDecoration = "none";
-                                    codeElem.style.color = "#444";
-                                    avisoElem.textContent = `(Estado de envío: ${envioData.estado})`;
-                                    avisoElem.style.color = "#C89B1F";
-                                }
-                            }
-                        })
-                        .catch(err => console.error("Error al obtener envio:", err));
-                } else {
                     fetch(`${API_URL}/recojotienda/pedido/${pedidoId}`)
                         .then(r => r.ok ? r.json() : null)
                         .then(recojoData => {
@@ -278,7 +246,6 @@
                             }
                         })
                         .catch(err => console.error("Error al obtener recojo:", err));
-                }
 
                 // Consultar los ítems asociados desde el PedidosItemsController
                 return fetch(`${API_URL}/pedidoitems/pedido/${pedidoId}`);
@@ -336,10 +303,10 @@
             else if (est === "CONFIRMADO") label = "Confirmado";
             else if (est === "EN_PREPARACION") label = "En Preparación";
             else if (est === "EN_CAMINO") {
-                label = tipoEntrega === "DELIVERY" ? "En Camino ✈" : "Listo para Retirar 🏪";
+                label = "Listo para Retirar 🏪";
             }
             else if (est === "ENTREGADO") {
-                label = tipoEntrega === "DELIVERY" ? "Entregado ♡" : "Recogido ✓";
+                label = "Recogido ✓";
             }
 
             const nodeHtml = `

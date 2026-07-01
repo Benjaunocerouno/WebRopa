@@ -156,23 +156,15 @@
           <h3>Sesiones activas</h3>
           <div style="display: flex; gap: 10px; align-items: center;">
             <input type="text" class="buscador-generico" data-target="tabla-sesiones" placeholder="Buscar sesión..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+            <button class="btn btn-secundario btn-mini" onclick="cargarSesionesLive()">↻ Refrescar</button>
             <span class="nota">Tabla optimizada para 50+ sesiones simultáneas</span>
           </div>
         </div>
         <p class="tarjeta-sub">Cierre forzado de sesión = invalida el token en curso. Revocar acceso = bloquea el nivel de permiso y devuelve HTTP 403 en la siguiente petición.</p>
         <table>
-          <thead><tr><th>ID usuario</th><th>Rol</th><th>IP</th><th>Última actividad</th><th colspan="2"></th></tr></thead>
+          <thead><tr><th>ID usuario</th><th>Rol</th><th>Última actividad</th><th colspan="2"></th></tr></thead>
           <tbody id="tabla-sesiones"></tbody>
         </table>
-      </div>
-
-      <div class="tarjeta">
-        <span class="etiqueta-doodle">Auto-bloqueo</span>
-        <div class="tarjeta-titulo">
-          <h3>Bloqueos por intentos de intrusión</h3>
-        </div>
-        <p class="tarjeta-sub">Más de 5 intentos fallidos en 10 minutos inhabilita la cuenta 15 minutos. Aun así, queda bloqueada hasta el desbloqueo manual del SuperAdmin.</p>
-        <div id="lista-bloqueos"></div>
       </div>
     </section>
 
@@ -507,7 +499,16 @@ document.getElementById('login-password').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('btn-ingresar').click();
 });
 
-document.getElementById('btn-cerrar-sesion').addEventListener('click', () => {
+document.getElementById('btn-cerrar-sesion').addEventListener('click', async () => {
+  const s = obtenerSesion();
+  if (s && s.token) {
+    try {
+      await fetch(CONFIG.API_URL + '/usuarios/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + s.token }
+      });
+    } catch (e) { console.error("Error logging out", e); }
+  }
   borrarSesion();
   document.getElementById('usuario-nombre').textContent = 'Cargando…';
   document.getElementById('avatar-iniciales').textContent = '–';
@@ -522,17 +523,7 @@ verificarSesion();
 /* ══════════════════════════════════════════
    DATOS DE DEMOSTRACIÓN
    ══════════════════════════════════════════ */
-const sesiones = [
-  { id:'USR-7741', rol:'catalogo', ip:'190.234.11.8',  actividad:'hace 2 min',  sospechosa:false },
-  { id:'USR-7742', rol:'vendedor', ip:'186.4.55.230',  actividad:'hace 4 min',  sospechosa:false },
-  { id:'USR-7743', rol:'almacenero', ip:'45.182.9.14', actividad:'hace 19 min', sospechosa:true  },
-  { id:'USR-7744', rol:'supervisor', ip:'190.234.11.91',actividad:'hace 1 min', sospechosa:false },
-];
 
-let bloqueos = [
-  { usuario:'USR-6620 (vendedor)',   ip:'201.88.4.12', intentos:6, segundosRestantes: 312 },
-  { usuario:'USR-6633 (almacenero)', ip:'77.12.90.4',  intentos:8, segundosRestantes: 0   },
-];
 
 const roles = ['vendedor','almacenero','catalogo','supervisor'];
 const nombreRol = {
@@ -588,6 +579,12 @@ document.getElementById('menu-navegacion').addEventListener('click', (e) => {
   btn.classList.add('activo');
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('activo'));
   document.getElementById('panel-' + btn.dataset.panel).classList.add('activo');
+
+  if (btn.dataset.panel === 'auditoria') {
+    cargarAuditoria();
+  } else if (btn.dataset.panel === 'roles') {
+    cargarRolesYTrabajadores();
+  }
 });
 
 /* ── Toast ── */
@@ -601,85 +598,145 @@ function mostrarToast(mensaje) {
 }
 
 /* ── Sesiones ── */
+let sesiones = [];
+
+async function cargarSesionesLive() {
+  const s = obtenerSesion();
+  if (!s || !s.token) return;
+  try {
+    const res = await fetch(CONFIG.API_URL + '/superadmin/seguridad/sesiones', {
+      headers: { 'Authorization': 'Bearer ' + s.token }
+    });
+    if (res.ok) {
+      sesiones = await res.json();
+      pintarSesiones();
+    }
+  } catch (e) { console.error("Error cargando sesiones", e); }
+}
+
 function pintarSesiones() {
   const tbody = document.getElementById('tabla-sesiones');
-  tbody.innerHTML = sesiones.map(s => `
+  tbody.innerHTML = sesiones.map(s => {
+    let act = "reciente";
+    if (s.ultimaActividad) {
+      const ms = new Date() - new Date(s.ultimaActividad);
+      const min = Math.floor(ms / 60000);
+      act = min > 0 ? `hace ${min} min` : 'ahora mismo';
+    }
+    return `
     <tr class="${s.sospechosa ? 'fila-sospechosa' : ''}">
-      <td class="mono">${s.id}</td>
-      <td><span class="pildora rol-${s.rol}">${nombreRol[s.rol]}</span></td>
-      <td class="mono">${s.ip}</td>
-      <td>${s.actividad}${s.sospechosa ? ' · <strong style="color:var(--alerta)">revisar</strong>' : ''}</td>
+      <td class="mono">USR-${s.usuarioId} (${s.correo})</td>
+      <td><span class="pildora rol-default">${s.rol}</span></td>
+      <td>${act}${s.sospechosa ? ' · <strong style="color:var(--alerta)">revisar</strong>' : ''}</td>
       <td><button class="btn btn-secundario btn-mini" data-revocar="${s.id}">Revocar acceso</button></td>
       <td><button class="btn btn-peligro btn-mini" data-cerrar="${s.id}">Forzar cierre</button></td>
     </tr>
-  `).join('');
+  `}).join('');
   document.getElementById('contador-sesiones').textContent = sesiones.length;
 }
-document.getElementById('tabla-sesiones').addEventListener('click', (e) => {
-  const cerrar  = e.target.dataset.cerrar;
-  const revocar = e.target.dataset.revocar;
+document.getElementById('tabla-sesiones').addEventListener('click', async (e) => {
+  const btnCerrar = e.target.closest('[data-cerrar]');
+  const btnRevocar = e.target.closest('[data-revocar]');
+  
+  const cerrar = btnCerrar ? btnCerrar.dataset.cerrar : null;
+  const revocar = btnRevocar ? btnRevocar.dataset.revocar : null;
+  
+  const s = obtenerSesion();
+  if (!s || !s.token) return;
+
   if (cerrar) {
-    sesiones.splice(sesiones.findIndex(s => s.id === cerrar), 1);
-    pintarSesiones();
+    await fetch(CONFIG.API_URL + `/superadmin/seguridad/sesiones/${cerrar}/cerrar`, {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + s.token }
+    });
+    cargarSesionesLive();
     mostrarToast(`Sesión ${cerrar} cerrada · token invalidado`);
   }
   if (revocar) {
-    sesiones.splice(sesiones.findIndex(s => s.id === revocar), 1);
-    pintarSesiones();
+    await fetch(CONFIG.API_URL + `/superadmin/seguridad/sesiones/${revocar}/revocar`, {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + s.token }
+    });
+    cargarSesionesLive();
     mostrarToast(`Acceso de ${revocar} revocado · próxima petición → HTTP 403 · registrado en auditoría`);
   }
 });
-pintarSesiones();
+cargarSesionesLive();
+setInterval(cargarSesionesLive, 10000);
 
-/* ── Bloqueos ── */
-function formatoTiempo(s) {
-  if (s <= 0) return null;
-  const m = Math.floor(s / 60), sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, '0')}`;
-}
-function pintarBloqueos() {
-  const cont = document.getElementById('lista-bloqueos');
-  if (bloqueos.length === 0) {
-    cont.innerHTML = `<p class="tarjeta-sub" style="margin:0;">No hay cuentas bloqueadas por intrusión en este momento.</p>`;
-    return;
-  }
-  cont.innerHTML = bloqueos.map((b, i) => {
-    const tiempo = formatoTiempo(b.segundosRestantes);
-    return `
-      <div class="fila-bloqueo">
-        <div class="detalle">
-          <strong>${b.usuario}</strong> · <span class="ip mono">${b.ip}</span><br>
-          <span class="nota">${b.intentos} intentos fallidos en 10 min</span>
-        </div>
-        ${tiempo
-          ? `<span class="cronometro">⏱ ${tiempo} restante (auto)</span>`
-          : `<span class="pildora estado-fallo">Tiempo expirado · pendiente</span>`
-        }
-        <button class="btn btn-secundario btn-mini" data-desbloquear="${i}">Desbloquear manualmente</button>
-      </div>
-    `;
-  }).join('');
-}
-document.getElementById('lista-bloqueos').addEventListener('click', (e) => {
-  const idx = e.target.dataset.desbloquear;
-  if (idx === undefined) return;
-  const u = bloqueos[idx].usuario;
-  bloqueos.splice(idx, 1);
-  pintarBloqueos();
-  mostrarToast(`${u} desbloqueado manualmente`);
-});
-pintarBloqueos();
-setInterval(() => {
-  let cambio = false;
-  bloqueos.forEach(b => { if (b.segundosRestantes > 0) { b.segundosRestantes--; cambio = true; } });
-  if (cambio) pintarBloqueos();
-}, 1000);
+
+/* ── Establecer filtros de fecha por defecto (hace 7 días a hoy) ── */
+const hoy = new Date();
+const haceUnaSemana = new Date();
+haceUnaSemana.setDate(hoy.getDate() - 7);
+document.getElementById('filtro-fecha-hasta').value = hoy.toISOString().split('T')[0];
+document.getElementById('filtro-fecha-desde').value = haceUnaSemana.toISOString().split('T')[0];
 
 /* ── Roles ── */
-document.getElementById('btn-asignar-rol').addEventListener('click', () => {
-  const trabajador = document.getElementById('select-trabajador').value;
-  const rol = document.getElementById('select-rol').selectedOptions[0].text;
-  mostrarToast(`Rol "${rol}" asignado a ${trabajador.split(' — ')[0]}. Verá los nuevos módulos en su próximo inicio de sesión.`);
+async function cargarRolesYTrabajadores() {
+  const selectTrabajador = document.getElementById('select-trabajador');
+  const selectRol = document.getElementById('select-rol');
+  const sesion = obtenerSesion();
+  if (!sesion || !sesion.token) return;
+
+  try {
+    // 1. Cargar usuarios
+    const resUsers = await fetch(CONFIG.API_URL + '/usuarios', { headers: { 'Authorization': 'Bearer ' + sesion.token }});
+    if (!resUsers.ok) throw new Error();
+    const usuarios = await resUsers.json();
+    
+    selectTrabajador.innerHTML = usuarios.map(u => 
+      `<option value="${u.id}">${u.nombre} (${u.correo}) — ${u.rol ? u.rol.nombre : 'Sin Rol'}</option>`
+    ).join('');
+
+    // 2. Cargar roles
+    const resRoles = await fetch(CONFIG.API_URL + '/roles', { headers: { 'Authorization': 'Bearer ' + sesion.token }});
+    if (!resRoles.ok) throw new Error();
+    const rolesData = await resRoles.json();
+    
+    selectRol.innerHTML = rolesData.map(r => 
+      `<option value="${r.id}">${r.nombre}</option>`
+    ).join('');
+  } catch (e) {
+    console.error("Error al cargar roles o trabajadores", e);
+  }
+}
+
+document.getElementById('btn-asignar-rol').addEventListener('click', async () => {
+  const userId = document.getElementById('select-trabajador').value;
+  const rolId = document.getElementById('select-rol').value;
+  const rolNombre = document.getElementById('select-rol').selectedOptions[0]?.text || '';
+  const trabajadorNombre = document.getElementById('select-trabajador').selectedOptions[0]?.text.split(' (')[0] || '';
+
+  if (!userId || !rolId) {
+    mostrarToast('Selecciona un trabajador y un rol.');
+    return;
+  }
+
+  const sesion = obtenerSesion();
+  if (!sesion || !sesion.token) return;
+
+  try {
+    const res = await fetch(CONFIG.API_URL + '/usuarios', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + sesion.token
+      },
+      body: JSON.stringify({
+        id: parseInt(userId),
+        rol: { id: parseInt(rolId) }
+      })
+    });
+
+    if (res.ok) {
+      mostrarToast(`Rol "${rolNombre}" asignado a ${trabajadorNombre} exitosamente.`);
+      cargarRolesYTrabajadores();
+      cargarAdmins();
+    } else {
+      mostrarToast('Error al asignar el rol');
+    }
+  } catch (e) {
+    mostrarToast('Error de red al asignar rol');
+  }
 });
 
 function pintarMatriz() {
@@ -702,26 +759,68 @@ document.getElementById('btn-guardar-permisos').addEventListener('click', () => 
 pintarMatriz();
 
 /* ── Auditoría ── */
-function pintarLogs(lista) {
-  document.getElementById('tabla-logs').innerHTML = lista.map(l => `
-    <tr>
-      <td class="mono">${l.fecha}</td>
-      <td class="mono">${l.autor}</td>
-      <td>${l.entidad}</td>
-      <td><div class="valor-cambio"><span class="anterior">${l.anterior}</span>→<span class="nuevo">${l.nuevo}</span></div></td>
-    </tr>
-  `).join('');
-}
-document.getElementById('btn-filtrar-log').addEventListener('click', () => {
+async function cargarAuditoria() {
+  const tbody = document.getElementById('tabla-logs');
+  const desde = document.getElementById('filtro-fecha-desde').value;
+  const hasta = document.getElementById('filtro-fecha-hasta').value;
   const usuario = document.getElementById('filtro-usuario').value;
-  const filtrado = usuario === 'todos' ? logs : logs.filter(l => l.autor === usuario);
-  pintarLogs(filtrado);
-  mostrarToast(`Filtro aplicado · ${filtrado.length} registro(s) encontrados`);
-});
+  
+  const sesion = obtenerSesion();
+  if (!sesion || !sesion.token) return;
+
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Cargando logs de auditoría...</td></tr>';
+
+  try {
+    const url = `${CONFIG.API_URL}/superadmin/auditoria?desde=${desde}&hasta=${hasta}&usuario=${usuario}`;
+    const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + sesion.token }});
+    if (!res.ok) throw new Error();
+    const logsData = await res.json();
+    
+    // Rellenar select de usuarios con todos los autores únicos registrados
+    const select = document.getElementById('filtro-usuario');
+    const selectValue = select.value;
+    const todosAutoresRes = await fetch(`${CONFIG.API_URL}/usuarios`, { headers: { 'Authorization': 'Bearer ' + sesion.token }});
+    if (todosAutoresRes.ok) {
+      const todosUsuarios = await todosAutoresRes.json();
+      const correos = ['todos', ...new Set(todosUsuarios.map(u => u.correo))];
+      select.innerHTML = correos.map(c => 
+        `<option value="${c}" ${c === selectValue ? 'selected' : ''}>${c === 'todos' ? 'Todos' : c}</option>`
+      ).join('');
+    }
+
+    if (logsData.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:var(--cafe)">No se encontraron registros de auditoría.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = logsData.map(l => {
+      const f = new Date(l.fechaHora);
+      const fechaStr = `${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}/${f.getFullYear()} ${String(f.getHours()).padStart(2,'0')}:${String(f.getMinutes()).padStart(2,'0')}`;
+      return `
+        <tr>
+          <td class="mono">${fechaStr}</td>
+          <td>
+            <strong>${l.autorNombre || l.autorCorreo}</strong><br>
+            <span style="font-size:0.78rem; color:var(--cafe)">${l.autorRol || 'SISTEMA'}</span>
+          </td>
+          <td><span class="pildora rol-supervisor">${l.accion}</span></td>
+          <td>
+            ${l.detalle}<br>
+            <small style="color:var(--cafe); opacity:0.75">IP: ${l.ipOrigen || '0.0.0.0'}</small>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--alerta); padding: 20px;">Error al cargar registros de auditoría.</td></tr>';
+  }
+}
+
+document.getElementById('btn-filtrar-log').addEventListener('click', cargarAuditoria);
 document.getElementById('btn-exportar-pdf').addEventListener('click', () => {
   mostrarToast('Generando PDF del historial filtrado…');
+  window.print();
 });
-pintarLogs(logs);
 
 /* ── Infraestructura ── */
 function pintarMetricas() {
@@ -1044,9 +1143,24 @@ verificarSesion = async function() {
   await oldVerificar();
   cargarEmpresas();
   cargarAdmins();
+  cargarRolesYTrabajadores();
+  cargarAuditoria();
 };
 verificarSesion();
 
+// Buscador genérico funcional
+document.querySelectorAll('.buscador-generico').forEach(input => {
+  input.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const targetId = e.target.dataset.target;
+    const tbody = document.getElementById(targetId);
+    if (!tbody) return;
+    Array.from(tbody.getElementsByTagName('tr')).forEach(tr => {
+      const text = tr.textContent.toLowerCase();
+      tr.style.display = text.includes(term) ? '' : 'none';
+    });
+  });
+});
 </script>
 
 </body>

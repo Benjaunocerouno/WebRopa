@@ -7,8 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.proyecto.WebRopa.entity.Productos;
+import com.proyecto.WebRopa.entity.Variantes;
 import com.proyecto.WebRopa.repository.VariantesRepository;
 import com.proyecto.WebRopa.service.IProductosService;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -21,18 +23,56 @@ public class ProductosController {
     }
 
     @GetMapping("/productos")
-    public List<Productos> listarTodos() {
-        return serviceProductos.buscarTodos();
+    public List<Productos> listarTodos(
+            @RequestParam(value = "incluirInactivos", required = false, defaultValue = "false") boolean incluirInactivos) {
+        List<Productos> lista = serviceProductos.buscarTodos();
+        if (incluirInactivos) {
+            return lista;
+        }
+        return lista.stream()
+                .filter(p -> p.getEstado() == Productos.Estado.ACTIVO)
+                .peek(p -> {
+                    if (p.getVariantes() != null) {
+                        p.setVariantes(p.getVariantes().stream()
+                                .filter(v -> v.getEstado() == Variantes.Estado.ACTIVO)
+                                .collect(Collectors.toList()));
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/productos/empresa/{empresaId}")
-    public List<Productos> listarPorEmpresa(@PathVariable Long empresaId) {
-        return serviceProductos.buscarPorEmpresa(empresaId);
+    public List<Productos> listarPorEmpresa(
+            @PathVariable Long empresaId,
+            @RequestParam(value = "incluirInactivos", required = false, defaultValue = "false") boolean incluirInactivos) {
+        List<Productos> lista = serviceProductos.buscarPorEmpresa(empresaId);
+        if (incluirInactivos) {
+            return lista;
+        }
+        return lista.stream()
+                .filter(p -> p.getEstado() == Productos.Estado.ACTIVO)
+                .peek(p -> {
+                    if (p.getVariantes() != null) {
+                        p.setVariantes(p.getVariantes().stream()
+                                .filter(v -> v.getEstado() == Variantes.Estado.ACTIVO)
+                                .collect(Collectors.toList()));
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/productos/{id}")
     public Optional<Productos> buscarPorId(@PathVariable Long id) {
-        return serviceProductos.buscarId(id);
+        Optional<Productos> opt = serviceProductos.buscarId(id);
+        if (opt.isPresent()) {
+            Productos p = opt.get();
+            if (p.getVariantes() != null) {
+                p.setVariantes(p.getVariantes().stream()
+                        .filter(v -> v.getEstado() == Variantes.Estado.ACTIVO)
+                        .collect(Collectors.toList()));
+            }
+        }
+        return opt;
     }
 
     @PostMapping("/productos")
@@ -72,5 +112,26 @@ public class ProductosController {
 
         serviceProductos.eliminar(id);
         return ResponseEntity.ok("Producto y sus variantes asociados han sido eliminados correctamente");
+    }
+
+    @PutMapping("/productos/{id}/activar")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('PRODUCTOS_EDITAR')")
+    public ResponseEntity<?> activar(@PathVariable Long id) {
+        Optional<Productos> productoOpt = serviceProductos.buscarId(id);
+        if (!productoOpt.isPresent()) {
+            return ResponseEntity.badRequest().body("El producto no existe");
+        }
+        Productos producto = productoOpt.get();
+        producto.setEstado(Productos.Estado.ACTIVO);
+
+        // Reactivar también todas sus variantes
+        if (producto.getVariantes() != null) {
+            for (Variantes v : producto.getVariantes()) {
+                v.setEstado(Variantes.Estado.ACTIVO);
+            }
+        }
+
+        serviceProductos.modificar(producto);
+        return ResponseEntity.ok(producto);
     }
 }

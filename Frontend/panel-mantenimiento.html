@@ -104,6 +104,12 @@
           </svg>
           Proveedores
         </button>
+        <button class="menu-item" data-panel="carga-stock">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Carga de Stock
+        </button>
       </nav>
 
       <div class="menu-pie">
@@ -193,6 +199,11 @@
                 id="prod-precio" placeholder="0.00"></div>
             <div class="campo"><label class="etiqueta-campo">URL Imagen Principal</label><input type="text"
                 id="prod-img" placeholder="https://ejemplo.com/imagen.jpg"></div>
+            <div class="campo"><label class="etiqueta-campo">Proveedor</label>
+              <select id="prod-prov">
+                <option value="">-- Selecciona Proveedor --</option>
+              </select>
+            </div>
           </div>
           <div class="campo" style="margin-bottom: 15px;"><label class="etiqueta-campo">Descripción detallada</label>
             <input type="text" id="prod-desc" placeholder="Añade una descripción llamativa del producto...">
@@ -216,7 +227,11 @@
         <div class="tarjeta">
           <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
             <h3>Productos registrados</h3>
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <label style="font-size:0.8rem; display:flex; align-items:center; gap:6px; color:var(--cafe-oscuro); cursor:pointer; user-select:none;">
+                <input type="checkbox" id="chk-ver-inactivos" onchange="cargarProductos()" style="cursor:pointer; width:14px; height:14px;">
+                Mostrar deshabilitados
+              </label>
               <input type="text" class="buscador-generico" data-target="tabla-productos" placeholder="Buscar producto..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
               <button class="btn btn-secundario btn-mini" onclick="cargarProductos()">↻ Refrescar</button>
             </div>
@@ -440,6 +455,59 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-carga-stock">
+        <div class="topbar">
+          <div>
+            <h2>Carga de Stock</h2>
+            <p class="descripcion">Incrementa el stock de variantes activas registrando un ingreso.</p>
+          </div>
+        </div>
+
+        <div class="tarjeta" style="border-color: var(--sage-oscuro);">
+          <div class="tarjeta-titulo">
+            <h3>Registrar Carga de Stock</h3>
+          </div>
+
+          <div class="grid-doble" style="margin-bottom: 15px;">
+            <div class="campo">
+              <label class="etiqueta-campo">Producto</label>
+              <select id="carga-producto">
+                <option value="">Cargando productos...</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label class="etiqueta-campo">Variante</label>
+              <select id="carga-variante">
+                <option value="">Primero seleccione un producto...</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label class="etiqueta-campo">Cantidad</label>
+              <input type="number" id="carga-cantidad" placeholder="Ej. 50" min="1">
+            </div>
+            <div class="campo">
+              <label class="etiqueta-campo">Fecha de Ingreso</label>
+              <input type="datetime-local" id="carga-fecha">
+            </div>
+            <div class="campo">
+              <label class="etiqueta-campo">Proveedor</label>
+              <select id="carga-proveedor">
+                <option value="">Cargando proveedores...</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label class="etiqueta-campo">Observaciones</label>
+              <input type="text" id="carga-observaciones" placeholder="Detalles de la carga...">
+            </div>
+          </div>
+
+          <div style="margin-top:20px; display:flex; gap:10px;">
+            <button class="btn btn-primario" id="btn-guardar-carga">Guardar Carga</button>
+            <button class="btn btn-secundario" id="btn-limpiar-carga">Limpiar</button>
+          </div>
         </div>
       </section>
 

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.proyecto.WebRopa.entity.Carritos;
 import com.proyecto.WebRopa.entity.Usuarios;
@@ -19,6 +20,7 @@ import com.proyecto.WebRopa.service.IUsuariosService;
 import com.proyecto.WebRopa.service.IRolesServices;
 
 import jakarta.servlet.http.HttpServletRequest;
+import com.proyecto.WebRopa.service.jpa.AuditoriaService;
 
 @RestController
 @RequestMapping("/api")
@@ -29,17 +31,22 @@ public class UsuariosController {
     private final ICarritosService serviceCarritos;
     private final IRolesServices serviceRoles;
     private final JwtUtil jwtUtil;
+    private final AuditoriaService auditoriaService;
 
-    public UsuariosController(IUsuariosService serviceUsuarios, BCryptPasswordEncoder passwordEncoder, ICarritosService serviceCarritos, IRolesServices serviceRoles, JwtUtil jwtUtil) {
+    @Autowired
+    private com.proyecto.WebRopa.service.seguridad.SeguridadEnVivoService seguridadEnVivoService;
+
+    public UsuariosController(IUsuariosService serviceUsuarios, BCryptPasswordEncoder passwordEncoder, ICarritosService serviceCarritos, IRolesServices serviceRoles, JwtUtil jwtUtil, AuditoriaService auditoriaService) {
         this.serviceUsuarios = serviceUsuarios;
         this.passwordEncoder = passwordEncoder;
         this.serviceCarritos = serviceCarritos;
         this.serviceRoles = serviceRoles;
         this.jwtUtil = jwtUtil;
+        this.auditoriaService = auditoriaService;
     }
 
     @PostMapping("/usuarios/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credenciales, HttpServletRequest request) {
         String correo = credenciales.get("correo");
         String password = credenciales.get("password");
 
@@ -75,7 +82,21 @@ public class UsuariosController {
             response.put("empresa_id", empresaId);
         }
         response.put("permisos", permisos);
+
+        // Registrar la sesión exitosa en el monitor de seguridad en vivo
+        seguridadEnVivoService.registrarLoginExitoso(token, user.getId(), rolNombre, request.getRemoteAddr(), user.getCorreo());
+
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/usuarios/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
+            seguridadEnVivoService.cerrarSesionPorToken(token);
+        }
+        return ResponseEntity.ok(Map.of("message", "Sesión cerrada"));
     }
 
     @GetMapping("/usuarios/me")
@@ -110,6 +131,48 @@ public class UsuariosController {
         response.put("telefono", user.getTelefono());
         response.put("rol", user.getRol().getNombre());
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/usuarios/me")
+    public ResponseEntity<?> modificarMiPerfil(HttpServletRequest request, @RequestBody Usuarios usuarioDatos) {
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autenticado");
+        }
+
+        String token = header.substring(7);
+        if (!jwtUtil.validarToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido o expirado");
+        }
+
+        String userIdStr = jwtUtil.extraerUsuarioId(token);
+        Optional<Usuarios> existenteOpt;
+        try {
+            existenteOpt = serviceUsuarios.buscarId(Long.parseLong(userIdStr));
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido");
+        }
+
+        if (existenteOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+
+        Usuarios existente = existenteOpt.get();
+
+        if (usuarioDatos.getNombre() != null && !usuarioDatos.getNombre().trim().isEmpty()) {
+            existente.setNombre(usuarioDatos.getNombre().trim());
+        }
+
+        if (usuarioDatos.getTelefono() != null) {
+            String telefono = usuarioDatos.getTelefono();
+            if (!telefono.matches("\\d{9}")) {
+                return ResponseEntity.badRequest().body("El teléfono debe contener exactamente 9 dígitos.");
+            }
+            existente.setTelefono(telefono);
+        }
+
+        serviceUsuarios.guardar(existente);
+        return ResponseEntity.ok("Perfil actualizado correctamente");
     }
 
     // Registro de nuevo usuario
@@ -186,6 +249,7 @@ public class UsuariosController {
         carrito.setUsuario(usuario);
         serviceCarritos.guardar(carrito);
         
+        auditoriaService.registrar("CREAR_CUENTA_ADMIN", "USUARIO", "Se creó la cuenta Admin para " + usuario.getCorreo() + " asociada a la empresa ID " + usuario.getEmpresa().getId());
         return ResponseEntity.ok(usuario);
     }
 
@@ -248,22 +312,42 @@ public class UsuariosController {
         }
 
         // Actualización del rol (para que un admin pueda ascender/cambiar roles)
+        boolean rolCambiado = false;
+        String rolAnterior = existente.getRol() != null ? existente.getRol().getNombre() : "Ninguno";
+        String nuevoRolNombre = "";
         if (usuario.getRol() != null && usuario.getRol().getId() != null) {
             Optional<Roles> rolOpt = serviceRoles.buscarId(usuario.getRol().getId());
             if (!rolOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("El rol especificado no existe");
             }
-            existente.setRol(rolOpt.get());
+            if (existente.getRol() == null || !existente.getRol().getId().equals(rolOpt.get().getId())) {
+                existente.setRol(rolOpt.get());
+                nuevoRolNombre = rolOpt.get().getNombre();
+                rolCambiado = true;
+            }
         }
 
+        if (usuario.getTallaUniforme() != null) existente.setTallaUniforme(usuario.getTallaUniforme());
+        if (usuario.getDescuentoEmpleado() != null) existente.setDescuentoEmpleado(usuario.getDescuentoEmpleado());
+        if (usuario.getEspecialidad() != null) existente.setEspecialidad(usuario.getEspecialidad());
+        if (usuario.getSucursal() != null) existente.setSucursal(usuario.getSucursal());
+
         serviceUsuarios.guardar(existente);
+
+        if (rolCambiado) {
+            auditoriaService.registrar("ASIGNAR_ROL", "USUARIO", "Se cambió el rol del usuario " + existente.getNombre() + " (" + existente.getCorreo() + ") de " + rolAnterior + " a " + nuevoRolNombre);
+        }
         return ResponseEntity.ok(existente);
     }
 
     @DeleteMapping("/usuarios/{id}")
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('PERSONAL_GESTIONAR')")
     public String eliminar(@PathVariable Long id) {
+        Optional<Usuarios> uOpt = serviceUsuarios.buscarId(id);
         serviceUsuarios.eliminar(id);
+        uOpt.ifPresent(u -> 
+            auditoriaService.registrar("DESACTIVAR_ADMIN", "USUARIO", "Se desactivó la cuenta de " + u.getNombre() + " (" + u.getCorreo() + ")")
+        );
         return "Usuario eliminado";
     }
 }

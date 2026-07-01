@@ -127,6 +127,7 @@ document.getElementById('menu-navegacion').addEventListener('click', (e) => {
     if (btn.dataset.panel === 'pedidos') cargarPedidos();
     if (btn.dataset.panel === 'cupones') cargarCupones();
     if (btn.dataset.panel === 'proveedores') cargarProveedores();
+    if (btn.dataset.panel === 'alertas') cargarAlertas();
 });
 
 async function aplicarUsuario(datos) {
@@ -178,6 +179,7 @@ document.getElementById('btn-ingresar').addEventListener('click', async () => {
         showToast(`Bienvenido ${data.nombre}`);
         // Cargar dashboard defaults
         cargarCategoriasParaSelect();
+        cargarProveedoresParaSelect();
         cargarProductos();
     } catch (e) {
         errEl.textContent = e.message;
@@ -185,7 +187,16 @@ document.getElementById('btn-ingresar').addEventListener('click', async () => {
     }
 });
 
-document.getElementById('btn-cerrar-sesion').addEventListener('click', () => {
+document.getElementById('btn-cerrar-sesion').addEventListener('click', async () => {
+    const s = getSessionData();
+    if (s && s.token) {
+        try {
+            await fetch(CONFIG.API_URL + '/usuarios/logout', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + s.token }
+            });
+        } catch (e) { console.error("Error logging out", e); }
+    }
     localStorage.removeItem(SESSION_KEY);
     document.getElementById('login-overlay').classList.remove('oculto');
 
@@ -209,6 +220,7 @@ document.getElementById('btn-cerrar-sesion').addEventListener('click', () => {
             document.getElementById('login-overlay').classList.add('oculto');
             await aplicarUsuario(s);
             cargarCategoriasParaSelect();
+            cargarProveedoresParaSelect();
             cargarProductos();
         }
     }
@@ -242,6 +254,17 @@ async function cargarCategoriasParaSelect() {
         sel.innerHTML = '<option value="">-- Selecciona Categoría --</option>' + cats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
     } catch (e) {
         sel.innerHTML = '<option value="">Error al cargar categorías</option>';
+    }
+}
+
+async function cargarProveedoresParaSelect() {
+    const sel = document.getElementById('prod-prov');
+    if (!sel) return;
+    try {
+        const provs = await fetchAuth('/proveedores');
+        sel.innerHTML = '<option value="">-- Selecciona Proveedor --</option>' + provs.map(p => `<option value="${p.id}">${p.razonSocial} (${p.ruc})</option>`).join('');
+    } catch (e) {
+        sel.innerHTML = '<option value="">Error al cargar proveedores</option>';
     }
 }
 
@@ -303,6 +326,7 @@ function addVarianteRow() {
     <div class="campo" style="flex:0.8"><label class="etiqueta-campo">Hex Color</label><input type="color" class="v-hex" value="#5c4a3d" style="width: 100%; height: 38px; padding: 2px; cursor: pointer; border-radius: 12px; border: 1.5px solid var(--borde-trazo); background: var(--crema);"></div>
     <div class="campo" style="flex:0.5"><label class="etiqueta-campo">Talla</label><input type="text" class="v-talla" placeholder="Ej. M"></div>
     <div class="campo" style="flex:0.5"><label class="etiqueta-campo">Stock</label><input type="number" class="v-stock" value="10"></div>
+    <div class="campo" style="flex:0.5"><label class="etiqueta-campo">Stock Crítico</label><input type="number" class="v-critico" value="2"></div>
     <div class="campo" style="flex:1.5"><label class="etiqueta-campo">Imagen URL</label><input type="text" class="v-img" placeholder="https://..."></div>
     <button class="btn-quitar-variante" style="margin-bottom: 2px;" onclick="document.getElementById('var-row-${varianteRowIndex}').remove()">✕</button>
   `;
@@ -324,6 +348,7 @@ document.getElementById('btn-add-variante-row').addEventListener('click', addVar
 document.getElementById('btn-guardar-prod').addEventListener('click', async () => {
     const nombre = document.getElementById('prod-nombre').value.trim();
     const catId = document.getElementById('prod-cat').value;
+    const provId = document.getElementById('prod-prov').value;
     const precio = document.getElementById('prod-precio').value;
     const desc = document.getElementById('prod-desc').value;
     const img = document.getElementById('prod-img').value;
@@ -346,6 +371,9 @@ document.getElementById('btn-guardar-prod').addEventListener('click', async () =
             imagen_url: img,
             categoria: { id: parseInt(catId) }
         };
+        if (provId) {
+            payloadProd.proveedor = { id: parseInt(provId) };
+        }
         if (miEmpresaId) {
             payloadProd.empresa = { id: parseInt(miEmpresaId) };
         }
@@ -359,10 +387,11 @@ document.getElementById('btn-guardar-prod').addEventListener('click', async () =
             const vHex = row.querySelector('.v-hex').value || '#000000';
             const vTalla = row.querySelector('.v-talla').value || 'U';
             const vStock = parseInt(row.querySelector('.v-stock').value) || 0;
+            const vCritico = parseInt(row.querySelector('.v-critico').value) || 0;
             const vImg = row.querySelector('.v-img').value || '';
 
             const payloadVar = {
-                sku: vSku, color: vColor, talla: vTalla, stock: vStock, stock_critico: 2, imagen: vImg, hex: vHex,
+                sku: vSku, color: vColor, talla: vTalla, stock: vStock, stock_critico: vCritico, imagen: vImg, hex: vHex,
                 producto: { id: prodCreado.id }
             };
             if (miEmpresaId) {
@@ -375,6 +404,8 @@ document.getElementById('btn-guardar-prod').addEventListener('click', async () =
 
         // Resetear form
         document.getElementById('prod-nombre').value = '';
+        document.getElementById('prod-cat').value = '';
+        document.getElementById('prod-prov').value = '';
         document.getElementById('prod-precio').value = '';
         document.getElementById('prod-desc').value = '';
         document.getElementById('prod-img').value = '';
@@ -394,24 +425,36 @@ document.getElementById('btn-guardar-prod').addEventListener('click', async () =
 let lastProducts = [];
 async function cargarProductos() {
     const tbody = document.getElementById('tabla-productos');
+    const verInactivos = document.getElementById('chk-ver-inactivos')?.checked || false;
     try {
-        const prods = await fetchAuth('/productos');
+        const prods = await fetchAuth(`/productos?incluirInactivos=${verInactivos}`);
         lastProducts = prods;
 
         tbody.innerHTML = prods.map(p => {
             const vars = p.variantes || [];
             const varCount = vars.length;
+            const isInactive = p.estado === 'INACTIVO';
+            const rowStyle = isInactive ? 'style="opacity:0.65; background-color:rgba(92,74,61,0.04);"' : '';
+            const statusBadge = isInactive ? ' <span class="pildora estado-fallo" style="font-size:0.65rem;">Deshabilitado</span>' : '';
+            
+            const btnAccion = isInactive
+                ? `<button class="btn btn-primario btn-mini" onclick="event.stopPropagation(); activarProducto(${p.id}, '${p.nombre.replace(/'/g, "\\'")}')">Habilitar</button>`
+                : `<button class="btn btn-peligro btn-mini" onclick="event.stopPropagation(); eliminarProducto(${p.id}, '${p.nombre.replace(/'/g, "\\'")}')">Deshabilitar</button>`;
+
             return `
-        <tr class="fila-principal" onclick="toggleVariantes(${p.id})">
+        <tr class="fila-principal" ${rowStyle} onclick="toggleVariantes(${p.id})">
           <td>${p.id}</td>
           <td><img src="${p.imagen_url || 'https://via.placeholder.com/40x50'}" class="img-min"></td>
-          <td><strong>${p.nombre}</strong></td>
+          <td>
+            <strong>${p.nombre}</strong>${statusBadge}<br>
+            <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${p.proveedor ? 'Prov: ' + p.proveedor.razonSocial : 'Sin proveedor'}</span>
+          </td>
           <td>S/. ${p.precio.toFixed(2)}</td>
           <td>${p.categoria ? p.categoria.nombre : '-'}</td>
           <td><span class="pildora rol-almacenero">${varCount} variante(s)</span></td>
           <td>
             <button class="btn btn-secundario btn-mini" onclick="event.stopPropagation(); toggleVariantes(${p.id})">Ver ▾</button>
-            <button class="btn btn-peligro btn-mini" onclick="event.stopPropagation(); eliminarProducto(${p.id}, '${p.nombre}')">Borrar</button>
+            ${btnAccion}
           </td>
         </tr>
         <tr id="vars-prod-${p.id}" style="display:none;">
@@ -419,25 +462,35 @@ async function cargarProductos() {
             <div class="variantes-lista-expandida" style="padding: 15px 20px;">
               <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items: center;">
                 <h4 style="margin:0; font-size:0.9rem; color:var(--cafe-oscuro)">Variantes de ${p.nombre}</h4>
-                <button class="btn btn-primario btn-mini" onclick="openAddVariantModal(${p.id}, '${p.nombre}')">+ Añadir Variante</button>
+                <button class="btn btn-primario btn-mini" onclick="openAddVariantModal(${p.id}, '${p.nombre.replace(/'/g, "\\'")}')">+ Añadir Variante</button>
               </div>
               ${vars.length === 0 ? '<p style="font-size:0.8rem; color:var(--cafe); margin:0;">No hay variantes registradas.</p>' : `
               <table>
                 <thead><tr><th>SKU</th><th>Img</th><th>Color</th><th>Talla</th><th>Stock</th><th>Acción</th></tr></thead>
                 <tbody>
-                  ${vars.map(v => `
-                    <tr>
+                  ${vars.map(v => {
+                    const isVarInactive = v.estado === 'INACTIVO';
+                    const varRowStyle = isVarInactive ? 'style="opacity:0.65; background-color:rgba(92,74,61,0.02);"' : '';
+                    const varStatus = isVarInactive ? ' <small style="color:var(--alerta)">(Deshabilitada)</small>' : '';
+                    
+                    const btnVarAccion = isVarInactive
+                        ? `<button class="btn btn-primario btn-mini" onclick="activarVariante(${v.id}, '${v.sku}')">Habilitar</button>`
+                        : `<button class="btn btn-peligro btn-mini" onclick="eliminarVariante(${v.id}, '${v.sku}')">Deshabilitar</button>`;
+                    
+                    return `
+                    <tr ${varRowStyle}>
                       <td class="mono">${v.sku}</td>
                       <td>${v.imagen ? `<img src="${v.imagen}" style="width:25px;height:25px;object-fit:cover;border-radius:4px;">` : '-'}</td>
                       <td>
                         <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${v.hex || '#000000'}; border:1px solid var(--borde-trazo); vertical-align:middle; margin-right:6px;"></span>
-                        ${v.color} <span style="font-size:0.75rem; color:var(--cafe); opacity:0.7">(${v.hex || '#000000'})</span>
+                        ${v.color}${varStatus} <span style="font-size:0.75rem; color:var(--cafe); opacity:0.7">(${v.hex || '#000000'})</span>
                       </td>
                       <td>${v.talla}</td>
                       <td><span class="pildora ${v.stock <= v.stock_critico ? 'estado-fallo' : 'estado-ok'}">${v.stock}</span></td>
-                      <td><button class="btn btn-peligro btn-mini" onclick="eliminarVariante(${v.id}, '${v.sku}')">Eliminar</button></td>
+                      <td>${btnVarAccion}</td>
                     </tr>
-                  `).join('')}
+                    `;
+                  }).join('')}
                 </tbody>
               </table>
               `}
@@ -457,19 +510,37 @@ function toggleVariantes(prodId) {
 }
 
 async function eliminarProducto(id, nombre) {
-    if (!confirm(`¿Eliminar producto "${nombre}" y todas sus variantes?`)) return;
+    if (!confirm(`¿Deshabilitar producto "${nombre}" y todas sus variantes?`)) return;
     try {
         const msg = await fetchAuth(`/productos/${id}`, 'DELETE');
-        showToast(msg || 'Producto eliminado');
+        showToast(msg || 'Producto deshabilitado');
         cargarProductos();
     } catch (e) { showToast(e.message, true); }
 }
 
 async function eliminarVariante(id, sku) {
-    if (!confirm(`¿Eliminar variante SKU: ${sku}?`)) return;
+    if (!confirm(`¿Deshabilitar variante SKU: ${sku}?`)) return;
     try {
         const msg = await fetchAuth(`/variantes/${id}`, 'DELETE');
-        showToast(msg || 'Variante eliminada');
+        showToast(msg || 'Variante deshabilitada');
+        cargarProductos();
+    } catch (e) { showToast(e.message, true); }
+}
+
+async function activarProducto(id, nombre) {
+    if (!confirm(`¿Desea volver a habilitar el producto "${nombre}"?`)) return;
+    try {
+        await fetchAuth(`/productos/${id}/activar`, 'PUT');
+        showToast('Producto habilitado con éxito');
+        cargarProductos();
+    } catch (e) { showToast(e.message, true); }
+}
+
+async function activarVariante(id, sku) {
+    if (!confirm(`¿Desea volver a habilitar la variante SKU: ${sku}?`)) return;
+    try {
+        await fetchAuth(`/variantes/${id}/activar`, 'PUT');
+        showToast('Variante habilitada con éxito');
         cargarProductos();
     } catch (e) { showToast(e.message, true); }
 }
@@ -946,3 +1017,234 @@ document.getElementById('buscador-prov')?.addEventListener('input', function(e) 
         }
     });
 });
+
+/* ==========================================================
+   CARGA DE STOCK
+   ========================================================== */
+const selCargaProd = document.getElementById('carga-producto');
+const selCargaVar = document.getElementById('carga-variante');
+const selCargaProv = document.getElementById('carga-proveedor');
+
+if (selCargaProd) {
+    selCargaProd.addEventListener('change', () => {
+        const prodId = selCargaProd.value;
+        selCargaVar.innerHTML = '<option value="">Cargando variantes...</option>';
+        if (!prodId) {
+            selCargaVar.innerHTML = '<option value="">Primero seleccione un producto...</option>';
+            return;
+        }
+        
+        const producto = lastProducts.find(p => p.id == prodId);
+        if (producto && producto.variantes) {
+            const variantesActivas = producto.variantes.filter(v => v.estado !== 'INACTIVO');
+            if (variantesActivas.length === 0) {
+                selCargaVar.innerHTML = '<option value="">No hay variantes activas para este producto</option>';
+            } else {
+                selCargaVar.innerHTML = '<option value="">Seleccione una variante...</option>' + 
+                    variantesActivas.map(v => `<option value="${v.id}">${v.color} - ${v.talla} (Stock actual: ${v.stock})</option>`).join('');
+            }
+        }
+    });
+}
+
+async function inicializarCargaStock() {
+    if (!selCargaProd || !selCargaProv) return;
+    
+    // Cargar productos en el select (solo activos)
+    try {
+        if (!lastProducts || lastProducts.length === 0) {
+            lastProducts = await fetchAuth('/productos');
+        }
+        const prodActivos = lastProducts.filter(p => p.estado !== 'INACTIVO');
+        selCargaProd.innerHTML = '<option value="">Seleccione un producto...</option>' + 
+            prodActivos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+    } catch (e) {
+        selCargaProd.innerHTML = '<option value="">Error al cargar productos</option>';
+    }
+
+    // Cargar proveedores
+    try {
+        const proveedores = await fetchAuth('/proveedores');
+        const provActivos = proveedores.filter(p => p.estado !== 'INACTIVO');
+        selCargaProv.innerHTML = '<option value="">Seleccione un proveedor...</option>' + 
+            provActivos.map(p => `<option value="${p.id}">${p.razonSocial || p.nombreComercial}</option>`).join('');
+    } catch (e) {
+        selCargaProv.innerHTML = '<option value="">Error al cargar proveedores</option>';
+    }
+    
+    // Set fecha actual
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('carga-fecha').value = now.toISOString().slice(0, 16);
+}
+
+// Hookear en el menu-item click
+document.getElementById('menu-navegacion').addEventListener('click', (e) => {
+    const btn = e.target.closest('.menu-item');
+    if (btn && btn.dataset.panel === 'carga-stock') {
+        inicializarCargaStock();
+    }
+});
+
+document.getElementById('btn-guardar-carga')?.addEventListener('click', async () => {
+    const varianteId = selCargaVar.value;
+    const cantidad = document.getElementById('carga-cantidad').value;
+    const fecha = document.getElementById('carga-fecha').value;
+    const proveedorId = selCargaProv.value;
+    const observaciones = document.getElementById('carga-observaciones').value;
+
+    if (!varianteId || !cantidad || !fecha || !proveedorId) {
+        return showToast('Producto, Variante, Cantidad, Fecha y Proveedor son obligatorios', true);
+    }
+    
+    if (parseInt(cantidad) <= 0) {
+        return showToast('La cantidad debe ser mayor a 0', true);
+    }
+
+    // Formatear la fecha como DD/MM/YYYY HH:mm:ss esperado por Spring Boot
+    const dateObj = new Date(fecha);
+    const dia = String(dateObj.getDate()).padStart(2, '0');
+    const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const anio = dateObj.getFullYear();
+    const hora = String(dateObj.getHours()).padStart(2, '0');
+    const min = String(dateObj.getMinutes()).padStart(2, '0');
+    const sec = String(dateObj.getSeconds()).padStart(2, '0');
+    const fechaFormat = `${dia}/${mes}/${anio} ${hora}:${min}:${sec}`;
+
+    const payload = {
+        tipo_movimiento: 'INGRESO_COMPRA',
+        cantidad: parseInt(cantidad),
+        observacion: observaciones,
+        fecha: fechaFormat,
+        variante: { id: parseInt(varianteId) },
+        proveedor: { id: parseInt(proveedorId) }
+    };
+
+    const btnGuardar = document.getElementById('btn-guardar-carga');
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = 'Guardando...';
+
+    try {
+        await fetchAuth('/inventario-movimientos', 'POST', payload);
+        showToast('Carga de stock registrada correctamente');
+        
+        // Limpiar form
+        document.getElementById('btn-limpiar-carga').click();
+        
+        // Refrescar productos en memoria
+        lastProducts = await fetchAuth('/productos');
+    } catch (e) {
+        showToast(e.message, true);
+    } finally {
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = 'Guardar Carga';
+    }
+});
+
+document.getElementById('btn-limpiar-carga')?.addEventListener('click', () => {
+    selCargaProd.value = '';
+    selCargaVar.innerHTML = '<option value="">Primero seleccione un producto...</option>';
+    document.getElementById('carga-cantidad').value = '';
+    document.getElementById('carga-observaciones').value = '';
+    selCargaProv.value = '';
+    
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('carga-fecha').value = now.toISOString().slice(0, 16);
+});
+
+/* ==========================================================
+   ALERTAS DE INVENTARIO (REAL)
+   ========================================================== */
+async function cargarAlertas() {
+    const tbody = document.getElementById('tabla-alertas');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Analizando niveles de stock...</td></tr>';
+
+    try {
+        const prods = await fetchAuth('/productos');
+        let alertasHTML = '';
+        let contadorAlertas = 0;
+
+        prods.forEach(p => {
+            const vars = p.variantes || [];
+            const prov = p.proveedor;
+            
+            vars.forEach(v => {
+                const stock = v.stock ?? 0;
+                const critico = v.stock_critico ?? 2; // valor por defecto si es nulo
+                
+                if (stock <= critico) {
+                    contadorAlertas++;
+                    const provText = prov 
+                        ? `<strong>${prov.razonSocial}</strong>${prov.contactoNombre ? `<br><small style="color:var(--cafe)">Contacto: ${prov.contactoNombre}</small>` : ''}` 
+                        : '<span style="color:var(--alerta)">Sin Proveedor</span>';
+
+                    // Convertir proveedor a JSON string seguro para pasarlo como argumento HTML
+                    const provJsonStr = prov ? JSON.stringify({
+                        ruc: prov.ruc,
+                        razonSocial: prov.razonSocial,
+                        contactoNombre: prov.contactoNombre || '',
+                        telefono: prov.telefono || '',
+                        correo: prov.correo || ''
+                    }).replace(/"/g, '&quot;').replace(/'/g, '&#39;') : 'null';
+
+                    alertasHTML += `
+                    <tr class="fila-sospechosa">
+                      <td class="mono">${v.sku}</td>
+                      <td>
+                        <strong>${p.nombre}</strong><br>
+                        <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${provText}</span>
+                      </td>
+                      <td>
+                        <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${v.hex || '#000000'}; border:1px solid var(--borde-trazo); vertical-align:middle; margin-right:6px;"></span>
+                        ${v.color} (${v.talla})
+                      </td>
+                      <td><span class="pildora estado-fallo">${stock}</span></td>
+                      <td>${critico}</td>
+                      <td>
+                        ${prov 
+                          ? `<button class="btn btn-secundario btn-mini" onclick="contactarProveedor(${provJsonStr}, '${p.nombre.replace(/'/g, "\\'")}', '${v.sku}', '${v.color}', '${v.talla}', ${stock}, ${critico})">Contactar Proveedor</button>`
+                          : `<span style="font-size:0.8rem; color:var(--cafe)">Asigne un proveedor al producto</span>`
+                        }
+                      </td>
+                    </tr>
+                    `;
+                }
+            });
+        });
+
+        if (contadorAlertas === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--verde); padding:20px; font-weight: 500;">✓ Todo el inventario se encuentra por encima del stock crítico.</td></tr>';
+        } else {
+            tbody.innerHTML = alertasHTML;
+        }
+
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--alerta); text-align:center; padding:20px;">Error al cargar alertas: ${e.message}</td></tr>`;
+    }
+}
+
+function contactarProveedor(prov, prodNombre, sku, color, talla, stock, critico) {
+    if (!prov) {
+        showToast('Este producto no tiene proveedor asignado', true);
+        return;
+    }
+
+    const asunto = `Solicitud de Reabastecimiento - ${prodNombre}`;
+    const cuerpo = `Hola ${prov.contactoNombre || 'Proveedor'},\n\nLe escribimos de la boutique para solicitar reabastecimiento del siguiente artículo:\n- Producto: ${prodNombre}\n- SKU: ${sku}\n- Variante: Color ${color}, Talla ${talla}\n- Stock actual: ${stock} unidades (Nivel de reorden: ${critico})\n\nPor favor, confírmenos la disponibilidad y el precio para esta reposición.\n\nAtentamente,\nControl de Inventario.`;
+
+    if (prov.telefono) {
+        let tClean = prov.telefono.replace(/\D/g, '');
+        if (tClean.length === 9) {
+            tClean = '51' + tClean; // Default country code
+        }
+        window.open(`https://wa.me/${tClean}?text=${encodeURIComponent(cuerpo)}`);
+        showToast(`Abriendo chat de WhatsApp para ${prov.razonSocial}`);
+    } else if (prov.correo) {
+        window.open(`mailto:${prov.correo}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`);
+        showToast(`Abriendo cliente de correo para ${prov.razonSocial}`);
+    } else {
+        alert(`No hay teléfono ni correo registrado para ${prov.razonSocial}. \nRUC: ${prov.ruc}\nNombre Comercial: ${prov.nombreComercial || '-'}`);
+    }
+}

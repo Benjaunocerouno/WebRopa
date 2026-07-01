@@ -20,7 +20,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "variantes")
 @SQLDelete(sql = "UPDATE variantes SET estado = 'INACTIVO' WHERE id = ?")
-@SQLRestriction("estado != 'INACTIVO'")
 public class Variantes {
     
     @Id

@@ -17,7 +17,6 @@ public class PedidoEstadoService implements IPedidoEstadoService {
     private final IPagosService pagosService;
     private final IBoletasService boletasService;
     private final IRecojoTiendaService recojoTiendaService;
-    private final IEnvioDomicilioService envioDomicilioService;
     private final IDevolucionesService devolucionesService;
     private final INotificacionesService notificacionesService;
 
@@ -30,7 +29,6 @@ public class PedidoEstadoService implements IPedidoEstadoService {
             IPagosService pagosService,
             IBoletasService boletasService,
             IRecojoTiendaService recojoTiendaService,
-            IEnvioDomicilioService envioDomicilioService,
             IDevolucionesService devolucionesService,
             INotificacionesService notificacionesService) {
         this.pedidosItemsService = pedidosItemsService;
@@ -38,7 +36,6 @@ public class PedidoEstadoService implements IPedidoEstadoService {
         this.pagosService = pagosService;
         this.boletasService = boletasService;
         this.recojoTiendaService = recojoTiendaService;
-        this.envioDomicilioService = envioDomicilioService;
         this.devolucionesService = devolucionesService;
         this.notificacionesService = notificacionesService;
     }
@@ -59,14 +56,8 @@ public class PedidoEstadoService implements IPedidoEstadoService {
         if (!tieneBoleta) generarBoleta(pedido);
 
         // Generar entrega si no existe
-        if (pedido.getTipo_entrega() == Pedidos.TipoEntrega.DELIVERY) {
-            if (envioDomicilioService.buscarPorPedidoId(pedido.getId()).isEmpty()) {
-                generarEnvioDomicilio(pedido);
-            }
-        } else {
-            if (recojoTiendaService.buscarPorPedidoId(pedido.getId()).isEmpty()) {
-                generarRecojo(pedido);
-            }
+        if (recojoTiendaService.buscarPorPedidoId(pedido.getId()).isEmpty()) {
+            generarRecojo(pedido);
         }
 
         // Registrar movimientos de inventario SALIDA_VENTA si no existen
@@ -93,6 +84,9 @@ public class PedidoEstadoService implements IPedidoEstadoService {
     // ── → LISTO_PARA_RECOGER ─────────────────────────
     @Transactional
     public void aplicarEfectosListoParaRecoger(Pedidos pedido) {
+        if (recojoTiendaService.buscarPorPedidoId(pedido.getId()).isEmpty()) {
+            generarRecojo(pedido);
+        }
         notificacionesService.crear(
                 pedido.getUsuario(),
                 pedido,
@@ -171,19 +165,5 @@ public class PedidoEstadoService implements IPedidoEstadoService {
         recojo.setPedido(pedido);
         recojo.setCodigo_recojo("REC-" + java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase());
         recojoTiendaService.guardar(recojo);
-    }
-
-    private void generarEnvioDomicilio(Pedidos pedido) {
-        EnvioDomicilio envio = new EnvioDomicilio();
-        envio.setPedido(pedido);
-        envio.setDireccion(pedido.getDireccion_envio());
-        envio.setDistrito(pedido.getDistrito_envio());
-        envio.setReferencia(pedido.getReferencia_envio());
-        envio.setNombreDestinatario(pedido.getDestinatario_nombre());
-        envio.setTelefonoContacto(pedido.getDestinatario_telefono());
-        envio.setCostoEnvio(pedido.getCosto_envio());
-        envio.setEstado(EnvioDomicilio.Estado.PENDIENTE);
-        envio.setCodigo_seguimiento("ENV-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        envioDomicilioService.guardar(envio);
     }
 }

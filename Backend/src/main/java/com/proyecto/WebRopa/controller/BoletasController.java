@@ -2,20 +2,26 @@ package com.proyecto.WebRopa.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.proyecto.WebRopa.entity.Boletas;
+import com.proyecto.WebRopa.entity.Pedidos;
 import com.proyecto.WebRopa.service.IBoletasService;
+import com.proyecto.WebRopa.service.IPedidosService;
 
 @RestController
 @RequestMapping("/api")
 public class BoletasController {
 
     private final IBoletasService serviceBoletas;
-    public BoletasController(IBoletasService serviceBoletas) {
+    private final IPedidosService servicePedidos;
+
+    public BoletasController(IBoletasService serviceBoletas, IPedidosService servicePedidos) {
         this.serviceBoletas = serviceBoletas;
+        this.servicePedidos = servicePedidos;
     }
 
     // ── GET todos ────────────────────────────────────
@@ -32,6 +38,12 @@ public class BoletasController {
             return ResponseEntity.badRequest().body("La boleta no existe");
         }
         return ResponseEntity.ok(boleta.get());
+    }
+
+    // ── GET boletas por pedido (comprador) ───────────
+    @GetMapping("/boletas/pedido/{pedidoId}")
+    public ResponseEntity<?> buscarPorPedido(@PathVariable Long pedidoId) {
+        return ResponseEntity.ok(serviceBoletas.buscarPorPedidoId(pedidoId));
     }
 
     // ── POST ─────────────────────────────────────────
@@ -77,5 +89,30 @@ public class BoletasController {
         }
         serviceBoletas.eliminar(id);
         return ResponseEntity.ok("Boleta anulada correctamente");
+    }
+
+    // ── Generar boletas faltantes para pedidos pagados ─
+    @org.springframework.transaction.annotation.Transactional
+    @PostMapping("/boletas/sincronizar")
+    public ResponseEntity<?> sincronizar() {
+        int generadas = 0;
+        for (Pedidos pedido : servicePedidos.buscarTodos()) {
+            if (!pedido.isPago_confirmado()) continue;
+            if (!serviceBoletas.buscarPorPedidoId(pedido.getId()).isEmpty()) continue;
+
+            String nombreCliente = pedido.getUsuario() != null ? pedido.getUsuario().getNombre() : null;
+            if (nombreCliente == null || nombreCliente.isBlank()) nombreCliente = "Cliente No Registrado";
+
+            Boletas boleta = new Boletas();
+            boleta.setPedido(pedido);
+            boleta.setNombre_cliente(nombreCliente);
+            boleta.setNumero_boleta("BOL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            boleta.setSubtotal(pedido.getSubtotal());
+            boleta.setIgv(pedido.getSubtotal() * 0.18);
+            boleta.setTotal(pedido.getTotal());
+            serviceBoletas.guardar(boleta);
+            generadas++;
+        }
+        return ResponseEntity.ok(java.util.Map.of("generadas", generadas));
     }
 }

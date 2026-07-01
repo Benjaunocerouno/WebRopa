@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,6 +36,7 @@ public class RecojoTienda {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "pedido_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private Pedidos pedido;
 
     @ManyToOne(fetch = FetchType.EAGER)

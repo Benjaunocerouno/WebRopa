@@ -20,19 +20,16 @@ public class PagosController {
     private final IPedidosService servicePedidos;
     private final IBoletasService serviceBoletas;
     private final IRecojoTiendaService serviceRecojoTienda;
-    private final IEnvioDomicilioService serviceEnvio;
 
     public PagosController(
             IPagosService servicePagos,
             IPedidosService servicePedidos,
             IBoletasService serviceBoletas,
-            IRecojoTiendaService serviceRecojoTienda,
-            IEnvioDomicilioService serviceEnvio) {
+            IRecojoTiendaService serviceRecojoTienda) {
         this.servicePagos = servicePagos;
         this.servicePedidos = servicePedidos;
         this.serviceBoletas = serviceBoletas;
         this.serviceRecojoTienda = serviceRecojoTienda;
-        this.serviceEnvio = serviceEnvio;
     }
 
     // ── Ver todos los pagos (admin) ──────────────────
@@ -81,8 +78,7 @@ public class PagosController {
         pago.setPedido(pedido);
         pago.setMonto(pedido.getTotal());
         
-        boolean isTarjeta = (pago.getMetodo() == Pagos.Metodo.TARJETA);
-        pago.setEstado(isTarjeta ? Pagos.Estado.APROBADO : Pagos.Estado.PENDIENTE);
+        pago.setEstado(Pagos.Estado.APROBADO);
         servicePagos.guardar(pago);
 
         Map<String, Object> response = new HashMap<>();
@@ -92,30 +88,22 @@ public class PagosController {
         pagoData.put("estado", pago.getEstado().toString());
         response.put("pago", pagoData);
 
-        if (isTarjeta) {
-            pedido.setPago_confirmado(true);
-            pedido.setEstado(Pedidos.Estado.CONFIRMADO);
-            servicePedidos.guardar(pedido);
+        // Todos los pagos se confirman automáticamente
+        pedido.setPago_confirmado(true);
+        pedido.setEstado(Pedidos.Estado.CONFIRMADO);
+        servicePedidos.guardar(pedido);
 
-            Boletas boleta = generarBoleta(pedido);
-            Map<String, Object> boletaData = new HashMap<>();
-            boletaData.put("numero_boleta", boleta.getNumero_boleta());
-            boletaData.put("nombre_cliente", boleta.getNombre_cliente());
-            boletaData.put("total", boleta.getTotal());
-            response.put("boleta", boletaData);
+        Boletas boleta = generarBoleta(pedido);
+        Map<String, Object> boletaData = new HashMap<>();
+        boletaData.put("numero_boleta", boleta.getNumero_boleta());
+        boletaData.put("nombre_cliente", boleta.getNombre_cliente());
+        boletaData.put("total", boleta.getTotal());
+        response.put("boleta", boletaData);
 
-            if (pedido.getTipo_entrega() == Pedidos.TipoEntrega.DELIVERY) {
-                EnvioDomicilio envio = generarEnvioDomicilio(pedido);
-                Map<String, Object> envioData = new HashMap<>();
-                envioData.put("codigo_seguimiento", envio.getCodigo_seguimiento());
-                response.put("envio", envioData);
-            } else {
-                RecojoTienda recojo = generarRecojo(pedido);
-                Map<String, Object> recojoData = new HashMap<>();
-                recojoData.put("codigo_recojo", recojo.getCodigo_recojo());
-                response.put("recojo", recojoData);
-            }
-        }
+        RecojoTienda recojo = generarRecojo(pedido);
+        Map<String, Object> recojoData = new HashMap<>();
+        recojoData.put("codigo_recojo", recojo.getCodigo_recojo());
+        response.put("recojo", recojoData);
 
         return ResponseEntity.ok(response);
     }
@@ -147,11 +135,7 @@ public class PagosController {
                     servicePedidos.guardar(pedido);
 
                     generarBoleta(pedido);
-                    if (pedido.getTipo_entrega() == Pedidos.TipoEntrega.DELIVERY) {
-                        generarEnvioDomicilio(pedido);
-                    } else {
-                        generarRecojo(pedido);
-                    }
+                    generarRecojo(pedido);
                 }
             }
 
@@ -186,20 +170,5 @@ public class PagosController {
         recojo.setCodigo_recojo("REC-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
         serviceRecojoTienda.guardar(recojo);
         return recojo;
-    }
-
-    private EnvioDomicilio generarEnvioDomicilio(Pedidos pedido) {
-        EnvioDomicilio envio = new EnvioDomicilio();
-        envio.setPedido(pedido);
-        envio.setDireccion(pedido.getDireccion_envio());
-        envio.setDistrito(pedido.getDistrito_envio());
-        envio.setReferencia(pedido.getReferencia_envio());
-        envio.setNombreDestinatario(pedido.getDestinatario_nombre());
-        envio.setTelefonoContacto(pedido.getDestinatario_telefono());
-        envio.setCostoEnvio(pedido.getCosto_envio());
-        envio.setEstado(EnvioDomicilio.Estado.PENDIENTE);
-        envio.setCodigo_seguimiento("ENV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        serviceEnvio.guardar(envio);
-        return envio;
     }
 }
