@@ -34,6 +34,106 @@
 .btn-outline { background: transparent; border: 1.5px solid var(--borde-trazo); color: var(--cafe); }
 .btn-outline:hover { border-color: var(--sage-oscuro); color: var(--sage-oscuro); }
 .img-min { width: 40px; height: 50px; object-fit: cover; border-radius: 4px; background: var(--borde-trazo); }
+.permisos-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 15px;
+}
+.permiso-resumen {
+  background: linear-gradient(180deg, rgba(248,244,237,0.95), rgba(243,236,226,0.85));
+  border: 1px solid var(--borde-trazo);
+  border-radius: var(--radio-b);
+  padding: 14px 16px;
+  box-shadow: 0 10px 20px rgba(92,74,61,0.04);
+}
+.permiso-resumen .titulo {
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem;
+  color: var(--cafe-oscuro);
+  margin-bottom: 6px;
+}
+.permiso-resumen .descripcion {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+.permiso-lista {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 8px;
+}
+.permiso-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.82rem;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(92,74,61,0.08);
+}
+.permiso-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.permiso-toggle input { accent-color: var(--sage-oscuro); }
+.permiso-panel-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.permiso-panel-nota {
+  background: rgba(216,164,143,0.12);
+  border: 1px solid rgba(92,74,61,0.12);
+  border-radius: var(--radio-b);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  color: var(--cafe-oscuro);
+}
+.permiso-panel-nota strong { display: block; margin-bottom: 4px; }
+.permiso-matriz {
+  width: 100%;
+  border-collapse: collapse;
+}
+.permiso-matriz th,
+.permiso-matriz td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--borde-trazo);
+  vertical-align: top;
+}
+.permiso-matriz thead th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cafe);
+}
+.permiso-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+}
+.permiso-estado::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--sage-oscuro);
+  box-shadow: 0 0 0 4px rgba(122,140,110,0.12);
+}
+@media (max-width: 900px) {
+  .permiso-panel-grid,
+  .permisos-resumen { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -189,44 +289,96 @@
       <div class="topbar">
         <div>
           <h2>Roles y Permisos</h2>
-          <p class="descripcion">Asigna qué módulos puede ver y editar cada empleado.</p>
+          <p class="descripcion">Define qué puede ver y hacer cada usuario dentro del panel.</p>
         </div>
       </div>
       <div class="tarjeta">
-        <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
-          <h3>Matriz de Permisos (Prototipo)</h3>
-          <input type="text" class="buscador-generico" data-target="tabla-permisos-empresa" placeholder="Buscar rol o empleado..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+        <div class="permiso-panel-nota">
+          <strong>Editor visual de permisos</strong>
+          Usa esta vista para definir qué módulos y acciones tiene disponibles cada rol. El usuario final solo verá lo que su rol permita.
         </div>
-        <table class="matriz-permisos">
-          <thead>
-            <tr>
-              <th>Empleado / Rol</th>
-              <th>Panel Admin</th>
-              <th>Mantenimiento (Inventario)</th>
-              <th>Despacho (Pedidos)</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-permisos-empresa">
-            <tr>
-              <td><strong>Carlos Admin</strong><br><span style="font-size:0.75rem; color:var(--cafe)">Admin</span></td>
-              <td><input type="checkbox" class="chk-permiso" checked disabled></td>
-              <td><input type="checkbox" class="chk-permiso" checked></td>
-              <td><input type="checkbox" class="chk-permiso" checked></td>
-            </tr>
-            <tr>
-              <td><strong>Ana Inventario</strong><br><span style="font-size:0.75rem; color:var(--cafe)">Mantenimiento</span></td>
-              <td><input type="checkbox" class="chk-permiso"></td>
-              <td><input type="checkbox" class="chk-permiso" checked></td>
-              <td><input type="checkbox" class="chk-permiso"></td>
-            </tr>
-            <tr>
-              <td><strong>Luis Repartidor</strong><br><span style="font-size:0.75rem; color:var(--cafe)">Despacho</span></td>
-              <td><input type="checkbox" class="chk-permiso"></td>
-              <td><input type="checkbox" class="chk-permiso"></td>
-              <td><input type="checkbox" class="chk-permiso" checked></td>
-            </tr>
-          </tbody>
-        </table>
+
+        <div class="permisos-resumen">
+          <div class="permiso-resumen">
+            <div class="titulo">Administrador</div>
+            <p class="descripcion">Acceso completo al panel, incluyendo usuarios, catálogo, pedidos y configuración.</p>
+            <ul class="permiso-lista">
+              <li><span>Gestionar usuarios</span><span class="permiso-estado">Total</span></li>
+              <li><span>Editar catálogo</span><span class="permiso-estado">Total</span></li>
+              <li><span>Ver reportes</span><span class="permiso-estado">Total</span></li>
+            </ul>
+          </div>
+          <div class="permiso-resumen">
+            <div class="titulo">Mantenimiento</div>
+            <p class="descripcion">Acceso a inventario, productos y movimientos internos, sin administración de usuarios.</p>
+            <ul class="permiso-lista">
+              <li><span>Inventario y stock</span><span class="permiso-estado">Activo</span></li>
+              <li><span>Productos</span><span class="permiso-estado">Activo</span></li>
+              <li><span>Usuarios</span><span class="permiso-estado">Restringido</span></li>
+            </ul>
+          </div>
+          <div class="permiso-resumen">
+            <div class="titulo">Despacho</div>
+            <p class="descripcion">Acceso centrado en pedidos, estados, seguimiento y atención operativa.</p>
+            <ul class="permiso-lista">
+              <li><span>Ver pedidos</span><span class="permiso-estado">Activo</span></li>
+              <li><span>Cambiar estados</span><span class="permiso-estado">Activo</span></li>
+              <li><span>Configurar sistema</span><span class="permiso-estado">Restringido</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="permiso-panel-grid">
+          <div>
+            <div class="tarjeta-titulo" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
+              <h3 style="margin:0;">Permisos por usuario</h3>
+              <input type="text" class="buscador-generico" data-target="tabla-permisos-empresa" placeholder="Buscar rol o empleado..." style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--borde-trazo); outline: none; font-family: 'Outfit', sans-serif;">
+            </div>
+            <table class="permiso-matriz">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Acceso</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-permisos-empresa">
+                <tr>
+                  <td><strong>Carlos Admin</strong></td>
+                  <td><span class="pildora rol-admin">Admin</span></td>
+                  <td><label class="permiso-toggle"><input type="checkbox" checked disabled><span>Completo</span></label></td>
+                </tr>
+                <tr>
+                  <td><strong>Ana Inventario</strong></td>
+                  <td><span class="pildora rol-almacenero">Mantenimiento</span></td>
+                  <td><label class="permiso-toggle"><input type="checkbox" checked><span>Operativo</span></label></td>
+                </tr>
+                <tr>
+                  <td><strong>Luis Repartidor</strong></td>
+                  <td><span class="pildora rol-vendedor">Despacho</span></td>
+                  <td><label class="permiso-toggle"><input type="checkbox" checked><span>Pedidos</span></label></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="tarjeta-titulo" style="margin-bottom:12px;">
+              <h3 style="margin:0;">Permisos rápidos</h3>
+            </div>
+            <div class="tarjeta" style="margin:0; background:rgba(255,255,255,0.6);">
+              <div class="grid-doble" style="margin-bottom: 8px;">
+                <label class="permiso-toggle"><input type="checkbox" checked><span>Ver panel admin</span></label>
+                <label class="permiso-toggle"><input type="checkbox" checked><span>Gestionar catálogo</span></label>
+                <label class="permiso-toggle"><input type="checkbox"><span>Gestionar usuarios</span></label>
+                <label class="permiso-toggle"><input type="checkbox" checked><span>Ver pedidos</span></label>
+                <label class="permiso-toggle"><input type="checkbox" checked><span>Cambiar estados</span></label>
+                <label class="permiso-toggle"><input type="checkbox"><span>Ajustar configuración</span></label>
+              </div>
+              <button class="btn btn-primario" type="button">Guardar cambios de permisos</button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
