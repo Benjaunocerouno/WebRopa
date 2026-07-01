@@ -31,6 +31,10 @@ public class BoletasService implements IBoletasService {
         return repoBoletas.findAll();
     }
 
+    public List<Boletas> buscarPorPedidoId(Long pedidoId) {
+        return repoBoletas.findByPedidoId(pedidoId);
+    }
+
     public Optional<Boletas> buscarId(Long id) {
         Long tenantId = com.proyecto.WebRopa.security.TenantContext.getCurrentTenant();
         if (tenantId != null) {
