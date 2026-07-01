@@ -20,6 +20,9 @@ public class PedidoEstadoService implements IPedidoEstadoService {
     private final IDevolucionesService devolucionesService;
     private final INotificacionesService notificacionesService;
 
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager em;
+
     public PedidoEstadoService(
             IPedidosItemsService pedidosItemsService,
             IVariantesService variantesService,
@@ -55,6 +58,26 @@ public class PedidoEstadoService implements IPedidoEstadoService {
         // Generar entrega si no existe
         if (recojoTiendaService.buscarPorPedidoId(pedido.getId()).isEmpty()) {
             generarRecojo(pedido);
+        }
+
+        // Registrar movimientos de inventario SALIDA_VENTA si no existen
+        String checkJpql = "SELECT COUNT(im) FROM InventarioMovimientos im WHERE im.observacion = :obs";
+        long existingMovs = em.createQuery(checkJpql, Long.class)
+                .setParameter("obs", "Salida por venta de pedido #" + pedido.getId())
+                .getSingleResult();
+
+        if (existingMovs == 0) {
+            List<PedidosItems> items = pedidosItemsService.buscarPorPedidoId(pedido.getId());
+            for (PedidosItems item : items) {
+                InventarioMovimientos mov = new InventarioMovimientos();
+                mov.setTipo_movimiento(InventarioMovimientos.TipoMovimiento.SALIDA_VENTA);
+                mov.setCantidad(-item.getCantidad());
+                mov.setObservacion("Salida por venta de pedido #" + pedido.getId());
+                mov.setVariante(item.getVariante());
+                mov.setFecha(LocalDateTime.now());
+                mov.setEstado(InventarioMovimientos.Estado.ACTIVO);
+                em.persist(mov);
+            }
         }
     }
 

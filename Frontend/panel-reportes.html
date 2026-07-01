@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/panel-empresa.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 /* Estilos específicos para reportes */
 .grid-kpi {
@@ -155,56 +156,44 @@
         </div>
         <div class="estado-vivo">
           <span class="punto-pulso"></span>
-          Actualizado hace 5 min
+          Actualizado hace un momento
         </div>
       </div>
 
       <div class="grid-kpi">
         <div class="kpi-card verde">
           <div class="kpi-label">Ingresos del Mes</div>
-          <div class="kpi-valor">S/ 45,230.50</div>
-          <div class="kpi-delta sube">▲ +12% vs mes anterior</div>
+          <div class="kpi-valor" id="kpi-ingresos-valor">S/ 0.00</div>
+          <div class="kpi-delta" id="kpi-ingresos-delta">-</div>
         </div>
         <div class="kpi-card terracota">
           <div class="kpi-label">Pedidos Completados</div>
-          <div class="kpi-valor">842</div>
-          <div class="kpi-delta sube">▲ +5% vs mes anterior</div>
+          <div class="kpi-valor" id="kpi-pedidos-valor">0</div>
+          <div class="kpi-delta" id="kpi-pedidos-delta">-</div>
         </div>
         <div class="kpi-card mostaza">
           <div class="kpi-label">Ticket Promedio</div>
-          <div class="kpi-valor">S/ 53.70</div>
-          <div class="kpi-delta baja">▼ -2% vs mes anterior</div>
+          <div class="kpi-valor" id="kpi-ticket-valor">S/ 0.00</div>
+          <div class="kpi-delta" id="kpi-ticket-delta">-</div>
         </div>
         <div class="kpi-card cafe">
           <div class="kpi-label">Tasa Devolución</div>
-          <div class="kpi-valor">4.2%</div>
-          <div class="kpi-delta sube">▼ -1.5% vs mes anterior</div> <!-- Baja devolucion es bueno, por eso color verde (sube class pero significa positivo) -->
+          <div class="kpi-valor" id="kpi-devolucion-valor">0.0%</div>
+          <div class="kpi-delta" id="kpi-devolucion-delta">-</div>
         </div>
       </div>
 
       <div class="grid-doble">
         <div class="tarjeta">
           <div class="tarjeta-titulo"><h3>Tendencia de Ventas (Últimos 7 días)</h3></div>
-          <div class="chart-placeholder">[ Gráfico de Líneas: Ventas diarias ]<br>Tu compañero integrará Chart.js aquí.</div>
+          <div style="position: relative; height: 300px; width: 100%; margin-top: 15px;">
+            <canvas id="chart-tendencia-ventas"></canvas>
+          </div>
         </div>
         <div class="tarjeta">
           <div class="tarjeta-titulo"><h3>Top 5 Categorías</h3></div>
-          <div class="lista-top">
-            <div class="item-top">
-              <span class="item-puesto">1</span><span class="item-nombre">Polos y Camisas</span>
-              <div style="flex:2; margin-right:15px;"><div class="barra-progreso"><div class="barra-relleno" style="width: 85%; background: var(--terracota);"></div></div></div>
-              <span class="item-valor">35%</span>
-            </div>
-            <div class="item-top">
-              <span class="item-puesto">2</span><span class="item-nombre">Pantalones</span>
-              <div style="flex:2; margin-right:15px;"><div class="barra-progreso"><div class="barra-relleno" style="width: 60%; background: var(--sage-oscuro);"></div></div></div>
-              <span class="item-valor">25%</span>
-            </div>
-            <div class="item-top">
-              <span class="item-puesto">3</span><span class="item-nombre">Casacas</span>
-              <div style="flex:2; margin-right:15px;"><div class="barra-progreso"><div class="barra-relleno" style="width: 45%; background: var(--mostaza);"></div></div></div>
-              <span class="item-valor">18%</span>
-            </div>
+          <div class="lista-top" id="top-categorias-lista">
+            <!-- Cargado dinámicamente -->
           </div>
         </div>
       </div>
@@ -223,22 +212,26 @@
         <div class="form-fila">
           <div class="campo">
             <label class="etiqueta-campo">Fecha Inicio</label>
-            <input type="date">
+            <input type="date" id="ventas-fecha-inicio">
           </div>
           <div class="campo">
             <label class="etiqueta-campo">Fecha Fin</label>
-            <input type="date">
+            <input type="date" id="ventas-fecha-fin">
           </div>
           <div class="campo">
             <label class="etiqueta-campo">Estado Pedido</label>
-            <select>
-              <option>Todos</option>
-              <option>Confirmados</option>
-              <option>Pendientes</option>
+            <select id="ventas-estado-pedido">
+              <option value="Todos">Todos</option>
+              <option value="PENDIENTE">Pendientes</option>
+              <option value="CONFIRMADO">Confirmados</option>
+              <option value="EN_PREPARACION">En Preparación</option>
+              <option value="LISTO_PARA_RECOGER">Listo para Recoger</option>
+              <option value="RECOGIDO">Recogidos</option>
+              <option value="CANCELADO">Cancelados</option>
             </select>
           </div>
-          <button class="btn btn-primario" style="margin-bottom: 2px;">Generar Reporte</button>
-          <button class="btn btn-secundario" style="margin-bottom: 2px;">Exportar CSV</button>
+          <button class="btn btn-primario" id="btn-generar-ventas" style="margin-bottom: 2px;">Generar Reporte</button>
+          <button class="btn btn-secundario" id="btn-exportar-ventas" style="margin-bottom: 2px;">Exportar CSV</button>
         </div>
       </div>
 
@@ -259,33 +252,9 @@
               <th>Método Pago</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="tabla-ventas-body">
             <tr>
-              <td>2023-10-25</td>
-              <td class="mono">B001-000452</td>
-              <td>Juan Pérez</td>
-              <td>S/ 100.00</td>
-              <td>S/ 18.00</td>
-              <td class="mono">S/ 118.00</td>
-              <td><span class="pildora estado-ok">Tarjeta</span></td>
-            </tr>
-            <tr>
-              <td>2023-10-25</td>
-              <td class="mono">B001-000453</td>
-              <td>Ana Gómez</td>
-              <td>S/ 45.50</td>
-              <td>S/ 8.19</td>
-              <td class="mono">S/ 53.69</td>
-              <td><span class="pildora estado-pendiente">Yape</span></td>
-            </tr>
-            <tr>
-              <td>2023-10-24</td>
-              <td class="mono">B001-000454</td>
-              <td>Carlos Ruiz</td>
-              <td>S/ 200.00</td>
-              <td>S/ 36.00</td>
-              <td class="mono">S/ 236.00</td>
-              <td><span class="pildora estado-ok">Tarjeta</span></td>
+              <td colspan="7" style="text-align: center; color: var(--cafe);">Presione "Generar Reporte" para cargar datos.</td>
             </tr>
           </tbody>
         </table>
@@ -298,10 +267,10 @@
         <div>
           <h2>Productos Más Vendidos</h2>
           <p class="descripcion">Basado en PedidosItems, ranking de los productos con mayor rotación.</p>
-        </div>
-      </div>
       <div class="tarjeta">
-        <div class="chart-placeholder">[ Gráfico de Barras Horizontales: Top 10 Productos ]</div>
+        <div style="position: relative; height: 350px; width: 100%;">
+          <canvas id="chart-top-productos"></canvas>
+        </div>
       </div>
       <div class="tarjeta">
         <div class="tarjeta-titulo" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px;">
@@ -318,20 +287,9 @@
               <th>Ingreso Generado</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="tabla-productos-body">
             <tr>
-              <td>#1</td>
-              <td>Polo Básico Algodón</td>
-              <td>M / Blanco</td>
-              <td class="mono">145</td>
-              <td class="mono">S/ 4,350.00</td>
-            </tr>
-            <tr>
-              <td>#2</td>
-              <td>Jean Clásico Recto</td>
-              <td>32 / Azul Oscuro</td>
-              <td class="mono">98</td>
-              <td class="mono">S/ 8,820.00</td>
+              <td colspan="5" style="text-align: center; color: var(--cafe);">Cargando ranking de productos...</td>
             </tr>
           </tbody>
         </table>
@@ -349,20 +307,15 @@
       <div class="grid-doble">
         <div class="tarjeta" style="border-color: var(--alerta);">
           <div class="tarjeta-titulo"><h3 style="color: var(--alerta);">⚠️ Alertas de Stock Bajo</h3></div>
-          <div class="lista-top">
-            <div class="item-top">
-              <span class="item-nombre">Casaca Cuero Sintético (L / Negro)</span>
-              <span class="item-valor" style="color: var(--alerta);">2 unid. restantes</span>
-            </div>
-            <div class="item-top">
-              <span class="item-nombre">Polo Estampado Vintage (S / Gris)</span>
-              <span class="item-valor" style="color: var(--alerta);">0 unid. restantes</span>
-            </div>
+          <div class="lista-top" id="inventario-alertas-lista">
+            <!-- Cargado dinámicamente -->
           </div>
         </div>
         <div class="tarjeta">
           <div class="tarjeta-titulo"><h3>Distribución de Movimientos</h3></div>
-          <div class="chart-placeholder" style="height: 150px;">[ Gráfico de Dona: % Compras vs % Ventas ]</div>
+          <div style="position: relative; height: 200px; width: 100%; margin-top: 15px;">
+            <canvas id="chart-distribucion-movimientos"></canvas>
+          </div>
         </div>
       </div>
       <div class="tarjeta">
@@ -380,27 +333,9 @@
               <th>Observación</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="tabla-inventario-body">
             <tr>
-              <td>Hoy 10:30</td>
-              <td><span class="pildora estado-ok">INGRESO_COMPRA</span></td>
-              <td>Polo Básico / M Blanco</td>
-              <td class="mono">+50</td>
-              <td>Lote Proveedor A</td>
-            </tr>
-            <tr>
-              <td>Hoy 11:15</td>
-              <td><span class="pildora estado-fallo">SALIDA_VENTA</span></td>
-              <td>Jean Clásico / 32 Azul</td>
-              <td class="mono">-2</td>
-              <td>Pedido #843</td>
-            </tr>
-            <tr>
-              <td>Ayer 16:40</td>
-              <td><span class="pildora estado-pendiente">INGRESO_DEVOLUCION</span></td>
-              <td>Casaca Denim / M Celeste</td>
-              <td class="mono">+1</td>
-              <td>Devolución Pedido #820</td>
+              <td colspan="5" style="text-align: center; color: var(--cafe);">Cargando movimientos...</td>
             </tr>
           </tbody>
         </table>
@@ -418,11 +353,11 @@
       <div class="grid-kpi">
         <div class="kpi-card mostaza">
           <div class="kpi-label">Cupones Usados (Mes)</div>
-          <div class="kpi-valor">124</div>
+          <div class="kpi-valor" id="kpi-cupones-usados">0</div>
         </div>
         <div class="kpi-card verde">
           <div class="kpi-label">Ahorro Clientes</div>
-          <div class="kpi-valor">S/ 1,250.00</div>
+          <div class="kpi-valor" id="kpi-ahorro-clientes">S/ 0.00</div>
         </div>
       </div>
       <div class="tarjeta">
@@ -440,20 +375,9 @@
               <th>Estado</th>
             </tr>
           </thead>
-          <tbody id="tabla-rep-cupones">
+          <tbody id="tabla-cupones-body">
             <tr>
-              <td class="mono">BIENVENIDA20</td>
-              <td>20%</td>
-              <td class="mono">85</td>
-              <td class="mono">S/ 850.00</td>
-              <td><span class="pildora estado-ok">Activo</span></td>
-            </tr>
-            <tr>
-              <td class="mono">FLASH50</td>
-              <td>S/ 50.00</td>
-              <td class="mono">39</td>
-              <td class="mono">S/ 400.00</td>
-              <td><span class="pildora estado-fallo">Expirado</span></td>
+              <td colspan="5" style="text-align: center; color: var(--cafe);">Cargando efectividad de cupones...</td>
             </tr>
           </tbody>
         </table>
@@ -471,23 +395,14 @@
       <div class="grid-doble">
         <div class="tarjeta">
           <div class="tarjeta-titulo"><h3>Motivos Frecuentes</h3></div>
-          <div class="chart-placeholder">[ Gráfico Pie: Talla(50%), Defecto(30%), Color(20%) ]</div>
+          <div style="position: relative; height: 250px; width: 100%; margin-top: 15px;">
+            <canvas id="chart-motivos-devolucion"></canvas>
+          </div>
         </div>
         <div class="tarjeta">
           <div class="tarjeta-titulo"><h3>Últimas Solicitudes</h3></div>
-          <div class="lista-top">
-            <div class="item-top">
-              <span class="item-nombre">Devolución #15 - TALLA_INCORRECTA</span>
-              <span class="pildora estado-pendiente">SOLICITADA</span>
-            </div>
-            <div class="item-top">
-              <span class="item-nombre">Devolución #14 - DEFECTUOSO</span>
-              <span class="pildora estado-ok">REEMBOLSADA</span>
-            </div>
-            <div class="item-top">
-              <span class="item-nombre">Devolución #13 - OTRO</span>
-              <span class="pildora estado-fallo">RECHAZADA</span>
-            </div>
+          <div class="lista-top" id="devoluciones-recientes-lista">
+            <!-- Cargado dinámicamente -->
           </div>
         </div>
       </div>
@@ -502,7 +417,7 @@
    CONFIGURACIÓN Y UTILIDADES (Basado en panel-empresa)
    ========================================================== */
 const API_URL = CONFIG.API_URL;
-const SESSION_KEY = 'tenant_session';
+const SESSION_KEY = CONFIG.TENANT_SESSION_KEY || 'tenant_session';
 
 function getToken() {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY)).token; } catch { return null; }
@@ -536,6 +451,473 @@ async function fetchAuth(endpoint, method='GET', body=null) {
 }
 
 /* ==========================================================
+   LÓGICA DEL PANEL DE REPORTES Y GRÁFICOS (CHART.JS)
+   ========================================================== */
+let charts = {};
+let ventasActuales = [];
+
+async function cargarDatosPanel(panelId) {
+  try {
+    switch(panelId) {
+      case 'dashboard':
+        await cargarDashboard();
+        break;
+      case 'ventas':
+        inicializarFechasVentas();
+        await cargarVentasFinancieras();
+        break;
+      case 'productos':
+        await cargarTopProductos();
+        break;
+      case 'inventario':
+        await cargarInventario();
+        break;
+      case 'clientes':
+        await cargarClientes();
+        break;
+      case 'devoluciones':
+        await cargarDevoluciones();
+        break;
+    }
+  } catch (e) {
+    console.error("Error al cargar panel " + panelId, e);
+    if (e.message.includes("403") || e.message.includes("denegado") || e.message.includes("Role") || e.message.includes("permisos")) {
+      alert("Acceso denegado: No cuenta con permisos de analista para ver este reporte.");
+    }
+  }
+}
+
+// 1. DASHBOARD GENERAL
+async function cargarDashboard() {
+  const data = await fetchAuth('/reportes/dashboard');
+  
+  // KPIs
+  document.getElementById('kpi-ingresos-valor').textContent = 'S/ ' + data.ingresosMes.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const ingDelta = document.getElementById('kpi-ingresos-delta');
+  ingDelta.textContent = data.ingresosDelta;
+  ingDelta.className = 'kpi-delta ' + (data.ingresosDelta.includes('+') ? 'sube' : 'baja');
+
+  document.getElementById('kpi-pedidos-valor').textContent = data.pedidosCompletados;
+  const pedDelta = document.getElementById('kpi-pedidos-delta');
+  pedDelta.textContent = data.pedidosDelta;
+  pedDelta.className = 'kpi-delta ' + (data.pedidosDelta.includes('+') ? 'sube' : 'baja');
+
+  document.getElementById('kpi-ticket-valor').textContent = 'S/ ' + data.ticketPromedio.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const tickDelta = document.getElementById('kpi-ticket-delta');
+  tickDelta.textContent = data.ticketDelta;
+  tickDelta.className = 'kpi-delta ' + (data.ticketDelta.includes('+') ? 'sube' : 'baja');
+
+  document.getElementById('kpi-devolucion-valor').textContent = data.tasaDevolucion.toFixed(1) + '%';
+  const devDelta = document.getElementById('kpi-devolucion-delta');
+  devDelta.textContent = data.devolucionDelta;
+  devDelta.className = 'kpi-delta ' + (data.devolucionDelta.includes('▼') ? 'sube' : 'baja'); // Menor tasa de devolución es verde (sube)
+
+  // Chart Tendencia Ventas
+  renderDashboardChart(data.tendenciaVentas);
+
+  // Top 5 Categorías
+  const listaCat = document.getElementById('top-categorias-lista');
+  listaCat.innerHTML = '';
+  if (!data.topCategorias || data.topCategorias.length === 0) {
+    listaCat.innerHTML = '<div style="padding:10px; text-align:center; color:var(--cafe);">Sin datos disponibles</div>';
+  } else {
+    data.topCategorias.forEach((cat, index) => {
+      const colors = ['var(--terracota)', 'var(--sage-oscuro)', 'var(--mostaza)', 'var(--cafe)', '#8c7a6b'];
+      const color = colors[index % colors.length];
+      const item = document.createElement('div');
+      item.className = 'item-top';
+      item.innerHTML = `
+        <span class="item-puesto">${index + 1}</span>
+        <span class="item-nombre">${cat.categoria}</span>
+        <div style="flex:2; margin-right:15px;">
+          <div class="barra-progreso">
+            <div class="barra-relleno" style="width: ${cat.porcentaje}%; background: ${color};"></div>
+          </div>
+        </div>
+        <span class="item-valor">${cat.porcentaje}% (${cat.cantidad} ud)</span>
+      `;
+      listaCat.appendChild(item);
+    });
+  }
+}
+
+function renderDashboardChart(tendencia) {
+  const ctx = document.getElementById('chart-tendencia-ventas').getContext('2d');
+  if (charts.tendencia) {
+    charts.tendencia.destroy();
+  }
+  const labels = tendencia.map(t => {
+    const pts = t.fecha.split('-');
+    return pts.length === 3 ? pts[2] + '/' + pts[1] : t.fecha;
+  });
+  const values = tendencia.map(t => t.total);
+
+  charts.tendencia = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Ingresos Diarios (S/)',
+        data: values,
+        borderColor: '#7E9270',
+        backgroundColor: 'rgba(126, 146, 112, 0.1)',
+        borderWidth: 2,
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(92,74,61,0.08)' },
+          ticks: { font: { family: 'Outfit' } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Outfit' } }
+        }
+      }
+    }
+  });
+}
+
+// 2. REPORTE DE VENTAS FINANCIERO
+function inicializarFechasVentas() {
+  const fi = document.getElementById('ventas-fecha-inicio');
+  const ff = document.getElementById('ventas-fecha-fin');
+  if (!fi.value) {
+    const hoy = new Date().toISOString().split('T')[0];
+    const hace30dias = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    fi.value = hace30dias;
+    ff.value = hoy;
+  }
+}
+
+async function cargarVentasFinancieras() {
+  const fi = document.getElementById('ventas-fecha-inicio').value;
+  const ff = document.getElementById('ventas-fecha-fin').value;
+  const est = document.getElementById('ventas-estado-pedido').value;
+
+  const url = `/reportes/ventas?fechaInicio=${fi}&fechaFin=${ff}&estadoPedido=${est}`;
+  const data = await fetchAuth(url);
+  ventasActuales = data;
+
+  const tbody = document.getElementById('tabla-ventas-body');
+  tbody.innerHTML = '';
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--cafe); padding:20px;">No se encontraron boletas en el rango seleccionado.</td></tr>';
+    return;
+  }
+
+  data.forEach(b => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${b.fecha}</td>
+      <td class="mono">${b.numeroBoleta}</td>
+      <td>${b.cliente}</td>
+      <td>S/ ${b.subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      <td>S/ ${b.igv.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      <td class="mono" style="font-weight:600;">S/ ${b.total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      <td><span class="pildora estado-ok">${b.metodoPago}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function exportarTablaACSV(nombreArchivo, datos) {
+  if (!datos || datos.length === 0) {
+    alert("No hay datos para exportar");
+    return;
+  }
+  const cabeceras = Object.keys(datos[0]);
+  const filasCsv = [cabeceras.join(",")];
+
+  for (const fila of datos) {
+    const valores = cabeceras.map(cabecera => {
+      const valor = fila[cabecera] === null || fila[cabecera] === undefined ? "" : fila[cabecera].toString();
+      const valorEscapado = valor.replace(/"/g, '""');
+      return valorEscapado.includes(",") || valorEscapado.includes("\n") || valorEscapado.includes('"') 
+        ? `"${valorEscapado}"` 
+        : valorEscapado;
+    });
+    filasCsv.push(valores.join(","));
+  }
+
+  const blob = new Blob(["\uFEFF" + filasCsv.join("\n")], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", nombreArchivo);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// 3. TOP PRODUCTOS
+async function cargarTopProductos() {
+  const data = await fetchAuth('/reportes/productos');
+
+  const tbody = document.getElementById('tabla-productos-body');
+  tbody.innerHTML = '';
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--cafe); padding:20px;">No hay registros de ventas.</td></tr>';
+    return;
+  }
+
+  data.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>#${p.ranking}</td>
+      <td>${p.nombre}</td>
+      <td>${p.variante}</td>
+      <td class="mono">${p.unidadesVendidas}</td>
+      <td class="mono" style="font-weight:600;">S/ ${p.ingresoGenerado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const top10 = data.slice(0, 10);
+  const ctx = document.getElementById('chart-top-productos').getContext('2d');
+  if (charts.topProductos) {
+    charts.topProductos.destroy();
+  }
+
+  charts.topProductos = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: top10.map(p => p.nombre + ' (' + p.variante + ')'),
+      datasets: [{
+        label: 'Unidades Vendidas',
+        data: top10.map(p => p.unidadesVendidas),
+        backgroundColor: 'rgba(210, 139, 109, 0.8)',
+        borderColor: 'var(--terracota)',
+        borderWidth: 1.5
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: { color: 'rgba(92,74,61,0.08)' }
+        },
+        y: {
+          grid: { display: false },
+          ticks: {
+            font: { family: 'Outfit', size: 10 }
+          }
+        }
+      }
+    }
+  });
+}
+
+// 4. INVENTARIO
+async function cargarInventario() {
+  const data = await fetchAuth('/reportes/inventario');
+
+  const alertasLista = document.getElementById('inventario-alertas-lista');
+  alertasLista.innerHTML = '';
+  if (!data.alertasStock || data.alertasStock.length === 0) {
+    alertasLista.innerHTML = '<div style="padding:15px; text-align:center; color:var(--sage-oscuro); font-weight:600;">✅ ¡Todo el stock está conforme!</div>';
+  } else {
+    data.alertasStock.forEach(alerta => {
+      const item = document.createElement('div');
+      item.className = 'item-top';
+      item.innerHTML = `
+        <span class="item-nombre" style="font-weight:600;">${alerta.nombre}</span>
+        <span class="item-valor" style="color:var(--alerta); font-weight:700;">${alerta.stock} ud. restantes (Crítico: ${alerta.stockCritico})</span>
+      `;
+      alertasLista.appendChild(item);
+    });
+  }
+
+  const ctx = document.getElementById('chart-distribucion-movimientos').getContext('2d');
+  if (charts.movimientos) {
+    charts.movimientos.destroy();
+  }
+
+  const dist = data.distribucionMovimientos || {};
+  const labels = Object.keys(dist);
+  const values = Object.values(dist);
+
+  if (labels.length === 0) {
+    labels.push('Sin movimientos');
+    values.push(0);
+  }
+
+  const backgroundColors = [
+    'rgba(126, 146, 112, 0.8)',
+    'rgba(210, 139, 109, 0.8)',
+    'rgba(224, 184, 114, 0.8)',
+    'rgba(140, 122, 107, 0.8)'
+  ];
+
+  charts.movimientos = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: backgroundColors,
+        borderWidth: 1.5,
+        borderColor: '#fdfbf7'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { font: { family: 'Outfit', size: 11 } }
+        }
+      }
+    }
+  });
+
+  const tbody = document.getElementById('tabla-inventario-body');
+  tbody.innerHTML = '';
+  if (!data.ultimosMovimientos || data.ultimosMovimientos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--cafe); padding:20px;">No se registran movimientos.</td></tr>';
+    return;
+  }
+
+  data.ultimosMovimientos.forEach(mov => {
+    const tr = document.createElement('tr');
+    let pillClass = 'estado-pendiente';
+    if (mov.tipoMovimiento === 'INGRESO_COMPRA' || mov.tipoMovimiento === 'INGRESO_DEVOLUCION') {
+      pillClass = 'estado-ok';
+    } else if (mov.tipoMovimiento === 'SALIDA_VENTA') {
+      pillClass = 'estado-fallo';
+    }
+    
+    tr.innerHTML = `
+      <td>${mov.fecha}</td>
+      <td><span class="pildora ${pillClass}">${mov.tipoMovimiento}</span></td>
+      <td>${mov.productoVariante}</td>
+      <td class="mono" style="font-weight:700;">${mov.cantidad > 0 ? '+' : ''}${mov.cantidad}</td>
+      <td>${mov.observacion || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// 5. FIDELIZACIÓN (CLIENTES / CUPONES)
+async function cargarClientes() {
+  const data = await fetchAuth('/reportes/clientes');
+
+  document.getElementById('kpi-cupones-usados').textContent = data.cuponesUsadosMes;
+  document.getElementById('kpi-ahorro-clientes').textContent = 'S/ ' + data.ahorroClientes.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const tbody = document.getElementById('tabla-cupones-body');
+  tbody.innerHTML = '';
+  if (!data.efectividadCupones || data.efectividadCupones.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--cafe); padding:20px;">No hay datos de cupones usados.</td></tr>';
+    return;
+  }
+
+  data.efectividadCupones.forEach(c => {
+    const tr = document.createElement('tr');
+    const pillClass = c.estado === 'ACTIVO' ? 'estado-ok' : 'estado-fallo';
+    tr.innerHTML = `
+      <td class="mono" style="font-weight:700; color:var(--terracota);">${c.codigo}</td>
+      <td>${c.descuento}</td>
+      <td class="mono">${c.vecesUsado}</td>
+      <td class="mono">S/ ${c.totalDescontado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      <td><span class="pildora ${pillClass}">${c.estado}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// 6. DEVOLUCIONES
+async function cargarDevoluciones() {
+  const data = await fetchAuth('/reportes/devoluciones');
+
+  const ctx = document.getElementById('chart-motivos-devolucion').getContext('2d');
+  if (charts.devoluciones) {
+    charts.devoluciones.destroy();
+  }
+
+  const dist = data.motivosFrecuentes || {};
+  const labels = Object.keys(dist);
+  const values = Object.values(dist);
+
+  if (labels.length === 0) {
+    labels.push('Sin devoluciones');
+    values.push(0);
+  }
+
+  charts.devoluciones = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: [
+          'rgba(210, 139, 109, 0.8)',
+          'rgba(224, 184, 114, 0.8)',
+          'rgba(126, 146, 112, 0.8)',
+          'rgba(140, 122, 107, 0.8)'
+        ],
+        borderWidth: 1.5,
+        borderColor: '#fdfbf7'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { font: { family: 'Outfit', size: 11 } }
+        }
+      }
+    }
+  });
+
+  const lista = document.getElementById('devoluciones-recientes-lista');
+  lista.innerHTML = '';
+  if (!data.ultimasSolicitudes || data.ultimasSolicitudes.length === 0) {
+    lista.innerHTML = '<div style="padding:15px; text-align:center; color:var(--cafe);">No se registran devoluciones.</div>';
+    return;
+  }
+
+  data.ultimasSolicitudes.forEach(d => {
+    let pillClass = 'estado-pendiente';
+    if (d.estado === 'REEMBOLSADA' || d.estado === 'APROBADA') pillClass = 'estado-ok';
+    else if (d.estado === 'RECHAZADA') pillClass = 'estado-fallo';
+
+    const item = document.createElement('div');
+    item.className = 'item-top';
+    item.innerHTML = `
+      <div style="flex:1;">
+        <div style="font-weight:600; font-size:0.85rem;">Devolución #${d.id} - ${d.motivo}</div>
+        <div style="font-size:0.75rem; color:var(--cafe);">${d.productoNombre} (${d.cantidad} ud)</div>
+        <div style="font-size:0.7rem; color:#8c7a6b; margin-top:2px;">Monto: S/ ${d.monto.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} | ${d.fecha}</div>
+      </div>
+      <span class="pildora ${pillClass}">${d.estado}</span>
+    `;
+    lista.appendChild(item);
+  });
+}
+
+/* ==========================================================
    NAVEGACIÓN Y PESTAÑAS
    ========================================================== */
 const menuItems = document.querySelectorAll('.menu-item');
@@ -548,7 +930,14 @@ menuItems.forEach(item => {
     item.classList.add('activo');
     const panelId = item.getAttribute('data-panel');
     document.getElementById('panel-' + panelId).classList.add('activo');
+    cargarDatosPanel(panelId);
   });
+});
+
+// Eventos de la pestaña Ventas
+document.getElementById('btn-generar-ventas').addEventListener('click', cargarVentasFinancieras);
+document.getElementById('btn-exportar-ventas').addEventListener('click', () => {
+  exportarTablaACSV('Reporte_Ventas_Financiero.csv', ventasActuales);
 });
 
 /* ==========================================================
@@ -557,6 +946,8 @@ menuItems.forEach(item => {
 async function aplicarUsuario(datos) {
   const nombre = datos.nombre || 'Usuario';
   document.getElementById('usuario-nombre').textContent = nombre;
+  // Cargar panel por defecto al iniciar sesión
+  await cargarDatosPanel('dashboard');
 }
 
 const btnIngresar = document.getElementById('btn-ingresar');
@@ -576,9 +967,6 @@ btnIngresar.addEventListener('click', async () => {
     });
     if(!res.ok) throw new Error('Credenciales inválidas');
     const data = await res.json();
-    
-    // Aquí el backend podría validar si el usuario tiene permiso para reportes.
-    // if (data.rol !== 'ADMIN') throw new Error('Acceso denegado');
 
     localStorage.setItem(SESSION_KEY, JSON.stringify(data));
     overlay.style.display = 'none';
@@ -604,14 +992,17 @@ btnCerrar.addEventListener('click', async () => {
   overlay.style.display = 'flex';
   document.getElementById('login-correo').value = '';
   document.getElementById('login-password').value = '';
+  // Limpiar gráficos
+  Object.values(charts).forEach(c => c && c.destroy());
+  charts = {};
 });
 
 // Auto-login al cargar la página si el token existe
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   const data = getSessionData();
   if (data && data.token) {
     overlay.style.display = 'none';
-    aplicarUsuario(data);
+    await aplicarUsuario(data);
   }
 });
 </script>
