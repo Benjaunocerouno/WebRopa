@@ -895,6 +895,40 @@
       renderPermisosRapidos();
       showToast('Valores base restaurados');
     }
+    
+    function mostrarPermisosReales(usuario) {
+      const contenedor = document.getElementById('lista-permisos-rapidos');
+      if (!contenedor) return;
+
+      const nota = contenedor.previousElementSibling;
+      if (nota && nota.classList.contains('permiso-panel-nota')) {
+          nota.innerHTML = `<strong>Permisos de ${escapeHtml(usuario.nombre)} (${escapeHtml(usuario.rol?.nombre || 'Sin rol')})</strong> Estos son los permisos reales asignados en la base de datos para este rol.`;
+      }
+
+      const btnGuardar = document.getElementById('btn-guardar-permisos-rapidos');
+      const btnRestaurar = document.getElementById('btn-restaurar-permisos-rapidos');
+      if (btnGuardar) btnGuardar.style.display = 'none';
+      if (btnRestaurar) btnRestaurar.style.display = 'none';
+
+      const permisos = usuario.rol?.permisos || [];
+
+      if (permisos.length === 0) {
+          contenedor.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--cafe); opacity: 0.7;">Este usuario/rol no tiene permisos asignados en la base de datos.</div>';
+          return;
+      }
+
+      contenedor.innerHTML = permisos.map(p => {
+          return `
+        <label class="permiso-preferencia" style="grid-template-columns: minmax(0, 1fr) auto;">
+          <div>
+            <strong>${escapeHtml(p.nombre)}</strong>
+            <span class="detalle">${escapeHtml(p.descripcion || 'Permiso del sistema')}</span>
+          </div>
+          <div style="padding: 4px 12px; background-color: var(--sage-oscuro); color: white; border-radius: 999px; font-size: 0.75rem; border: 1px solid rgba(0,0,0,0.1);">Asignado</div>
+        </label>
+          `;
+      }).join('');
+    }
 
     async function cargarPermisosUsuarios() {
       const tbody = document.getElementById('tabla-permisos-empresa');
@@ -906,6 +940,8 @@
         const todosLosUsuarios = await fetchAuth('/usuarios');
         const usuarios = filtrarUsuariosPorEmpresa(todosLosUsuarios);
         cargarSugerenciasPermisosUsuarios(usuarios);
+        
+        window._usuariosPermisosMap = {}; // Guardar usuarios para lookup
 
         if (!Array.isArray(usuarios) || usuarios.length === 0) {
           tbody.innerHTML = '<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--cafe);">No hay usuarios registrados para esta empresa.</td></tr>';
@@ -913,12 +949,13 @@
         }
 
         tbody.innerHTML = usuarios.map(usuario => {
+          window._usuariosPermisosMap[usuario.id] = usuario;
           const rolInfo = obtenerEtiquetaRol(usuario.rol?.nombre);
           const estado = usuario.estado || 'ACTIVO';
           const accesoActivo = rolInfo.acceso;
 
           return `
-        <tr>
+        <tr class="usuario-fila-clic" data-uid="${usuario.id}" style="cursor: pointer;" title="Clic para ver permisos de este usuario">
           <td>
             <strong>${escapeHtml(usuario.nombre || 'Sin nombre')}</strong><br>
             <span style="font-size:0.75rem; color:var(--cafe); opacity:0.8">${escapeHtml(usuario.correo || '')}</span>
@@ -926,13 +963,23 @@
           <td><span class="pildora ${rolInfo.clase}">${escapeHtml(rolInfo.texto)}</span></td>
           <td>
             <div style="display:flex; flex-direction:column; gap:6px;">
-              <label class="permiso-toggle"><input type="checkbox" ${estado === 'ACTIVO' ? 'checked' : ''}><span>${escapeHtml(accesoActivo)}</span></label>
+              <label class="permiso-toggle"><input type="checkbox" ${estado === 'ACTIVO' ? 'checked' : ''} disabled><span>${escapeHtml(accesoActivo)}</span></label>
               <span style="font-size:0.72rem; color:var(--cafe); opacity:0.75;">Estado: ${escapeHtml(estado)}</span>
             </div>
           </td>
         </tr>
       `;
         }).join('');
+        
+        // Asignar el evento a las filas
+        tbody.querySelectorAll('.usuario-fila-clic').forEach(fila => {
+          fila.addEventListener('click', () => {
+            tbody.querySelectorAll('tr').forEach(tr => tr.style.backgroundColor = '');
+            fila.style.backgroundColor = 'rgba(122, 140, 110, 0.15)'; // resaltado suave
+            const u = window._usuariosPermisosMap[fila.dataset.uid];
+            if (u) mostrarPermisosReales(u);
+          });
+        });
       } catch (e) {
         tbody.innerHTML = `<tr class="no-filtrable"><td colspan="3" style="text-align:center; padding:18px; color:var(--alerta);">Error cargando usuarios: ${escapeHtml(e.message)}</td></tr>`;
       }
