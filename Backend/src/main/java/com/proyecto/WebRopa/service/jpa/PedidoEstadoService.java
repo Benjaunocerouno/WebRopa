@@ -61,6 +61,9 @@ public class PedidoEstadoService implements IPedidoEstadoService {
     // ── → LISTO_PARA_RECOGER ─────────────────────────
     @Transactional
     public void aplicarEfectosListoParaRecoger(Pedidos pedido) {
+        if (recojoTiendaService.buscarPorPedidoId(pedido.getId()).isEmpty()) {
+            generarRecojo(pedido);
+        }
         notificacionesService.crear(
                 pedido.getUsuario(),
                 pedido,
